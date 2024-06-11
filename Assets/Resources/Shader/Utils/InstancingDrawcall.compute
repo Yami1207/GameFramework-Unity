@@ -20,6 +20,9 @@ uniform bool _EnableFrustumCulling;
 // 可视距离
 uniform float _VisibleDistance;
 
+uniform float4 _InstanceMinBounds;
+uniform float4 _InstanceMaxBounds;
+
 uniform uint _InstancingCount;
 
 StructuredBuffer<float4x4> _InstancingBuffer;
@@ -79,6 +82,38 @@ inline bool IsCulling(in float3 positionWS)
     return false;
 }
 
+inline bool IsCulling(in float3 minimum, in float3 maximum)
+{
+    float3 p;
+    for (int index = 0; index < 6; ++index)
+    {
+        float3 normal = _CameraFrustumPlanes[index].xyz;
+        float planeDistance = _CameraFrustumPlanes[index].w;
+        
+        // X axis
+        if (normal.x < 0)
+            p.x = minimum.x;
+        else
+            p.x = maximum.x;
+
+        // Y axis
+        if (normal.y < 0)
+            p.y = minimum.y;
+        else
+            p.y = maximum.y;
+
+        // Z axis
+        if (normal.z < 0)
+            p.z = minimum.z;
+        else
+            p.z = maximum.z;
+        
+        if (dot(p, normal) + planeDistance < -THICKNESS_PLANE)
+            return true;
+    }
+    return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // kernel: Main
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,11 +129,20 @@ void Main(uint3 id : SV_DispatchThreadID)
     if (!IsVisible(positionWS))
         return;
     
-    if (_EnableFrustumCulling && IsCulling(positionWS))
-        return;
+    float4x4 objectToWorld = _InstancingBuffer[id.x];
+    
+    if (_EnableFrustumCulling)
+    {
+        float3 minBounds = mul(objectToWorld, _InstanceMinBounds).xyz;
+        float3 maxBounds = mul(objectToWorld, _InstanceMaxBounds).xyz;
+        float3 minimum = min(minBounds, maxBounds);
+        float3 maximum = max(minBounds, maxBounds);
+        if (IsCulling(minimum, maximum))
+            return;
+    }
 
     InstanceParam instance = (InstanceParam) 0;
-    instance.objectToWorld = _InstancingBuffer[id.x];
+    instance.objectToWorld = objectToWorld;
     instance.worldToObject = InvMatrix(instance.objectToWorld);
     _VisibleBuffer.Append(instance);
 }

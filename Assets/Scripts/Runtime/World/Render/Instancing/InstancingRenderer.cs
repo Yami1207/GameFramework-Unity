@@ -17,7 +17,12 @@ public class InstancingRenderer
         public static readonly int enableFrustumCullingPropID = Shader.PropertyToID("_EnableFrustumCulling");
 
         public static readonly int visibleDistancePropID = Shader.PropertyToID("_VisibleDistance");
+
+        public static readonly int instanceMinBoundsPropID = Shader.PropertyToID("_InstanceMinBounds");
+        public static readonly int instanceMaxBoundsPropID = Shader.PropertyToID("_InstanceMaxBounds");
     }
+
+    private InstancingCore m_InstancingCore;
 
     private bool m_EnableFrustumCulling = true;
     public bool enableFrustumCulling { set { m_EnableFrustumCulling = value; } get { return m_EnableFrustumCulling; } }
@@ -25,7 +30,8 @@ public class InstancingRenderer
     private int m_VisibleDistance = -1;
     public int visibleDistance { get { return m_VisibleDistance + 1; } }
 
-    private InstancingCore m_InstancingCore;
+    private Vector4 m_MinimumBounds = Vector4.zero;
+    private Vector4 m_MaximumBounds = Vector4.zero;
 
     /// <summary>
     /// 对象变换矩阵列表
@@ -100,7 +106,12 @@ public class InstancingRenderer
         MeshFilter meshFilter = prefab.GetComponent<MeshFilter>();
         MeshRenderer renderer = prefab.GetComponent<MeshRenderer>();
         if (meshFilter != null && renderer != null)
+        {
+            m_MinimumBounds = renderer.bounds.min;
+            m_MaximumBounds = renderer.bounds.max;
+            m_MinimumBounds.w = m_MaximumBounds.w = 1.0f;
             m_InstancingDrawcall = m_InstancingCore.CreateInstancingDrawcall(meshFilter.sharedMesh, renderer.sharedMaterial, renderer);
+        }
     }
 
     public void AddDrawcall(InstancingDrawcall dc)
@@ -169,8 +180,13 @@ public class InstancingRenderer
         m_InstancingBuffer.SetData(m_InstanceList);
         cs.SetBuffer(kernel, ShaderConstants.instancingBufferPropID, m_InstancingBuffer);
         cs.SetBuffer(kernel, ShaderConstants.visibleBufferPropID, m_VisibleBuffer);
-        cs.SetBool(ShaderConstants.enableFrustumCullingPropID, m_EnableFrustumCulling);
         cs.SetFloat(ShaderConstants.visibleDistancePropID, m_VisibleDistance * Define.kChunkSideLength);
+        cs.SetBool(ShaderConstants.enableFrustumCullingPropID, m_EnableFrustumCulling);
+        if (m_EnableFrustumCulling)
+        {
+            cs.SetVector(ShaderConstants.instanceMinBoundsPropID, m_MinimumBounds);
+            cs.SetVector(ShaderConstants.instanceMaxBoundsPropID, m_MaximumBounds);
+        }
         cs.SetInt(ShaderConstants.instancingCountPropID, instancingCount);
         int threadX = (instancingCount >> 6) + 1;
         cs.Dispatch(kernel, threadX, 1, 1);
