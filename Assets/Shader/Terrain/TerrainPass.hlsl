@@ -54,13 +54,7 @@ inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, o
     inputData.viewDirectionWS = viewDirWS;
 
 	// 阴影值
-#if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
-	inputData.shadowCoord = input.shadowCoord;
-#elif defined(MAIN_LIGHT_CALCULATE_SHADOWS)
-	inputData.shadowCoord = TransformWorldToShadowCoord(inputData.positionWS);
-#else
-    inputData.shadowCoord = float4(0, 0, 0, 0);
-#endif
+    inputData.shadowCoord = GetShadowCoordInFragment(inputData.positionWS, input.shadowCoord);
     
     // 雾
     inputData.fogCoord = InitializeInputDataFog(float4(inputData.positionWS, 1.0), input.positionWSAndFog.w);

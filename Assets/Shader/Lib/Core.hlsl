@@ -6,6 +6,7 @@
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
 #include "Input.hlsl"
+#include "Lights.hlsl"
 #include "Utils.hlsl"
 #include "Lighting.hlsl"
 #include "Common.hlsl"

@@ -102,7 +102,7 @@ Material:
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _ColorVariation: 1
-    - _Cull: 2
+    - _Cull: 0
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
@@ -123,6 +123,8 @@ Material:
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _ReflectionIntensity: 0.2
+    - _Roughness: 0.15
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -139,7 +141,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 0.22352941, g: 0.40784314, b: 0.07058824, a: 1}
     - _Color1: {r: 0.22322798, g: 0.4072403, b: 0.07036011, a: 1}
     - _Color2: {r: 0.09305898, g: 0.27049786, b: 0.03071344, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

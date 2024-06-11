@@ -1,17 +1,6 @@
 ﻿#ifndef __UTILS_HLSL__
 #define __UTILS_HLSL__
 
-inline Light GetMainLight(CustomInputData inputData, half4 shadowMask, AmbientOcclusionFactor aoFactor)
-{
-    Light light = GetMainLight(inputData.shadowCoord, inputData.positionWS, shadowMask);
-
-#if defined(_SCREEN_SPACE_OCCLUSION) && !defined(_SURFACE_TYPE_TRANSPARENT)
-    if (IsLightingFeatureEnabled(DEBUGLIGHTINGFEATUREFLAGS_AMBIENT_OCCLUSION))
-        light.color *= aoFactor.directAmbientOcclusion;
-#endif
-    return light;
-}
-
 inline float4 GetShadowCoord(float3 positionWS, float4 positionCS)
 {
 #if defined(_MAIN_LIGHT_SHADOWS_SCREEN) && !defined(_SURFACE_TYPE_TRANSPARENT)

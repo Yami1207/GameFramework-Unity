@@ -639,7 +639,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_CloudSetting:
-    enabled: 0
+    enabled: 1
     color: {r: 1, g: 1, b: 1, a: 1}
     height: 200
     thickness: 10
@@ -1016,6 +1016,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2508788827086418239, guid: efa14cbb60c19604db0929ad1959fdcf, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: feaf11679cb6d6141acd947584e5f6a0, type: 2}
     - target: {fileID: 6082154132548551347, guid: efa14cbb60c19604db0929ad1959fdcf, type: 3}
       propertyPath: m_Name
       value: GrassMeadows1

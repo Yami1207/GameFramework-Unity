@@ -4,36 +4,22 @@
 // ========================= 开关定义 =========================
 #define USING_SWING (_USE_SWING)
 
-#define USING_NOISE_WORLD_SPACE_UVS (_USE_NOISE_WORLD_SPACE_UVS)
-
 #include "../Lib/Core.hlsl"
 #include "../Lib/Wind.hlsl"
 
 //--------------------------------------
 // 材质属性
-CBUFFER_START(UnityPerMaterial)
-    half3 _Color1;
-    half3 _Color2;
-    half3 _GrassShadowColor;
-    half _ColorVariation;
-    half _Cutoff;
-    half _NormalScale;
-    half _NoiseTiling;
-    half _GrassShininess;
-    half _GrassSpecularScale;
-    half _SwingFeq;
-    half _SwingFeqMax;
-    half _SwingScale;
-    half _SwingAmp;
-CBUFFER_END
+uniform half3 _Color;
+uniform half3 _GrassShadowColor;
+uniform half _Cutoff;
 
-//--------------------------------------
-// 贴图
-//TEXTURE2D(_MainTex);
-//SAMPLER(sampler_MainTex);
+uniform half _Roughness;
+uniform half _ReflectionIntensity;
 
-TEXTURE2D(_Noise);
-SAMPLER(sampler_Noise);
+uniform half _SwingFeq;
+uniform half _SwingFeqMax;
+uniform half _SwingScale;
+uniform half _SwingAmp;
 
 //--------------------------------------
 // 顶点结构体
@@ -41,6 +27,7 @@ struct Attributes
 {
     float3 positionOS   : POSITION;
     half2 texcoord      : TEXCOORD0;
+    float2 lightmapUV   : TEXCOORD1;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -50,10 +37,11 @@ struct Varyings
 {
     float4 positionCS       : SV_POSITION;
     half2 texcoord          : TEXCOORD0;
-    half3 normalWS          : TEXCOORD1;
-    float4 positionWSAndFog : TEXCOORD2;
+    float4 positionWSAndFog : TEXCOORD1;
+    float3 normalWS         : TEXCOORD2;
     float4 shadowCoord      : TEXCOORD3;
-
+    DECLARE_LIGHTMAP_OR_SH(lightmapUV, vertexSH, 4);
+    
     UNITY_VERTEX_OUTPUT_STEREO
 };
 
@@ -79,6 +67,36 @@ inline float3 GrassWindOffset(float3 positionOS, float2 mask)
     return positionOS;
 }
 
+inline void InitializeSurfaceData(Varyings input, out CustomSurfaceData surfaceData)
+{
+    half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord);
+    clip(albedoAlpha.a - _Cutoff);
+    
+    surfaceData = (CustomSurfaceData) 0;
+    surfaceData.albedo = albedoAlpha.rgb * _Color;
+    surfaceData.alpha = albedoAlpha.a;
+}
+
+inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, out CustomInputData inputData)
+{
+    inputData = (CustomInputData) 0;
+    inputData.positionWS = input.positionWSAndFog.xyz;
+    inputData.normalWS = input.normalWS;
+
+    half3 viewDirWS = GetWorldSpaceNormalizeViewDir(inputData.positionWS);
+    inputData.viewDirectionWS = viewDirWS;
+
+	// 阴影值
+    inputData.shadowCoord = GetShadowCoordInFragment(inputData.positionWS, input.shadowCoord);
+    
+    // 雾
+    inputData.fogCoord = InitializeInputDataFog(float4(inputData.positionWS, 1.0), input.positionWSAndFog.w);
+    
+    inputData.bakedGI = SAMPLE_GI(input.staticLightmapUV, input.vertexSH, inputData.normalWS.xyz);
+    inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
+    inputData.shadowMask = SAMPLE_SHADOWMASK(input.staticLightmapUV);
+}
+
 Varyings vert(Attributes input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
@@ -94,65 +112,119 @@ Varyings vert(Attributes input)
     output.positionWSAndFog = float4(positionWS, ComputeFogFactor(output.positionCS.z));
     output.shadowCoord = GetShadowCoord(positionWS, output.positionCS);
     
+    // lightmap
+    OUTPUT_LIGHTMAP_UV(input.lightmapUV, unity_LightmapST, output.lightmapUV);
+
+    // sh
+    OUTPUT_SH(output.normalWS, output.vertexSH);
+    
     return output;
 }
 
 FragData frag(Varyings input)
 {
-    half4 mainColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord);
-    clip(mainColor.a - _Cutoff);
-    
-    float3 positionWS = input.positionWSAndFog.xyz;
-#if USING_NOISE_WORLD_SPACE_UVS
-    half mask = SAMPLE_TEXTURE2D(_Noise, sampler_Noise, positionWS.xz * _NoiseTiling).r;
-#else
-    half mask = SAMPLE_TEXTURE2D(_Noise, sampler_Noise, input.texcoord).r;
-#endif
-    half3 albedo = mainColor.rgb * lerp(_Color1, _Color2, mask * _ColorVariation);
+    CustomSurfaceData surfaceData;
+    InitializeSurfaceData(input, surfaceData);
 
+    CustomInputData inputData;
+    InitializeInputData(input, surfaceData, inputData);
+    
+    half4 shadowMask = CalculateShadowMask(inputData);
+    Light mainLight = GetMainLight(inputData.shadowCoord, inputData.positionWS, shadowMask);
+    BxDFContext bxdfContext = GetBxDFContext(inputData, mainLight.direction);
+    
     // 阴影值
-    float4 shadowCoord = GetShadowCoordInFragment(positionWS, input.shadowCoord);
-    half shadowAtten = MainLightRealtimeShadow(shadowCoord);
+    half shadowAtten = MainLightRealtimeShadow(inputData.shadowCoord);
     half3 shadow = lerp(_GrassShadowColor, 1, shadowAtten);
-    
-    Light mainLight = GetMainLight();
-    float3 viewDirectionWS = GetCameraPositionWS() - positionWS;
-    
-    // Lambert
-    half NoL = dot(input.normalWS, mainLight.direction);
-    half diffuse = NoL * 0.5 + 0.5;
-    half3 directDiffuse = diffuse * mainLight.color;
-    half3 diffuseColor = shadow * directDiffuse;
-    
-    //half smoothness = _GrassShininess;
-    //half roughness = 1 - smoothness;
-    //half perceptualRoughness = roughness * roughness;
-    //half roughness2 = perceptualRoughness * perceptualRoughness;
-    //half roughness2MinusOne = roughness2 - 1;
-    //half normalizationTerm = roughness * 4 + 2;
 
-    //// 高光
-    //half H = SafeNormalize(viewDirectionWS + mainLight.direction);
-    //half NoH = saturate(dot(input.normalWS, H));
-    //half LoH = saturate(dot(mainLight.direction, H));
-    //half d = roughness2MinusOne * NoH * NoH + 1.0;
-    //half ggxTerm = roughness2 / (d * d * max(0.1, LoH * LoH) * normalizationTerm);
-    //half3 indirectSpecular = shadow * ggxTerm * mainLight.color;
-    ////half ggxTerm = min(roughness2 / max(d * d, 0.0001) * INV_PI, 64.0);
-    ////half LoV = dot(mainLight.direction, viewDirectionWS);
-    ////half smoothLoV = smoothstep(-1, -0.9962, LoV);
-    ////half3 indirectSpecular = shadow * ggxTerm * mainLight.color * smoothLoV * 4;
-    //half3 sepcularColor = indirectSpecular * _GrassSpecularScale;
+    // GI
+    MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI);
+    inputData.bakedGI *= surfaceData.albedo;
+    half3 giColor = inputData.bakedGI;
     
-    half3 color = albedo * diffuseColor;
+    // 反射环境
+    half perceptualRoughness = _Roughness;
+    giColor += _ReflectionIntensity * GetGlossyEnvironmentReflection(bxdfContext.R, perceptualRoughness);
+
+    // 主灯颜色(草不要暗部效果)
+    half3 lightColor = surfaceData.albedo * mainLight.color * shadow * bxdfContext.NoL_01;
+    
+    half3 color = lightColor + giColor;
 
     // 与雾混合
-    color = MixFog(color, input.positionWSAndFog.a);
+    color = MixFog(color, inputData.fogCoord);
 
     FragData output = (FragData) 0;
     output.color = half4(color, 1);
     output.normal = float4(input.normalWS * 0.5 + 0.5, 0.0);
     return output;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//                             ShadowCaster                                   /
+///////////////////////////////////////////////////////////////////////////////
+float3 _LightDirection;
+float3 _LightPosition;
+
+Varyings ShadowPassVertex(Attributes input)
+{
+    UNITY_SETUP_INSTANCE_ID(input);
+    
+    float3 positionOS = GrassWindOffset(input.positionOS.xyz, input.texcoord);
+    float3 positionWS = TransformObjectToWorld(positionOS);
+    float3 normalWS = TransformObjectToWorldNormal(normalize(positionOS));
+    
+    Varyings output = (Varyings) 0;
+    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+    output.texcoord = input.texcoord;
+
+#if _CASTING_PUNCTUAL_LIGHT_SHADOW
+	float3 lightDirectionWS = normalize(_LightPosition - vertexInput.positionWS);
+#else
+    float3 lightDirectionWS = _LightDirection;
+#endif
+
+    float4 positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, lightDirectionWS));
+#if UNITY_REVERSED_Z
+	positionCS.z = min(positionCS.z, UNITY_NEAR_CLIP_VALUE);
+#else
+    positionCS.z = max(positionCS.z, UNITY_NEAR_CLIP_VALUE);
+#endif
+    output.positionCS = positionCS;
+    
+    return output;
+}
+
+half4 ShadowPassFragment(Varyings input) : SV_Target
+{
+    half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord.xy);
+    clip(albedoAlpha.a - _Cutoff);
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//                              DepthOnly                                     /
+///////////////////////////////////////////////////////////////////////////////
+Varyings DepthOnlyVertex(Attributes input)
+{
+    UNITY_SETUP_INSTANCE_ID(input);
+    
+    float3 positionOS = GrassWindOffset(input.positionOS.xyz, input.texcoord);
+    float3 positionWS = TransformObjectToWorld(positionOS);
+    
+    Varyings output = (Varyings) 0;
+    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+    output.positionCS = TransformWorldToHClip(positionWS);
+    output.texcoord = input.texcoord;
+    return output;
+}
+
+half4 DepthOnlyFragment(Varyings input) : SV_TARGET
+{
+    UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+    half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord.xy);
+	clip(albedoAlpha.a - _Cutoff);
+    return 0;
 }
 
 #endif

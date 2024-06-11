@@ -2,37 +2,29 @@
 {
     Properties
     {
+        [Linear]_Color("Color", Vector) = (1, 1, 1, 1)
         _BaseMap("Texture", 2D) = "white" {}
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
-        [Header(Color)]
-        [Linear]_Color1("Color 1", Vector) = (1, 1, 1, 1)
-        [Linear]_Color2("Color 2", Vector) = (1, 1, 1, 1)
-        _ColorVariation("Color Variation", Range(0, 1)) = 1.0
+        [Linear]_GrassShadowColor("阴影色", Vector) = (0.7, 0.7, 0.7, 1.0)
 
-        _GrassShadowColor("阴影色", Color) = (0.7, 0.7, 0.7, 1.0)
+		_Roughness("粗糙度", Range(0, 1.0)) = 1
+		_ReflectionIntensity("反射强度", Range(0, 1.0)) = 0.5
 
-        [Header(Noise)]
-        [Toggle(_USE_NOISE_WORLD_SPACE_UVS)]_NoiseWorldSpaceUVs("UV是否是世界坐标", float) = 0
-        _Noise("Noise", 2D) = "white" {}
-		_NoiseTiling("Noise Tiling", float) = 1
-
-        [Header(Specular)]
-        _GrassShininess("光滑度", Range(0, 1)) = 0.25
-        _GrassSpecularScale("高光强度", Range(0, 5)) = 1
-
-        [Header(Wind)]
         [Toggle(_USE_SWING)]_Swing("摆动开启", int) = 0
         _SwingFeq("最小摆动频率", float) = 0.1
         _SwingFeqMax("最大摆动频率", float) = 0.6
         _SwingScale("修正频率", float) = 1
         _SwingAmp("摆动幅度", float) = 1
+
+        [MaterialEnum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Int) = 0
     }
     SubShader
     {
         Tags { "RenderPipeline" = "UniversalPipeline" "RenderType" = "Opaque"  "Queue" = "AlphaTest" }
-        Cull Off
+        Blend One Zero
 		AlphaToMask On
+        Cull[_Cull]
 
         Pass
         {
@@ -50,6 +42,7 @@
 			//--------------------------------------
 			// GPU Instancing
 			#pragma multi_compile_instancing
+            #pragma instancing_options assumeuniformscaling lodfade nolightprobe nolightmap
 			#pragma instancing_options procedural:Setup
 
 			// -------------------------------------
@@ -58,7 +51,6 @@
 
             // -------------------------------------
             // 自定义keywords
-		    #pragma shader_feature_local _USE_NOISE_WORLD_SPACE_UVS
             #pragma shader_feature_local _USE_SWING
 
 			#include "Grass.hlsl"
@@ -83,9 +75,40 @@
 
 			#pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
 
-            #define USE_ALPHA_CUTOFF 1
+			// -------------------------------------
+            // 自定义keywords
+            #pragma shader_feature_local _USE_SWING
 
-			#include "../Lib/Pass/ShadowCasterPass.hlsl"
+			#include "Grass.hlsl"
+
+			ENDHLSL
+		}
+
+        Pass
+		{
+			Name "DepthOnly"
+			Tags{"LightMode" = "DepthOnly"}
+
+			ColorMask 0
+
+			HLSLPROGRAM
+
+			#pragma vertex DepthOnlyVertex
+			#pragma fragment DepthOnlyFragment
+			#pragma target 3.0
+
+			//--------------------------------------
+			// GPU Instancing
+			#pragma multi_compile_instancing
+			#pragma multi_compile _ DOTS_INSTANCING_ON
+			#pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
+            #pragma instancing_options procedural:Setup
+
+			// -------------------------------------
+            // 自定义keywords
+            #pragma shader_feature_local _USE_SWING
+
+			#include "Grass.hlsl"
 
 			ENDHLSL
 		}
