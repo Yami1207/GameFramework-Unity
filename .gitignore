@@ -1,0 +1,15 @@
+
+.vsconfig
+.vs
+*.csproj
+*.rar
+*.sln
+Framework
+HotUpdate
+Library
+Logs
+obj
+Temp
+UserSettings
+data/excel
+data/打表工具

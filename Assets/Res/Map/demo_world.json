@@ -1,0 +1,15 @@
+{
+    "name" : "Demo",
+    "scenes" : [
+        {
+            "map_id": 1,
+            "x" : 0,
+            "z" : 0,
+            "terrain": {
+                "base": 5000,
+                "add": 5001,
+                "low": 5002
+            }
+        }
+    ]
+}

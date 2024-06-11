@@ -1,0 +1,104 @@
+﻿#define NUM_THREAD_X_GROUP 64
+
+// 平面厚度
+#define THICKNESS_PLANE 0.1		
+
+struct InstanceParam
+{
+    float4x4 objectToWorld;
+    float4x4 worldToObject;
+};
+
+// 镜头位置
+uniform float4 _CameraPosition;
+
+// 视锥体
+uniform float4 _CameraFrustumPlanes[6];
+
+uniform bool _EnableFrustumCulling;
+
+// 可视距离
+uniform float _VisibleDistance;
+
+uniform uint _InstancingCount;
+
+StructuredBuffer<float4x4> _InstancingBuffer;
+
+AppendStructuredBuffer<InstanceParam> _VisibleBuffer;
+
+// https://discussions.unity.com/t/shader-inverse-float4x4-function/36738
+inline float4x4 InvMatrix(float4x4 input)
+{
+    #define minor(a,b,c) determinant(float3x3(input.a, input.b, input.c))
+    float4x4 cofactors = float4x4(
+        minor(_22_23_24, _32_33_34, _42_43_44),
+		-minor(_21_23_24, _31_33_34, _41_43_44),
+		minor(_21_22_24, _31_32_34, _41_42_44),
+		-minor(_21_22_23, _31_32_33, _41_42_43),
+
+		-minor(_12_13_14, _32_33_34, _42_43_44),
+		minor(_11_13_14, _31_33_34, _41_43_44),
+		-minor(_11_12_14, _31_32_34, _41_42_44),
+		minor(_11_12_13, _31_32_33, _41_42_43),
+
+		minor(_12_13_14, _22_23_24, _42_43_44),
+		-minor(_11_13_14, _21_23_24, _41_43_44),
+		minor(_11_12_14, _21_22_24, _41_42_44),
+		-minor(_11_12_13, _21_22_23, _41_42_43),
+
+		-minor(_12_13_14, _22_23_24, _32_33_34),
+		minor(_11_13_14, _21_23_24, _31_33_34),
+		-minor(_11_12_14, _21_22_24, _31_32_34),
+		minor(_11_12_13, _21_22_23, _31_32_33)
+    );
+    #undef minor
+    
+    return transpose(cofactors) / determinant(input);
+}
+
+inline bool IsVisible(in float3 positionWS)
+{
+    if (_VisibleDistance >= 0)
+    {
+        float dx = positionWS.x - _CameraPosition.x;
+        float dz = positionWS.z - _CameraPosition.z;
+        return dx * dx + dz * dz <= (_VisibleDistance * _VisibleDistance);
+    }
+
+    return true;
+}
+
+inline bool IsCulling(in float3 positionWS)
+{
+    for (int index = 0; index < 6; ++index)
+    {
+        float4 plane = _CameraFrustumPlanes[index];
+        if (dot(positionWS, plane.xyz) + plane.w < -THICKNESS_PLANE)
+            return true;
+    }
+    return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// kernel: Main
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma kernel Main
+
+[numthreads(NUM_THREAD_X_GROUP, 1, 1)]
+void Main(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _InstancingCount)
+        return;
+    
+    float3 positionWS = _InstancingBuffer[id.x]._14_24_34;
+    if (!IsVisible(positionWS))
+        return;
+    
+    if (_EnableFrustumCulling && IsCulling(positionWS))
+        return;
+
+    InstanceParam instance = (InstanceParam) 0;
+    instance.objectToWorld = _InstancingBuffer[id.x];
+    instance.worldToObject = InvMatrix(instance.objectToWorld);
+    _VisibleBuffer.Append(instance);
+}
