@@ -12,11 +12,11 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _USE_NOISE_WORLD_SPACE_UVS
   - _USE_SWING
   m_InvalidKeywords:
   - _NOISE_WORLD_SPACE_UVS
   - _NORMAL_WORLD_SPACE_UVS
+  - _USE_NOISE_WORLD_SPACE_UVS
   - _USE_NORMAL_WORLD_SPACE_UVS
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1

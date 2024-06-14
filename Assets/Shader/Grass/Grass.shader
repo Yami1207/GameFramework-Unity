@@ -2,10 +2,8 @@
 {
     Properties
     {
-        [Linear]_Color("Color", Vector) = (1, 1, 1, 1)
-        _BaseMap("Texture", 2D) = "white" {}
-        _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
-
+        [Linear]_BaseColor("颜色", Vector) = (1, 1, 1, 1)
+		[Linear]_GrassTipColor("草尖颜色", Vector) = (1, 1, 1, 1)
         [Linear]_GrassShadowColor("阴影色", Vector) = (0.7, 0.7, 0.7, 1.0)
 
 		_Roughness("粗糙度", Range(0, 1.0)) = 1
@@ -17,11 +15,16 @@
         _SwingScale("修正频率", float) = 1
         _SwingAmp("摆动幅度", float) = 1
 
+		[Toggle(_USE_INTERACTIVE)]_Interactive("互动草", int) = 0
+		_GrassPivotPointTex("描点图", 2D) = "black" {}
+		_GrassPivotPointTexUnit("描点图单位", float) = 1
+		_GrassPushStrength("推力强度", float) = 1
+
         [MaterialEnum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Int) = 0
     }
     SubShader
     {
-        Tags { "RenderPipeline" = "UniversalPipeline" "RenderType" = "Opaque"  "Queue" = "AlphaTest" }
+        Tags { "RenderPipeline" = "UniversalPipeline" "RenderType" = "Opaque"  "Queue" = "Geometry" }
         Blend One Zero
 		AlphaToMask On
         Cull[_Cull]
@@ -52,6 +55,11 @@
             // -------------------------------------
             // 自定义keywords
             #pragma shader_feature_local _USE_SWING
+			#pragma shader_feature_local _USE_INTERACTIVE
+
+			//--------------------------------------
+            // 自定义宏
+			#define USE_SOLID_COLOR	1
 
 			#include "Grass.hlsl"
 
@@ -78,6 +86,7 @@
 			// -------------------------------------
             // 自定义keywords
             #pragma shader_feature_local _USE_SWING
+			#pragma shader_feature_local _USE_OBSTACLE
 
 			#include "Grass.hlsl"
 
@@ -107,6 +116,7 @@
 			// -------------------------------------
             // 自定义keywords
             #pragma shader_feature_local _USE_SWING
+			#pragma shader_feature_local _USE_OBSTACLE
 
 			#include "Grass.hlsl"
 

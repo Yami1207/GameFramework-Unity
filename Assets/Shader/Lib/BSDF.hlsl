@@ -1,6 +1,8 @@
 ﻿#ifndef __BSDF_HLSL__
 #define __BSDF_HLSL__
 
+#define DIELECTRIC_SPEC half4(0.04, 0.04, 0.04, 1.0 - 0.04)
+
 struct CustomBRDFData
 {
 	// F0 
@@ -59,7 +61,7 @@ CustomBRDFData GetBRDFData(CustomSurfaceData surfaceData)
     half oneMinusReflectivity = OneMinusReflectivityMetallic(metallic);
 
     CustomBRDFData data = (CustomBRDFData)0;
-    data.fresnel0 = lerp(kDieletricSpec.rgb, albedo, metallic);
+    data.fresnel0 = lerp(DIELECTRIC_SPEC.rgb, albedo, metallic);
     data.diffuseColor = albedo * lerp(0.96, 0.0, metallic);
     data.specularColor = data.fresnel0;
     

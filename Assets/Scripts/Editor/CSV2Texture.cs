@@ -40,4 +40,23 @@ public class CSV2Texture
         name = name.Substring(0, name.LastIndexOf('.'));
         AssetDatabase.CreateAsset(texture, string.Format("{0}/{1}.asset", dir, name));
     }
+
+    [MenuItem("Assets/Print Texture")]
+    private static void PrintTexture()
+    {
+        if (UnityEditor.Selection.activeObject == null)
+            return;
+
+        string path = AssetDatabase.GetAssetPath(Selection.activeObject);
+        if (path == null)
+            return;
+
+        Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        if (tex == null)
+            return;
+
+        var pixels = tex.GetPixels(0, 0, tex.width, tex.height);
+        for (int i = 0; i < pixels.Length; ++i)
+            Debug.LogError(pixels[i]);
+    }
 }

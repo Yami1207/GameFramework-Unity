@@ -4,12 +4,19 @@
 // ========================= 开关定义 =========================
 #define USING_SWING (_USE_SWING)
 
+#define USING_INTERACTIVE  (_USE_INTERACTIVE)
+
+#define USING_SOLID_COLOR (USE_SOLID_COLOR)
+
+#define USING_ALPHA_CUTOFF (USE_ALPHA_CUTOFF)
+
 #include "../Lib/Core.hlsl"
 #include "../Lib/Wind.hlsl"
 
 //--------------------------------------
 // 材质属性
-uniform half3 _Color;
+uniform half3 _BaseColor;
+uniform half3 _GrassTipColor;
 uniform half3 _GrassShadowColor;
 uniform half _Cutoff;
 
@@ -21,13 +28,22 @@ uniform half _SwingFeqMax;
 uniform half _SwingScale;
 uniform half _SwingAmp;
 
+uniform half _GrassPivotPointTexUnit;
+uniform half _GrassPushStrength;
+
+//--------------------------------------
+// 贴图
+TEXTURE2D(_GrassPivotPointTex);
+SAMPLER(sampler_GrassPivotPointTex);
+
 //--------------------------------------
 // 顶点结构体
 struct Attributes
 {
     float3 positionOS   : POSITION;
+    float3 normalOS     : NORMAL;
     half2 texcoord      : TEXCOORD0;
-    float2 lightmapUV   : TEXCOORD1;
+    half2 texcoord2     : TEXCOORD1;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -40,7 +56,7 @@ struct Varyings
     float4 positionWSAndFog : TEXCOORD1;
     float3 normalWS         : TEXCOORD2;
     float4 shadowCoord      : TEXCOORD3;
-    DECLARE_LIGHTMAP_OR_SH(lightmapUV, vertexSH, 4);
+    half3 vertexSH          : TEXCOORD4;
     
     UNITY_VERTEX_OUTPUT_STEREO
 };
@@ -54,26 +70,53 @@ struct FragData
 };
 
 #include "../Lib/Instancing.hlsl"
+#include "../Lib/Utils/ObjectTrails.hlsl"
 
-inline float3 GrassWindOffset(float3 positionOS, float2 mask)
+inline float3 GetGrassPosition(Attributes input)
 {
+    float3 positionOS = input.positionOS;
+    float lerpY = input.texcoord.y * input.texcoord.y;
+    
 #if USING_SWING
-    half stiffnessAtten = mask.y * mask.y;
-    float phase = UNITY_MATRIX_M._m10 - mask.x;
+    float phase = UNITY_MATRIX_M._m10 - input.texcoord.x;
     float feq = lerp(_SwingFeq, _SwingFeqMax, GetWindIntensity() * _SwingScale);
-    positionOS = SimpleSwingPosOS(positionOS, feq, _SwingAmp, stiffnessAtten, phase);
+    positionOS = SimpleSwingPositionOS(positionOS, feq, _SwingAmp, lerpY, phase);
 #endif
 
-    return positionOS;
+    float3 positionWS = TransformObjectToWorld(positionOS);
+#if USING_INTERACTIVE
+     // 获取周围角色信息
+    float4 playerPosWS = GetTrailObject(positionWS);
+    float dist = distance(positionWS, playerPosWS);
+    {    
+        // 草的描点
+        float3 pivotPointOS = SAMPLE_TEXTURE2D_LOD(_GrassPivotPointTex, sampler_GrassPivotPointTex, input.texcoord2, 0.0).xzy * _GrassPivotPointTexUnit;
+        float3 pivotPointWS = TransformObjectToWorld(pivotPointOS);
+
+        float pushDown = saturate((1 - dist / playerPosWS.w) * lerpY) * _GrassPushStrength;
+        float3 direction = normalize(playerPosWS - pivotPointWS);
+        float3 newPos = positionWS + (direction * pushDown);
+	    float orgDist = distance(positionWS, pivotPointWS);
+        positionWS = pivotPointWS + (normalize(newPos - pivotPointWS) * orgDist);
+    }
+#endif
+    
+    return positionWS;
 }
 
 inline void InitializeSurfaceData(Varyings input, out CustomSurfaceData surfaceData)
 {
     half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord);
+#if USING_ALPHA_CUTOFF
     clip(albedoAlpha.a - _Cutoff);
+#endif
     
     surfaceData = (CustomSurfaceData) 0;
-    surfaceData.albedo = albedoAlpha.rgb * _Color;
+#if USING_SOLID_COLOR
+    surfaceData.albedo = lerp(_BaseColor, _GrassTipColor, input.texcoord.y * input.texcoord.y);
+#else
+    surfaceData.albedo = albedoAlpha.rgb * lerp(_BaseColor, _GrassTipColor, input.texcoord.y * input.texcoord.y);
+#endif
     surfaceData.alpha = albedoAlpha.a;
 }
 
@@ -92,32 +135,28 @@ inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, o
     // 雾
     inputData.fogCoord = InitializeInputDataFog(float4(inputData.positionWS, 1.0), input.positionWSAndFog.w);
     
-    inputData.bakedGI = SAMPLE_GI(input.staticLightmapUV, input.vertexSH, inputData.normalWS.xyz);
+    inputData.bakedGI = SampleSHPixel(input.vertexSH, inputData.normalWS.xyz);
     inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
-    inputData.shadowMask = SAMPLE_SHADOWMASK(input.staticLightmapUV);
+    inputData.shadowMask = half4(1, 1, 1, 1);
 }
 
 Varyings vert(Attributes input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    
-    float3 positionOS = GrassWindOffset(input.positionOS.xyz, input.texcoord);
-    float3 positionWS = TransformObjectToWorld(positionOS);
+
+    float3 positionWS = GetGrassPosition(input);
 
     Varyings output;
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
     output.positionCS = TransformWorldToHClip(positionWS);
     output.texcoord = input.texcoord;
-    output.normalWS = TransformObjectToWorldNormal(normalize(positionOS));
+    output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     output.positionWSAndFog = float4(positionWS, ComputeFogFactor(output.positionCS.z));
     output.shadowCoord = GetShadowCoord(positionWS, output.positionCS);
-    
-    // lightmap
-    OUTPUT_LIGHTMAP_UV(input.lightmapUV, unity_LightmapST, output.lightmapUV);
 
     // sh
     OUTPUT_SH(output.normalWS, output.vertexSH);
-    
+        
     return output;
 }
 
@@ -170,13 +209,15 @@ Varyings ShadowPassVertex(Attributes input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
     
-    float3 positionOS = GrassWindOffset(input.positionOS.xyz, input.texcoord);
-    float3 positionWS = TransformObjectToWorld(positionOS);
-    float3 normalWS = TransformObjectToWorldNormal(normalize(positionOS));
+    float3 positionWS = GetGrassPosition(input);
+    float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
     
     Varyings output = (Varyings) 0;
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+    
+#if USING_ALPHA_CUTOFF
     output.texcoord = input.texcoord;
+#endif
 
 #if _CASTING_PUNCTUAL_LIGHT_SHADOW
 	float3 lightDirectionWS = normalize(_LightPosition - vertexInput.positionWS);
@@ -197,8 +238,10 @@ Varyings ShadowPassVertex(Attributes input)
 
 half4 ShadowPassFragment(Varyings input) : SV_Target
 {
+#if USING_ALPHA_CUTOFF
     half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord.xy);
     clip(albedoAlpha.a - _Cutoff);
+#endif
     return 0;
 }
 
@@ -209,21 +252,24 @@ Varyings DepthOnlyVertex(Attributes input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
     
-    float3 positionOS = GrassWindOffset(input.positionOS.xyz, input.texcoord);
-    float3 positionWS = TransformObjectToWorld(positionOS);
+    float3 positionWS = GetGrassPosition(input);
     
     Varyings output = (Varyings) 0;
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
     output.positionCS = TransformWorldToHClip(positionWS);
+#if USING_ALPHA_CUTOFF
     output.texcoord = input.texcoord;
+#endif
     return output;
 }
 
 half4 DepthOnlyFragment(Varyings input) : SV_TARGET
 {
+#if USING_ALPHA_CUTOFF
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
     half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord.xy);
 	clip(albedoAlpha.a - _Cutoff);
+#endif
     return 0;
 }
 

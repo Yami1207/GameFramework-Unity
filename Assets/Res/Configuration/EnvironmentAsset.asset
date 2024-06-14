@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 961d433a87a68ea4f955f38e671a5402, type: 3}
+  m_Name: EnvironmentAsset
+  m_EditorClassIdentifier: 
+  characterTrajectory:
+    resolution: 512
+    cameraHeight: 10
+    cameraRange: 24
+    cameraNear: 0
+    cameraFar: 50
+  wind:
+    speedX: 0.1
+    speedZ: 0.1
+    intensity: 1

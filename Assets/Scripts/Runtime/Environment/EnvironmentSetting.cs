@@ -10,7 +10,7 @@ public class EnvironmentSetting : SingletonMono<EnvironmentSetting>
 {
     private static class ShaderConstants
     {
-        public static readonly int kWindParameterPropID = Shader.PropertyToID("_g_WindParameter");
+        public static readonly int kWindParameterPropID = Shader.PropertyToID("_G_WindParameter");
     }
 
     [Serializable]

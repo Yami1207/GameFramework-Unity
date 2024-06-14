@@ -39,5 +39,39 @@ inline float4 SmoothTriangleWave(float4 x)
     return SmoothCurve(TriangleWave(x));
 }
 
+// 
+inline float3x3 MatrixRotate(float radian, const float3 axis)
+{
+    float s, c, t;
+    float tx, ty, tz;
+    float sx, sy, sz;
+
+    s = sin(radian);
+    c = cos(radian);
+    t = 1.f - c;
+
+    tx = t * axis.x;
+    ty = t * axis.y;
+    tz = t * axis.z;
+
+    sx = s * axis.x;
+    sy = s * axis.y;
+    sz = s * axis.z;
+
+    float3x3 mat;
+    mat._m00 = tx * axis.x + c;
+    mat._m01 = tx * axis.y + sz;
+    mat._m02 = tx * axis.z - sy;
+
+    mat._m10 = tx * axis.y - sz;
+    mat._m11 = ty * axis.y + c;
+    mat._m12 = ty * axis.z + sx;
+
+    mat._m20 = tx * axis.z + sy;
+    mat._m21 = ty * axis.z - sx;
+    mat._m22 = tz * axis.z + c;
+
+    return mat;
+}
 
 #endif

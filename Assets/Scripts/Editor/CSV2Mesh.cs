@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using Unity.VisualScripting;
 
 public class CSV2Mesh
 {
@@ -230,4 +231,28 @@ public class CSV2Mesh
         name = name.Substring(0, name.LastIndexOf('.'));
         AssetDatabase.CreateAsset(mesh, string.Format("{0}/{1}.asset", dir, name));
     }
+
+    //[MenuItem("Assets/Print Mesh Info")]
+    //private static void PrintMeshInfo()
+    //{
+    //    if (UnityEditor.Selection.activeObject == null)
+    //        return;
+
+    //    var meshFilter = UnityEditor.Selection.activeObject.GetComponent<MeshFilter>();
+    //    if (meshFilter == null || meshFilter.sharedMesh == null)
+    //        return;
+
+    //    var mesh = meshFilter.sharedMesh;
+
+    //    List<Vector3> uvs = new List<Vector3>();
+    //    mesh.GetUVs(0, uvs);
+    //    for (int i = 0; i < uvs.Count; ++i)
+    //        Debug.LogError(uvs[i]);
+
+    //    Debug.LogError("-----------------------");
+    //    List<Vector3> uvs1 = new List<Vector3>();
+    //    mesh.GetUVs(1, uvs1);
+    //    for (int i = 0; i < uvs1.Count; ++i)
+    //        Debug.LogError(uvs1[i]);
+    //}
 }
