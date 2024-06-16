@@ -129,7 +129,7 @@ inline half3 GetEnvironmentBRDFSpecular(CustomBRDFData brdfData, half fresnelTer
 inline half3 GetEnvironmentBRDF(CustomBRDFData brdfData, half3 indirectDiffuse, half3 indirectSpecular, half fresnelTerm)
 {
     half3 color = indirectDiffuse * brdfData.diffuseColor;
-    color += indirectSpecular * EnvironmentBRDFSpecular(brdfData, fresnelTerm);
+    color += indirectSpecular * GetEnvironmentBRDFSpecular(brdfData, fresnelTerm);
     return color;
 }
 

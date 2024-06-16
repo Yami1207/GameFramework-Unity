@@ -12,6 +12,7 @@
 
 #include "../Lib/Core.hlsl"
 #include "../Lib/Wind.hlsl"
+#include "../Lib/Utils/PivotPainter2.hlsl"
 
 //--------------------------------------
 // 材质属性
@@ -43,7 +44,7 @@ struct Attributes
     float3 positionOS   : POSITION;
     float3 normalOS     : NORMAL;
     half2 texcoord      : TEXCOORD0;
-    half2 texcoord2     : TEXCOORD1;
+    half2 texcoord2     : TEXCOORD2;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -72,10 +73,10 @@ struct FragData
 #include "../Lib/Instancing.hlsl"
 #include "../Lib/Utils/ObjectTrails.hlsl"
 
-inline float3 GetGrassPosition(Attributes input)
+inline float3 GetGrassPosition(Attributes input, float3 normalWS)
 {
     float3 positionOS = input.positionOS;
-    float lerpY = input.texcoord.y * input.texcoord.y;
+    float lerpY = input.texcoord.y;// * input.texcoord.y;
     
 #if USING_SWING
     float phase = UNITY_MATRIX_M._m10 - input.texcoord.x;
@@ -84,21 +85,22 @@ inline float3 GetGrassPosition(Attributes input)
 #endif
 
     float3 positionWS = TransformObjectToWorld(positionOS);
-#if USING_INTERACTIVE
+#if USING_INTERACTIVE    
      // 获取周围角色信息
     float4 playerPosWS = GetTrailObject(positionWS);
     float dist = distance(positionWS, playerPosWS);
-    {    
-        // 草的描点
-        float3 pivotPointOS = SAMPLE_TEXTURE2D_LOD(_GrassPivotPointTex, sampler_GrassPivotPointTex, input.texcoord2, 0.0).xzy * _GrassPivotPointTexUnit;
-        float3 pivotPointWS = TransformObjectToWorld(pivotPointOS);
-
-        float pushDown = saturate((1 - dist / playerPosWS.w) * lerpY) * _GrassPushStrength;
-        float3 direction = normalize(playerPosWS - pivotPointWS);
-        float3 newPos = positionWS + (direction * pushDown);
-	    float orgDist = distance(positionWS, pivotPointWS);
-        positionWS = pivotPointWS + (normalize(newPos - pivotPointWS) * orgDist);
-    }
+    
+    // 草的描点
+    float3 pivotPointOS = PivotPainter2_SamplePivotAndIndex(input.texcoord2, TEXTURECUBE_ARGS(_GrassPivotPointTex, sampler_GrassPivotPointTex)).xyz;
+    pivotPointOS = PivotPainter2_ConvertCoord(pivotPointOS, _GrassPivotPointTexUnit);
+    float3 pivotPointWS = TransformObjectToWorld(pivotPointOS);
+    pivotPointWS.y = unity_ObjectToWorld._24;
+    
+    float pushDown = saturate((1 - dist / playerPosWS.w) * lerpY) * _GrassPushStrength;
+    float3 direction = normalize(playerPosWS - pivotPointWS);
+    float3 newPos = positionWS + (direction * pushDown);
+	float orgDist = distance(positionWS, pivotPointWS);
+    positionWS = pivotPointWS + (normalize(newPos - pivotPointWS) * orgDist);
 #endif
     
     return positionWS;
@@ -106,7 +108,7 @@ inline float3 GetGrassPosition(Attributes input)
 
 inline void InitializeSurfaceData(Varyings input, out CustomSurfaceData surfaceData)
 {
-    half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord);
+    half4 albedoAlpha = G2L(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord));
 #if USING_ALPHA_CUTOFF
     clip(albedoAlpha.a - _Cutoff);
 #endif
@@ -135,7 +137,7 @@ inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, o
     // 雾
     inputData.fogCoord = InitializeInputDataFog(float4(inputData.positionWS, 1.0), input.positionWSAndFog.w);
     
-    inputData.bakedGI = SampleSHPixel(input.vertexSH, inputData.normalWS.xyz);
+    inputData.bakedGI = G2L(SampleSHPixel(input.vertexSH, inputData.normalWS.xyz));
     inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
     inputData.shadowMask = half4(1, 1, 1, 1);
 }
@@ -144,18 +146,19 @@ Varyings vert(Attributes input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
 
-    float3 positionWS = GetGrassPosition(input);
+    float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
+    float3 positionWS = GetGrassPosition(input, normalWS);
 
     Varyings output;
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
     output.positionCS = TransformWorldToHClip(positionWS);
     output.texcoord = input.texcoord;
-    output.normalWS = TransformObjectToWorldNormal(input.normalOS);
+    output.normalWS = normalWS;
     output.positionWSAndFog = float4(positionWS, ComputeFogFactor(output.positionCS.z));
     output.shadowCoord = GetShadowCoord(positionWS, output.positionCS);
 
     // sh
-    OUTPUT_SH(output.normalWS, output.vertexSH);
+    output.vertexSH = SampleSHVertex(output.normalWS);
         
     return output;
 }
@@ -194,7 +197,7 @@ FragData frag(Varyings input)
     color = MixFog(color, inputData.fogCoord);
 
     FragData output = (FragData) 0;
-    output.color = half4(color, 1);
+    output.color = L2G(half4(color, 1));
     output.normal = float4(input.normalWS * 0.5 + 0.5, 0.0);
     return output;
 }
@@ -209,8 +212,8 @@ Varyings ShadowPassVertex(Attributes input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
     
-    float3 positionWS = GetGrassPosition(input);
     float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
+    float3 positionWS = GetGrassPosition(input, normalWS);
     
     Varyings output = (Varyings) 0;
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
@@ -252,7 +255,8 @@ Varyings DepthOnlyVertex(Attributes input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
     
-    float3 positionWS = GetGrassPosition(input);
+    float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
+    float3 positionWS = GetGrassPosition(input, normalWS);
     
     Varyings output = (Varyings) 0;
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);

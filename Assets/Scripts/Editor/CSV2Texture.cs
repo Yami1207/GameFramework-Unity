@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using static UnityEditor.PlayerSettings;
 
 public class CSV2Texture
 {
@@ -55,8 +56,20 @@ public class CSV2Texture
         if (tex == null)
             return;
 
-        var pixels = tex.GetPixels(0, 0, tex.width, tex.height);
-        for (int i = 0; i < pixels.Length; ++i)
-            Debug.LogError(pixels[i]);
+        const float unitScale = 0.01f;
+
+        for (int y = 0; y < tex.height; ++y)
+        {
+            for (int x = 0; x < tex.width; ++x)
+            {
+                var p = tex.GetPixel(x, y);
+                Vector3 pos = new Vector3(-unitScale * p.r, unitScale * (p.b), unitScale * p.g);
+                Debug.LogError(pos);
+            }
+        }
+
+        //var pixels = tex.GetPixels(0, 0, tex.width, tex.height, 0);
+        //for (int i = 0; i < pixels.Length; ++i)
+        //    Debug.LogError(pixels[i]);
     }
 }

@@ -40,14 +40,15 @@ inline float4 SmoothTriangleWave(float4 x)
 }
 
 // 
-inline float3x3 MatrixRotate(float radian, const float3 axis)
+inline float3x3 MatrixRotate(float radian, float3 axis)
 {
     float s, c, t;
     float tx, ty, tz;
     float sx, sy, sz;
 
-    s = sin(radian);
-    c = cos(radian);
+    //s = sin(radian);
+    //c = cos(radian);
+    sincos(radian, s, c);
     t = 1.f - c;
 
     tx = t * axis.x;
@@ -72,6 +73,24 @@ inline float3x3 MatrixRotate(float radian, const float3 axis)
     mat._m22 = tz * axis.z + c;
 
     return mat;
+}
+
+inline float3 RotateAboutAxis(float4 NormalizedRotationAxisAndAngle, float3 PositionOnAxis, float3 Position)
+{
+			// Project Position onto the rotation axis and find the closest point on the axis to Position
+    float3 ClosestPointOnAxis = PositionOnAxis + NormalizedRotationAxisAndAngle.xyz * dot(NormalizedRotationAxisAndAngle.xyz, Position - PositionOnAxis);
+			// Construct orthogonal axes in the plane of the rotation
+    float3 UAxis = Position - ClosestPointOnAxis;
+    float3 VAxis = cross(NormalizedRotationAxisAndAngle.xyz, UAxis);
+    float CosAngle;
+    float SinAngle;
+    sincos(NormalizedRotationAxisAndAngle.w, SinAngle, CosAngle);
+			// Rotate using the orthogonal axes
+    float3 R = UAxis * CosAngle + VAxis * SinAngle;
+			// Reconstruct the rotated world space position
+    float3 RotatedPosition = ClosestPointOnAxis + R;
+			// Convert from position to a position offset
+    return RotatedPosition - Position;
 }
 
 #endif

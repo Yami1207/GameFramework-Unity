@@ -3,8 +3,14 @@
 
 #include "TerrainInput.hlsl"
 
-inline void InitializeSurfaceData(Varyings input, float4 splatControl, out CustomSurfaceData surfaceData)
+inline void InitializeSurfaceData(Varyings input, out CustomSurfaceData surfaceData)
 {
+    float4 splatControl = SAMPLE_TEXTURE2D(_Control, sampler_Control, input.texcoord);
+    half weight = dot(splatControl, half4(1, 1, 1, 1));
+#if defined(TERRAIN_ADD_PASS)
+    clip(weight - 0.01);
+#endif
+    
     // uv
     float2 uvSplat0 = TRANSFORM_TEX(input.texcoord, _Splat0);
     float2 uvSplat1 = TRANSFORM_TEX(input.texcoord, _Splat1);
@@ -59,7 +65,7 @@ inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, o
     // 雾
     inputData.fogCoord = InitializeInputDataFog(float4(inputData.positionWS, 1.0), input.positionWSAndFog.w);
     
-    inputData.bakedGI = SAMPLE_GI(input.staticLightmapUV, input.vertexSH, inputData.normalWS.xyz);
+    inputData.bakedGI = G2L(SampleSHPixel(input.vertexSH, inputData.normalWS));
     inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
     inputData.shadowMask = SAMPLE_SHADOWMASK(input.staticLightmapUV);
 }
@@ -87,8 +93,8 @@ Varyings vert(Attributes input)
     output.tangentWS = normalInput.tangentWS;
     output.bitangentWS = normalInput.bitangentWS;
     
-    OUTPUT_SH(output.normalWS, output.vertexSH);
-    
+    output.vertexSH = SampleSHVertex(output.normalWS);
+
     // 阴影
     output.shadowCoord = GetShadowCoord(positionWS, output.positionCS);
 				
@@ -96,37 +102,14 @@ Varyings vert(Attributes input)
 }
 
 FragData frag(Varyings input)
-{
-    float4 splatControl = SAMPLE_TEXTURE2D(_Control, sampler_Control, input.texcoord);
-    half weight = dot(splatControl, half4(1, 1, 1, 1));
-#if defined(TERRAIN_ADD_PASS)
-    clip(weight == 0.0 ? -1 : 1);
-#endif
-    
+{    
     CustomSurfaceData surfaceData;
-    InitializeSurfaceData(input, splatControl, surfaceData);
+    InitializeSurfaceData(input, surfaceData);
 
     CustomInputData inputData;
     InitializeInputData(input, surfaceData, inputData);
     
     half3 color = LightingPhysicallyBased(inputData, surfaceData);
-//    CustomBRDFData brdfData = GetBRDFData(surfaceData);
-
-//    Light mainLight = GetMainLight();
-//    BxDFContext bxdfContext = GetBxDFContext(inputData, mainLight.direction);
-//    half3 attenuatedLightColor = mainLight.color * mainLight.distanceAttenuation;
-//    half3 diffuseColor = LightingLambert(attenuatedLightColor, bxdfContext);
-    
-//#if defined(MAIN_LIGHT_CALCULATE_SHADOWS)
-//    half3 lighting = diffuseColor * MainLightRealtimeShadow(inputData.shadowCoord);
-//#else
-//    half3 lighting = diffuseColor;
-//#endif
-    
-//    // 间接光
-//    half3 indirectColor = inputData.bakedGI * surfaceData.albedo; //LightingIndirect(surfaceData, brdfData, bxdfContext, inputData.bakedGI, surfaceData.occlusion);
-    
-//    half3 color = lighting * surfaceData.albedo + indirectColor;
     color = MixFog(color, inputData.fogCoord);
 
     FragData output = (FragData) 0;

@@ -59,7 +59,7 @@
 
                 Varyings output;
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
-                UNITY_TRANSFER_INSTANCE_ID(input, output);
+                //UNITY_TRANSFER_INSTANCE_ID(input, output);
                 output.positionCS = TransformWorldToHClip(positionWS);
                 output.positionWS = positionWS;
                 output.originWS = float4(originWS, r);

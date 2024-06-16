@@ -80,8 +80,8 @@ struct Varyings
     float3 bitangentWS : TEXCOORD3;
     float3 normalWS : TEXCOORD4;
     float4 shadowCoord : TEXCOORD5;
-    
-    DECLARE_LIGHTMAP_OR_SH(staticLightmapUV, vertexSH, 6);
+    half3 vertexSH : TEXCOORD6;
+
     UNITY_VERTEX_OUTPUT_STEREO
 };
 

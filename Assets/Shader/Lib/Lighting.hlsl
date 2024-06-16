@@ -27,10 +27,10 @@ inline half3 LightingHalfLambert(half3 lightColor, BxDFContext bxdfContext)
 
 /////////////////////////////////////////////////////////////////////////
 // PBR
-half3 LightingIndirect(CustomSurfaceData surfaceData, CustomBRDFData brdfData, BxDFContext bxdfContext, half3 bakedGI, half occlusion, TEXTURECUBE_PARAM(envTex, sampler_envTex), half4 hdr)
+half3 LightingIndirect(CustomSurfaceData surfaceData, CustomBRDFData brdfData, BxDFContext bxdfContext, half3 bakedGI, half occlusion, TEXTURECUBE_PARAM(tex, texSampler), half4 hdr)
 {
     half3 indirectDiffuse = bakedGI;
-    half3 indirectSpecular = GetGlossyEnvironmentReflection(bxdfContext.R, brdfData.perceptualRoughness, TEXTURECUBE_ARGS(envTex, sampler_envTex), hdr);
+    half3 indirectSpecular = GetGlossyEnvironmentReflection(bxdfContext.R, brdfData.perceptualRoughness, TEXTURECUBE_ARGS(tex, texSampler), hdr);
     half fresnelTerm = Pow4(1.0 - bxdfContext.NoV);
 
     //half3 brdf = EnvBRDFApprox(brdfData.specularColor, brdfData.perceptualRoughness, bxdfContext.NoV_01);

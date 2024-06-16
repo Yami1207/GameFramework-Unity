@@ -8,7 +8,7 @@
 #include "Input.hlsl"
 #include "Lights.hlsl"
 #include "Utils.hlsl"
-#include "Lighting.hlsl"
 #include "Common.hlsl"
+#include "Lighting.hlsl"
 
 #endif
