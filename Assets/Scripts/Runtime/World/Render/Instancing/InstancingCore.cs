@@ -9,6 +9,7 @@ using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 public class InstancingCore
 {
     private static readonly int s_CameraPositionnPropID = Shader.PropertyToID("_CameraPosition");
+    private static readonly int s_CameraParamPropID = Shader.PropertyToID("_CameraParam");
     private static readonly int s_CameraFrustumPlanesPropID = Shader.PropertyToID("_CameraFrustumPlanes");
 
     #region ObjectFactory
@@ -160,6 +161,9 @@ public class InstancingCore
     private int m_MainKernel = -1;
     public int mainKernel { get { return m_MainKernel; } }
 
+    private int m_LODCullingKernel = -1;
+    public int lodCullingKernel { get { return m_LODCullingKernel; } }
+
     #endregion
 
     /// <summary>
@@ -220,6 +224,7 @@ public class InstancingCore
 
         m_InstancingDrwacallShader = AssetManager.instance.LoadResource<ComputeShader>("Shader/Utils/InstancingDrawcall");
         m_MainKernel = m_InstancingDrwacallShader.FindKernel("Main");
+        m_LODCullingKernel = m_InstancingDrwacallShader.FindKernel("LODCulling");
     }
 
     public void Destroy()
@@ -320,8 +325,19 @@ public class InstancingCore
             return;
 
         // 设置shader参数
-        m_InstancingDrwacallShader.SetVector(s_CameraPositionnPropID, CameraManager.mainCamera.transform.position);
-        m_InstancingDrwacallShader.SetVectorArray(s_CameraFrustumPlanesPropID, m_CameraFrustumPlanes);
+        {
+            Camera camera = CameraManager.mainCamera;
+
+            // 镜头位置
+            m_InstancingDrwacallShader.SetVector(s_CameraPositionnPropID, camera.transform.position);
+
+            // 镜头参数
+            Vector4 cameraParam = new Vector4(camera.orthographic ? 0.0f : 1.0f, camera.orthographicSize, camera.fieldOfView, Mathf.Tan(0.5f * Mathf.Deg2Rad * camera.fieldOfView));
+            m_InstancingDrwacallShader.SetVector(s_CameraParamPropID, cameraParam);
+
+            // 镜头视锥体平面
+            m_InstancingDrwacallShader.SetVectorArray(s_CameraFrustumPlanesPropID, m_CameraFrustumPlanes);
+        }
 
         if (m_Renderers.Count > 0)
         {

@@ -88,19 +88,22 @@ inline float3 GetGrassPosition(Attributes input, float3 normalWS)
 #if USING_INTERACTIVE    
      // 获取周围角色信息
     float4 playerPosWS = GetTrailObject(positionWS);
-    float dist = distance(positionWS, playerPosWS);
+    if (playerPosWS.w > 0)
+    {
+        float dist = distance(positionWS, playerPosWS);
     
-    // 草的描点
-    float3 pivotPointOS = PivotPainter2_SamplePivotAndIndex(input.texcoord2, TEXTURECUBE_ARGS(_GrassPivotPointTex, sampler_GrassPivotPointTex)).xyz;
-    pivotPointOS = PivotPainter2_ConvertCoord(pivotPointOS, _GrassPivotPointTexUnit);
-    float3 pivotPointWS = TransformObjectToWorld(pivotPointOS);
-    pivotPointWS.y = unity_ObjectToWorld._24;
+        // 草的描点
+        float3 pivotPointOS = PivotPainter2_SamplePivotAndIndex(input.texcoord2, TEXTURECUBE_ARGS(_GrassPivotPointTex, sampler_GrassPivotPointTex)).xyz;
+        pivotPointOS = PivotPainter2_ConvertCoord(pivotPointOS, _GrassPivotPointTexUnit);
+        float3 pivotPointWS = TransformObjectToWorld(pivotPointOS);
+        pivotPointWS.y = unity_ObjectToWorld._24;
     
-    float pushDown = saturate((1 - dist / playerPosWS.w) * lerpY) * _GrassPushStrength;
-    float3 direction = normalize(playerPosWS - pivotPointWS);
-    float3 newPos = positionWS + (direction * pushDown);
-	float orgDist = distance(positionWS, pivotPointWS);
-    positionWS = pivotPointWS + (normalize(newPos - pivotPointWS) * orgDist);
+        float pushDown = saturate((1 - dist / playerPosWS.w) * lerpY) * _GrassPushStrength;
+        float3 direction = normalize(playerPosWS - pivotPointWS);
+        float3 newPos = positionWS + (direction * pushDown);
+	    float orgDist = distance(positionWS, pivotPointWS);
+        positionWS = pivotPointWS + (normalize(newPos - pivotPointWS) * orgDist);
+    }
 #endif
     
     return positionWS;

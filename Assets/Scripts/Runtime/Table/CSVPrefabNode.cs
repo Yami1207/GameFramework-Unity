@@ -25,12 +25,12 @@ public class CSVPrefabNode : CSVData
     /// <summary>
     /// 
     /// </summary>
-    public bool instancing { private set; get; }
+    public int visible { private set; get; }
 
     /// <summary>
-    /// 可视距离
+    /// 
     /// </summary>
-    public int visible { private set; get; }
+    public bool instancing { private set; get; }
 
     #endregion
 
@@ -90,8 +90,8 @@ public class CSVPrefabNode : CSVData
             // 读取字段
             csvData.id = bytesData.ReadToInt32();
             csvData.asset_id = bytesData.ReadToInt32();
-            csvData.instancing = bytesData.ReadToBoolean();
             csvData.visible = bytesData.ReadToInt32();
+            csvData.instancing = bytesData.ReadToBoolean();
 
         }
         catch (Exception exception)

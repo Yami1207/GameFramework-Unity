@@ -12,7 +12,14 @@ struct InstanceParam
 // 镜头位置
 uniform float4 _CameraPosition;
 
-// 视锥体
+// 镜头参数
+// x: 是否正交矩阵
+// y: 镜头大小（正交）
+// z: 镜头视角
+// w: 镜头视角正切值
+uniform float4 _CameraParam;
+
+// 镜头视锥体平面（xyz: 平面法线 w: 原点到平面距离）
 uniform float4 _CameraFrustumPlanes[6];
 
 uniform bool _EnableFrustumCulling;
@@ -26,8 +33,6 @@ uniform float4 _InstanceMaxBounds;
 uniform uint _InstancingCount;
 
 StructuredBuffer<float4x4> _InstancingBuffer;
-
-AppendStructuredBuffer<InstanceParam> _VisibleBuffer;
 
 // https://discussions.unity.com/t/shader-inverse-float4x4-function/36738
 inline float4x4 InvMatrix(float4x4 input)
@@ -117,7 +122,63 @@ inline bool IsCulling(in float3 minimum, in float3 maximum)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // kernel: Main
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma kernel LODCulling
+
+// xyz: lod每层高度 w: LODGroup size
+uniform float4 _LODGroupData;
+
+AppendStructuredBuffer<InstanceParam> _VisibleBuffer_LOD0;
+AppendStructuredBuffer<InstanceParam> _VisibleBuffer_LOD1;
+AppendStructuredBuffer<InstanceParam> _VisibleBuffer_LOD2;
+
+inline float DistanceToRelativeHeight(float dist, float size)
+{
+    if (_CameraParam.x > 0.5)
+        return 0.5 * size / _CameraParam.y;
+    return 0.5 * size / (dist * _CameraParam.w);
+}
+
+[numthreads(NUM_THREAD_X_GROUP, 1, 1)]
+void LODCulling(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _InstancingCount)
+        return;
+    
+    float3 positionWS = _InstancingBuffer[id.x]._14_24_34;
+    if (!IsVisible(positionWS))
+        return;
+    
+    float4x4 objectToWorld = _InstancingBuffer[id.x];
+    if (_EnableFrustumCulling)
+    {
+        float3 minBounds = mul(objectToWorld, _InstanceMinBounds).xyz;
+        float3 maxBounds = mul(objectToWorld, _InstanceMaxBounds).xyz;
+        float3 minimum = min(minBounds, maxBounds);
+        float3 maximum = max(minBounds, maxBounds);
+        if (IsCulling(minimum, maximum))
+            return;
+    }
+    
+    InstanceParam instance = (InstanceParam) 0;
+    instance.objectToWorld = objectToWorld;
+    instance.worldToObject = InvMatrix(instance.objectToWorld);
+
+    float dist = distance(positionWS, _CameraPosition.xyz);
+    float height = DistanceToRelativeHeight(dist, _LODGroupData.w);
+    if (height >= _LODGroupData.x)
+        _VisibleBuffer_LOD0.Append(instance);
+    else if (height >= _LODGroupData.y)
+        _VisibleBuffer_LOD1.Append(instance);
+    else if (height >= _LODGroupData.z)
+        _VisibleBuffer_LOD2.Append(instance);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// kernel: Main
+////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma kernel Main
+
+AppendStructuredBuffer<InstanceParam> _VisibleBuffer;
 
 [numthreads(NUM_THREAD_X_GROUP, 1, 1)]
 void Main(uint3 id : SV_DispatchThreadID)

@@ -22,6 +22,11 @@ public class CSVToolPrefab : CSVData
     /// </summary>
     public string path { private set; get; }
 
+    /// <summary>
+    /// 替换
+    /// </summary>
+    public int replace { private set; get; }
+
     #endregion
 
     #region Override
@@ -80,6 +85,7 @@ public class CSVToolPrefab : CSVData
             // 读取字段
             csvData.id = bytesData.ReadToInt32();
             csvData.path = bytesData.ReadString();
+            csvData.replace = bytesData.ReadToInt32();
 
         }
         catch (Exception exception)
