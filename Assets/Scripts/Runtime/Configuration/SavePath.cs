@@ -15,7 +15,7 @@ public static class SavePath
     }
 
     /// <summary>
-    /// 地图存储路径
+    /// 地图存储路径(编辑模式)
     /// </summary>
     private static string s_EditorMapSavePath = AssetPathDefine.developDataPath + "/map";
     public static string mapSavePath
@@ -35,8 +35,8 @@ public static class SavePath
     /// <summary>
     /// 地图存储路径
     /// </summary>
-    private static readonly string kExternalMapSavePath = AssetPathDefine.externalDataPath + "/map";
-    public static string externalMapSavePath { get { return kExternalMapSavePath; } }
+    private static readonly string s_ExternalMapSavePath = AssetPathDefine.externalDataPath + "/map";
+    public static string externalMapSavePath { get { return s_ExternalMapSavePath; } }
 
 
     /// <summary>

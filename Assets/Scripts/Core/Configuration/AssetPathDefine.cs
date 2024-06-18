@@ -29,42 +29,42 @@ public static class AssetPathDefine
     /// <summary>
     /// 存放下载资源的目录
     /// </summary>
-    private static string m_ExternalFilePath = string.Empty;
+    private static string s_ExternalFilePath = string.Empty;
     public static string externalFilePath
     {
         get
         {
-            if (string.IsNullOrEmpty(m_ExternalFilePath))
-                m_ExternalFilePath = System.IO.Path.Combine(webBasePath, "http_res");
-            return m_ExternalFilePath;
+            if (string.IsNullOrEmpty(s_ExternalFilePath))
+                s_ExternalFilePath = System.IO.Path.Combine(webBasePath, "http_res");
+            return s_ExternalFilePath;
         }
     }
 
     /// <summary>
     /// 存放数据文件的目录
     /// </summary>
-    private static string m_ExternalDataPath = string.Empty;
+    private static string s_ExternalDataPath = string.Empty;
     public static string externalDataPath
     {
         get
         {
-            if (string.IsNullOrEmpty(m_ExternalDataPath))
-                m_ExternalDataPath = System.IO.Path.Combine(externalFilePath, dataFolderName.ToLower());
-            return m_ExternalDataPath;
+            if (string.IsNullOrEmpty(s_ExternalDataPath))
+                s_ExternalDataPath = System.IO.Path.Combine(externalFilePath, dataFolderName.ToLower());
+            return s_ExternalDataPath;
         }
     }
 
     /// <summary>
     /// 存放数据文件的目录 - 开发模式
     /// </summary>
-    private static string m_DevelopDataPath = string.Empty;
+    private static string s_DevelopDataPath = string.Empty;
     public static string developDataPath
     {
         get
         {
-            if (string.IsNullOrEmpty(m_DevelopDataPath))
-                m_DevelopDataPath = System.IO.Path.Combine(Application.dataPath + "/../data/", dataFolderName.ToLower());
-            return m_DevelopDataPath;
+            if (string.IsNullOrEmpty(s_DevelopDataPath))
+                s_DevelopDataPath = System.IO.Path.Combine(Application.dataPath + "/../data/", dataFolderName.ToLower());
+            return s_DevelopDataPath;
         }
     }
 
