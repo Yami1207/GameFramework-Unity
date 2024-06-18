@@ -13,6 +13,19 @@ MonoBehaviour:
   m_Name: ObjectTrails
   m_EditorClassIdentifier: 
   m_Active: 1
+--- !u!114 &-7206989879901107285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d75df01f3c63fd8409deaa04111a44b6, type: 3}
+  m_Name: SpecularReflection
+  m_EditorClassIdentifier: 
+  m_Active: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31,7 +44,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: 6381482789918863231}
   - {fileID: -8499847633944705269}
-  m_RendererFeatureMap: 7fef6171c9948f580b07c86d9c790a8a
+  - {fileID: -7206989879901107285}
+  m_RendererFeatureMap: 7fef6171c9948f580b07c86d9c790a8aabcba874e3a0fb9b
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
