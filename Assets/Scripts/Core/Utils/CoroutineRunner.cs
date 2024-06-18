@@ -5,6 +5,22 @@ using UnityEngine;
 public static class CoroutineRunner
 {
     /// <summary>
+    /// 全局启动协程
+    /// </summary>
+    /// <param name="function"></param>
+    public static Coroutine Run(IEnumerator function)
+    {
+        if (Application.isPlaying)
+        {
+            return Globals.StartCoroutine(function);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
     /// 阻塞式调用
     /// </summary>
     /// <param name="function"></param>

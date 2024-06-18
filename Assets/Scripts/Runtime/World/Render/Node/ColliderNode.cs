@@ -8,6 +8,7 @@ public class ColliderNode : ObjectNode
     public MeshCollider meshCollider { get { return m_MeshCollider; } }
 
     private Mesh m_SelfMesh = null;
+    public Mesh mesh { get { return m_SelfMesh; } }
 
     public void NewMesh(ChunkColliderBuffer buffer)
     {
@@ -42,7 +43,7 @@ public class ColliderNode : ObjectNode
             m_MeshCollider.sharedMesh = m_SelfMesh;
     }
 
-    public void ClearMesh()
+    public void Clear()
     {
         if (m_SelfMesh != null)
         {

@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Rendering;
 using UnityEngine;
@@ -13,21 +13,22 @@ public class GameManager : Singleton<GameManager>
 
     public void Init()
     {
-        // ½âÑ¹Êı¾İ
+        // è§£å‹æ•°æ®
         //DataExtractor.ExtractAll();
 
-        GameSetting.enableInstancing = false;
+        //GameSetting.enableInstancing = false;
 
-        // ÉèÖÃ¾µÍ·
+        // è®¾ç½®é•œå¤´
         CameraManager.mainCamera.clearFlags = CameraClearFlags.SolidColor;
         CameraManager.SetCameraRenderer(CameraManager.mainCamera, CameraManager.CameraRenderer.UI);
 
-        // ´´½¨Player
+        // åˆ›å»ºPlayer
         m_Player = new Player();
         m_Player.SetPosition(m_PlayerStartPos);
         DataBridge.RegisterPlayer(m_Player);
 
         m_World = new World();
+        m_World.enableRenderWorld = false;
         m_World.Load("demo_world.json");
         m_World.LoadChunkNow(m_Player.actor.position, Define.kChunkLoadDistance, OnChunkLoaded);
     }
@@ -62,20 +63,19 @@ public class GameManager : Singleton<GameManager>
 
     public void FixedUpdate()
     {
-
     }
 
     private void OnChunkLoaded()
     {
-        GameSetting.enableInstancing = true;
+        m_World.enableRenderWorld = true;
 
-        // ÇĞ»»¾µÍ·äÖÈ¾Æ÷
+        // åˆ‡æ¢é•œå¤´æ¸²æŸ“å™¨
         Camera camera = CameraManager.mainCamera;
         camera.clearFlags = CameraClearFlags.Skybox;
         camera.farClipPlane = GameSetting.playerChunkView * Define.kChunkSideLength;
         CameraManager.SetCameraRenderer(camera, CameraManager.CameraRenderer.Default);
 
-        // ½ÇÉ«Î»ÖÃ
+        // è§’è‰²ä½ç½®
         {
             ChunkPos chunkPos = Helper.WorldPosToChunkPos(m_PlayerStartPos);
             Chunk chunk = m_World.GetChunk(chunkPos);

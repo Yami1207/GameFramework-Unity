@@ -6,6 +6,8 @@ public class RenderChunkNode : ObjectNode
 {
     private readonly List<ColliderNode> m_ColliderNodes = new List<ColliderNode>();
 
+    private readonly List<MeshNode> m_MeshNodes = new List<MeshNode>();
+
     private readonly List<PrefabNode> m_PrefabNodes = new List<PrefabNode>();
 
     #region Collect
@@ -19,6 +21,13 @@ public class RenderChunkNode : ObjectNode
                 for (int i = 0; i < m_ColliderNodes.Count; ++i)
                     pool.Collect(m_ColliderNodes[i]);
                 m_ColliderNodes.Clear();
+            }
+
+            if (m_MeshNodes.Count > 0)
+            {
+                for (int i = 0; i < m_MeshNodes.Count; ++i)
+                    pool.Collect(m_MeshNodes[i]);
+                m_MeshNodes.Clear();
             }
 
             if (m_PrefabNodes.Count > 0)
@@ -59,6 +68,52 @@ public class RenderChunkNode : ObjectNode
         }
     }
 
+    /// <summary>
+    /// 删除/回收MeshNode
+    /// </summary>
+    /// <param name="pool"></param>
+    public void CollectOrDestroyMeshNodes(ChunkNodePool pool)
+    {
+        if (m_MeshNodes.Count > 0)
+        {
+            if (pool != null)
+            {
+                for (int i = 0; i < m_MeshNodes.Count; ++i)
+                    pool.Collect(m_MeshNodes[i]);
+            }
+            else
+            {
+                for (int i = 0; i < m_MeshNodes.Count; ++i)
+                    m_MeshNodes[i].Destroy();
+            }
+
+            m_MeshNodes.Clear();
+        }
+    }
+
+    /// <summary>
+    /// 删除/回收PrefabNode
+    /// </summary>
+    /// <param name="pool"></param>
+    public void CollectOrDestroyPrefabNodes(ChunkNodePool pool)
+    {
+        if (m_PrefabNodes.Count > 0)
+        {
+            if (pool != null)
+            {
+                for (int i = 0; i < m_PrefabNodes.Count; ++i)
+                    pool.Collect(m_PrefabNodes[i]);
+            }
+            else
+            {
+                for (int i = 0; i < m_PrefabNodes.Count; ++i)
+                    m_PrefabNodes[i].Destroy();
+            }
+
+            m_PrefabNodes.Clear();
+        }
+    }
+
     #endregion
 
     #region Collider Node
@@ -73,6 +128,17 @@ public class RenderChunkNode : ObjectNode
         node.ChangeParent(transform);
         node.PlaceStandardPosition(Vector3.zero, Space.Self);
         m_ColliderNodes.Add(node);
+    }
+
+    #endregion
+
+    #region Mesh Node
+
+    public void AddMeshNode(MeshNode node)
+    {
+        node.ChangeParent(transform);
+        node.PlaceStandardPosition(Vector3.zero, Space.Self);
+        m_MeshNodes.Add(node);
     }
 
     #endregion

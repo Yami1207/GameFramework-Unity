@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class ChunkNodePool
 {
-    private static readonly int kPoolCapacity = 256;
+    private static readonly int s_PoolCapacity = 256;
 
-    public static readonly int kRenderRootInitialCapacity = 512;
+    public static readonly int s_RenderRootInitialCapacity = 512;
 
     /// <summary>
     /// 根节点
@@ -30,6 +30,11 @@ public class ChunkNodePool
     private readonly CachePool<ColliderNode> m_ColliderNodePool;
 
     /// <summary>
+    /// MeshNode对象池
+    /// </summary>
+    private readonly CachePool<MeshNode> m_MeshNodePool;
+
+    /// <summary>
     /// PrefabNode对象池
     /// </summary>
     private readonly CachePool<PrefabNode> m_PrefabNodePool;
@@ -39,9 +44,10 @@ public class ChunkNodePool
         m_PoolRoot = new ObjectNode();
         m_RenderChunkRoot = new ObjectNode();
 
-        m_RenderChunkNodePool = new CachePool<RenderChunkNode>(kPoolCapacity);
-        m_ColliderNodePool = new CachePool<ColliderNode>(kPoolCapacity);
-        m_PrefabNodePool = new CachePool<PrefabNode>(kPoolCapacity);
+        m_RenderChunkNodePool = new CachePool<RenderChunkNode>(s_PoolCapacity);
+        m_ColliderNodePool = new CachePool<ColliderNode>(s_PoolCapacity);
+        m_MeshNodePool = new CachePool<MeshNode>(s_PoolCapacity);
+        m_PrefabNodePool = new CachePool<PrefabNode>(s_PoolCapacity);
     }
 
     /// <summary>
@@ -50,10 +56,10 @@ public class ChunkNodePool
     public void Init()
     {
         m_PoolRoot.CreateWithStandardPosition("Chunk Pool Root", new Vector3(-100000, -100000, -100000));
-        m_PoolRoot.transform.hierarchyCapacity = kPoolCapacity;
+        m_PoolRoot.transform.hierarchyCapacity = s_PoolCapacity;
 
         m_RenderChunkRoot.CreateWithStandardPosition("Render Chunk Root", Vector3.zero);
-        m_RenderChunkRoot.transform.hierarchyCapacity = kRenderRootInitialCapacity;
+        m_RenderChunkRoot.transform.hierarchyCapacity = s_RenderRootInitialCapacity;
     }
 
     public void Clear()
@@ -62,6 +68,7 @@ public class ChunkNodePool
 
         m_RenderChunkNodePool.Clear();
         m_ColliderNodePool.Clear();
+        m_MeshNodePool.Clear();
         m_PrefabNodePool.Clear();
     }
 
@@ -126,8 +133,35 @@ public class ChunkNodePool
     {
         if (!IsPoolValid())
         {
-            node.ClearMesh();
+            node.Clear();
             m_ColliderNodePool.Release(node);
+        }
+        else
+        {
+            node.Destroy();
+        }
+    }
+
+    #endregion
+
+    #region Mesh Node
+
+    public MeshNode RequireMeshNode(string name)
+    {
+        if (!IsRenderChunkRootValid())
+            return null;
+
+        MeshNode node = m_MeshNodePool.Get();
+        node.Create(name);
+        return node;
+    }
+
+    public void Collect(MeshNode node)
+    {
+        if (!IsPoolValid())
+        {
+            node.Clear();
+            m_MeshNodePool.Release(node);
         }
         else
         {
@@ -139,17 +173,21 @@ public class ChunkNodePool
 
     #region Prefab Node
 
-    public PrefabNode RequirePrefabNode()
+    public PrefabNode RequirePrefabNode(string name)
     {
         if (!IsRenderChunkRootValid())
             return null;
-        return m_PrefabNodePool.Get();
+
+        var node = m_PrefabNodePool.Get();
+        node.Create(name);
+        return node;
     }
 
     public void Collect(PrefabNode node)
     {
         if (!IsPoolValid())
         {
+            node.Clear();
             m_PrefabNodePool.Release(node);
         }
         else

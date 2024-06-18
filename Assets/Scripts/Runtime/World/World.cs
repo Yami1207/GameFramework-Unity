@@ -10,7 +10,7 @@ using static UnityEditor.Rendering.CameraUI;
 
 public class World
 {
-    private static readonly string kMapPath = "Map";
+    private static readonly string s_MapPath = "Map";
 
     public string name { get { return m_WorldInfo.name; } }
 
@@ -26,6 +26,12 @@ public class World
     private PlayerChunkManager m_PlayerChunkManager;
 
     private bool m_EnableLoadWorldByPlayer = true;
+
+    /// <summary>
+    /// 渲染场景
+    /// </summary>
+    private bool m_EnableRenderWorld = false;
+    public bool enableRenderWorld { set { m_EnableRenderWorld = value; } get { return m_EnableRenderWorld; } }
 
     private WaitForEndOfFrame m_WaitForEndOfFrame = new WaitForEndOfFrame();
 
@@ -77,17 +83,21 @@ public class World
         m_ChunkProvider = new ChunkProvider(this, m_ChunkLoader);
         m_PlayerChunkManager = new PlayerChunkManager(this, m_ChunkProvider);
 
-        string path = string.Format("{0}/{1}", kMapPath, filename);
+        string path = string.Format("{0}/{1}", s_MapPath, filename);
         m_WorldInfo.Load(path);
 
-        Dictionary<Vector2Int, MapData>.Enumerator iter = m_WorldInfo.mapDataDict.GetEnumerator();
-        while (iter.MoveNext())
+        // 创建地形
+        if (GameSetting.enableInstancing)
         {
-            MapData data = iter.Current.Value;
-            var instancingTerrain = m_RenderWorld.instancingCore.CreateOrGetInstancingTerrain(iter.Current.Key);
-            instancingTerrain.SetMaterials(data.terrainStandard, data.terrainAddStandard, data.terrainLow);
+            Dictionary<Vector2Int, MapData>.Enumerator iter = m_WorldInfo.mapDataDict.GetEnumerator();
+            while (iter.MoveNext())
+            {
+                MapData data = iter.Current.Value;
+                var instancingTerrain = m_RenderWorld.instancingCore.CreateOrGetInstancingTerrain(iter.Current.Key);
+                instancingTerrain.SetMaterials(data.terrainStandard, data.terrainAddStandard, data.terrainLow);
+            }
+            iter.Dispose();
         }
-        iter.Dispose();
 
         PrefabInfo.Load();
     }
@@ -106,7 +116,7 @@ public class World
 
     public void LateUpdate()
     {
-        if (m_RenderWorld != null)
+        if (m_EnableRenderWorld && m_RenderWorld != null)
             m_RenderWorld.LateUpdate();
     }
 

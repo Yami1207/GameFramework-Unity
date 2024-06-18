@@ -133,20 +133,42 @@ public class RenderChunk
             m_RenderChunkNode.activeSelf = true;
 
         var chunk = m_RenderWorld.world.GetChunk(m_ChunkPos);
-        m_InstancingChunk = m_RenderWorld.instancingCore.CreateOrGetInstancingChunk(this);
-        m_InstancingChunk.SetBounds(chunk.bounds);
-        m_InstancingChunk.SetExtendDrawcall(chunk.extendDrawcall);
 
         // collider
+        m_RenderChunkNode.CollectOrDestroyColliderNodes(m_ChunkNodePool);
+        var colliderNode = CreateColliderNode(m_RenderChunkNode);
+        colliderNode.NewMesh(task.GetRenderChunkCacheData().colliderBuffer);
+        m_RenderChunkNode.AddColliderNode(colliderNode);
+
+        if (GameSetting.enableInstancing)
         {
-            m_RenderChunkNode.CollectOrDestroyColliderNodes(m_ChunkNodePool);
-            var colliderNode = CreateColliderNode(m_RenderChunkNode);
-            colliderNode.NewMesh(task.GetRenderChunkCacheData().colliderBuffer);
-            m_RenderChunkNode.AddColliderNode(colliderNode);
+            m_InstancingChunk = m_RenderWorld.instancingCore.CreateOrGetInstancingChunk(this);
+            m_InstancingChunk.SetBounds(chunk.bounds);
+            m_InstancingChunk.SetExtendDrawcall(chunk.extendDrawcall);
+        }
+        else
+        {
+            if (m_RenderWorld.world.GetMapData(m_ChunkPos, out var mapData))
+            {
+                m_RenderChunkNode.CollectOrDestroyMeshNodes(m_ChunkNodePool);
+                var meshNode = CreateMeshNode(m_RenderChunkNode, "Terrain Mesh Node");
+                meshNode.Init(colliderNode.mesh, mapData.terrainStandard, UnityEngine.Rendering.ShadowCastingMode.Off, false);
+                m_RenderChunkNode.AddMeshNode(meshNode);
+
+                if (chunk.extendDrawcall)
+                {
+                    meshNode = CreateMeshNode(m_RenderChunkNode, "Terrain Extend Mesh Node");
+                    meshNode.Init(colliderNode.mesh, mapData.terrainAddStandard, UnityEngine.Rendering.ShadowCastingMode.Off, false);
+                    m_RenderChunkNode.AddMeshNode(meshNode);
+                }
+            }
         }
 
         // prefab
         {
+            // 回收PrefabNode
+            m_RenderChunkNode.CollectOrDestroyPrefabNodes(m_ChunkNodePool);
+
             var iter = task.GetRenderChunkCacheData().prefabBuffer.GetEnumerator();
             while (iter.MoveNext())
             {
@@ -159,7 +181,7 @@ public class RenderChunk
                 if (info == null)
                     continue;
 
-                if (info.useInstancing)
+                if (GameSetting.enableInstancing && info.useInstancing)
                 {
                     var instancingPrefab = m_RenderWorld.instancingCore.GetInstancingPrefab();
                     instancingPrefab.Load(info);
@@ -170,21 +192,22 @@ public class RenderChunk
                     }
                     m_InstancingChunk.AddPrefab(instancingPrefab);
                 }
-                //else
-                //{
-                //    for (int i = 0; i < list.Count; ++i)
-                //    {
-                //        var data = list[i];
-                //        var prefabNode = CreatePrefabNode(m_RenderChunkNode);
-                //        prefabNode.Load(info);
-                //        m_RenderChunkNode.AddPrefabNode(prefabNode);
+                else
+                {
+                    string name = "" + id;
+                    for (int i = 0; i < list.Count; ++i)
+                    {
+                        var data = list[i];
+                        var prefabNode = CreatePrefabNode(m_RenderChunkNode, name);
+                        prefabNode.Load(info);
+                        m_RenderChunkNode.AddPrefabNode(prefabNode);
 
-                //        // 设置坐标等信息
-                //        prefabNode.PlaceStandardPosition(data.position, Space.Self);
-                //        prefabNode.transform.rotation = Quaternion.Euler(data.eulerAngle);
-                //        prefabNode.transform.localScale = data.scale;
-                //    }
-                //}
+                        // 设置坐标等信息
+                        prefabNode.PlaceStandardPosition(data.position, Space.Self);
+                        prefabNode.transform.rotation = Quaternion.Euler(data.eulerAngle);
+                        prefabNode.transform.localScale = data.scale;
+                    }
+                }
             }
             iter.Dispose();
         }
@@ -202,9 +225,17 @@ public class RenderChunk
         return node;
     }
 
-    private PrefabNode CreatePrefabNode(RenderChunkNode parent)
+    private MeshNode CreateMeshNode(RenderChunkNode parent, string name)
     {
-        PrefabNode node = m_ChunkNodePool.RequirePrefabNode();
+        MeshNode node = m_ChunkNodePool.RequireMeshNode(name);
+        if (!node.activeSelf)
+            node.activeSelf = true;
+        return node;
+    }
+
+    private PrefabNode CreatePrefabNode(RenderChunkNode parent, string name)
+    {
+        PrefabNode node = m_ChunkNodePool.RequirePrefabNode(name);
         if (!node.activeSelf)
             node.activeSelf = true;
         return node;

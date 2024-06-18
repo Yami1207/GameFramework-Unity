@@ -7,13 +7,13 @@ using static UnityEditor.PlayerSettings;
 
 public class InstancingTerrain
 {
+    private static Mesh s_TerrainMesh = null;
+
     private InstancingCore m_InstancingCore;
 
     private InstancingRenderer m_StandardRenderer;
     private InstancingRenderer m_StandardAddRenderer;
     private InstancingRenderer m_LowRenderer;
-
-    private static Mesh s_TerrainMesh = null;
 
     public InstancingTerrain(InstancingCore core)
     {

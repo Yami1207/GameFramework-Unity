@@ -222,7 +222,7 @@ public class InstancingCore
         for (int i = 0; i < m_UploadChunkBuffer.Length; ++i)
             m_UploadChunkBuffer[i] = new List<InstancingChunk>(256);
 
-        m_InstancingDrwacallShader = AssetManager.instance.LoadResource<ComputeShader>("Shader/Utils/InstancingDrawcall");
+        m_InstancingDrwacallShader = AssetManager.instance.LoadAsset<ComputeShader>("Shader/Utils/InstancingDrawcall");
         m_MainKernel = m_InstancingDrwacallShader.FindKernel("Main");
         m_LODCullingKernel = m_InstancingDrwacallShader.FindKernel("LODCulling");
     }
@@ -287,7 +287,7 @@ public class InstancingCore
         }
         m_RenderFrame = Time.renderedFrameCount;
 
-        if (!GameSetting.enableInstancing || m_ChunkDict.Count == 0)
+        if (m_ChunkDict.Count == 0)
             return;
 
         Camera camera = CameraManager.mainCamera;

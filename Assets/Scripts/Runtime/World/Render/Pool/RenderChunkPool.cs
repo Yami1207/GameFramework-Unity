@@ -10,7 +10,7 @@ public class RenderChunkPool
 
     private readonly ChunkNodePool m_ChunkNodePool;
 
-    private readonly Stack<RenderChunk> m_RenderChunkStack = new Stack<RenderChunk>(ChunkNodePool.kRenderRootInitialCapacity);
+    private readonly Stack<RenderChunk> m_RenderChunkStack = new Stack<RenderChunk>(ChunkNodePool.s_RenderRootInitialCapacity);
 
     public RenderChunkPool(RenderWorld renderWorld, ChunkNodePool chunkNodePool)
     {
