@@ -14,5 +14,7 @@ UserSettings
 data/excel
 data/打表工具
 Assets/Scripts/Editor/BuildTools
-Assets/StreamingAssets
-/Assets/StreamingAssets
+/Assets/StreamingAssets/Map
+Assets/StreamingAssets/Map.meta
+/Assets/StreamingAssets/Data
+Assets/StreamingAssets/Data.meta

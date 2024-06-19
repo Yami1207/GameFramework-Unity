@@ -23,7 +23,10 @@ public static class CSVHelper
     public static string GetActualDataPath(string dataPath)
     {
 #if UNITY_EDITOR
-        return AssetPathDefine.developDataPath + dataPath.Substring(AssetPathDefine.dataFolderName.Length);
+        if (SettingManager.instance.developMode)
+            return AssetPathDefine.developDataPath + dataPath.Substring(AssetPathDefine.dataFolderName.Length);
+        else
+            return AssetPathDefine.externalDataPath + dataPath.Substring(AssetPathDefine.dataFolderName.Length);
 #else
         return AssetPathDefine.externalDataPath + dataPath.Substring(AssetPathDefine.dataFolderName.Length);
 #endif

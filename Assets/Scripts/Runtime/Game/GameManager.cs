@@ -13,10 +13,12 @@ public class GameManager : Singleton<GameManager>
 
     public void Init()
     {
-        // 解压数据
-        //DataExtractor.ExtractAll();
+        Setup();
 
-        //GameSetting.enableInstancing = false;
+        AssetManager.instance.DoStartScene();
+
+        // 解压数据
+        DataExtractor.ExtractAll();
 
         // 设置镜头
         CameraManager.mainCamera.clearFlags = CameraClearFlags.SolidColor;
@@ -63,6 +65,11 @@ public class GameManager : Singleton<GameManager>
 
     public void FixedUpdate()
     {
+    }
+
+    private void Setup()
+    {
+        GameSetting.enableInstancing = SettingManager.instance.enableInstancing;
     }
 
     private void OnChunkLoaded()

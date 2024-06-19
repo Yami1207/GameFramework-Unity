@@ -5,6 +5,7 @@ using UnityEngine;
 public static class AssetPathDefine
 {
     public static readonly string dataFolderName = "Data";
+    public static readonly string dataZipName = "Data.zip";
 
     /// <summary>
     /// 项目中存放资源的目录
@@ -69,10 +70,38 @@ public static class AssetPathDefine
     }
 
     /// <summary>
+    /// 项目中数据文件路径
+    /// </summary>
+    private static string s_ProjectDataPath = string.Empty;
+    public static string projectDataPath
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(s_ProjectDataPath))
+                s_ProjectDataPath = resFolder + dataFolderName;
+            return s_ProjectDataPath;
+        }
+    }
+
+    /// <summary>
     /// 数据zip目录
     /// </summary>
     public static string dataFloder
     {
         get { return Application.streamingAssetsPath + "/" + dataFolderName; }
+    }
+
+    /// <summary>
+    /// 打包后的数据文件路径(非热更数据压缩包)
+    /// </summary>
+    private static string s_PackedDataPath = string.Empty;
+    public static string packedDataPath
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(s_PackedDataPath))
+                s_PackedDataPath = dataFloder + "/" + dataZipName;
+            return s_PackedDataPath;
+        }
     }
 }

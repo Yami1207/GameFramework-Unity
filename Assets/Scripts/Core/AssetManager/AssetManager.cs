@@ -22,12 +22,6 @@ public class AssetManager : Singleton<AssetManager>, IAssetLoader
 #endif
     public bool enableAssetBundle
     {
-#if UNITY_EDITOR
-        set
-        {
-            m_EnableAssetBundleForEditor = value;
-        }
-#endif
         get
         {
 #if UNITY_EDITOR
@@ -51,13 +45,13 @@ public class AssetManager : Singleton<AssetManager>, IAssetLoader
     /// </summary>
     private PoolManager m_PoolManager = null;
 
-    public void Init(bool enableAssetBundle = false)
+    public void Init()
     {
 #if UNITY_EDITOR
-        m_EnableAssetBundleForEditor = enableAssetBundle;
+        m_EnableAssetBundleForEditor = SettingManager.instance.enableAssetBundle;
 #endif
 
-        if (m_EnableAssetBundleForEditor)
+        if (enableAssetBundle)
         {
 
         }
@@ -319,7 +313,7 @@ public class AssetManager : Singleton<AssetManager>, IAssetLoader
         m_ResourceManager.LoadAssetAsync(assetId, (asset) =>
         {
 #if UNITY_EDITOR
-            if (asset == null && enableAssetBundle == false)
+            if (asset == null && !enableAssetBundle)
             {
                 // 编辑器下尝试从AssetDatabase加载
                 asset = m_AssetDatabaseManager.LoadAsset<Object>(assetId);

@@ -15,29 +15,25 @@ public static class SavePath
     }
 
     /// <summary>
-    /// 地图存储路径(编辑模式)
+    /// 地图存储路径(开发者模式)
     /// </summary>
     private static string s_EditorMapSavePath = AssetPathDefine.developDataPath + "/map";
-    public static string mapSavePath
-    {
-        get
-        {
-            if (string.IsNullOrEmpty(s_EditorMapSavePath))
-            {
-                var dataPath = Application.dataPath;
-                dataPath = dataPath.Substring(0, dataPath.LastIndexOf("/"));
-                s_EditorMapSavePath = System.IO.Path.Combine(dataPath + "/data/", AssetPathDefine.dataFolderName.ToLower() + "/map");
-            }
-            return s_EditorMapSavePath;
-        }
-    }
 
     /// <summary>
     /// 地图存储路径
     /// </summary>
     private static readonly string s_ExternalMapSavePath = AssetPathDefine.externalDataPath + "/map";
-    public static string externalMapSavePath { get { return s_ExternalMapSavePath; } }
 
+    /// <summary>
+    /// 地图存储路径
+    /// </summary>
+    public static string mapSavePath
+    {
+        get
+        {
+            return SettingManager.instance.developMode ? s_EditorMapSavePath : s_ExternalMapSavePath;
+        }
+    }
 
     /// <summary>
     /// 获取地图目录

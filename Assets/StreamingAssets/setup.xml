@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Setup>
+    <Publish version="1" devel_mode="true" instancing="true" game_version="1" res_version="1"/>
+    <Debug fps="true" use_ab="false" />
+</Setup>

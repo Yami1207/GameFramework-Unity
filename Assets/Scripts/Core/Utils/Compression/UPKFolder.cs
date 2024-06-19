@@ -72,6 +72,7 @@ namespace Compress.UPK
 
             // 遍历文件夹全部文件
             DirectoryInfo dirInfo = new DirectoryInfo(inpath);
+            string parentDir = dirInfo.Parent.FullName.Replace("\\", "/");
             foreach (FileInfo fileinfo in dirInfo.GetFiles("*.*", SearchOption.AllDirectories))
             {
                 // 无视拓展名为.meta(unity资源标识文件)
@@ -81,6 +82,8 @@ namespace Compress.UPK
                 // 规范化相对路径
                 string filename = fileinfo.FullName.Replace("\\", "/");
                 filename = filename.Replace(sourceDirPath + "/", "");
+                if (filename.StartsWith(parentDir))
+                    filename = filename.Substring(parentDir.Length + 1);
                 int filesize = (int)fileinfo.Length;
 
                 OneFileInfo info = new OneFileInfo();
@@ -275,15 +278,26 @@ namespace Compress.UPK
 
                 int startPos = info.startPos;
                 int size = info.size;
-                string path = info.path;
+
+                string parentDir = "", filename = "";
+                int pos = info.path.LastIndexOf("/");
+                if (pos != -1)
+                {
+                    parentDir = info.path.Substring(0, info.path.LastIndexOf("/"));
+                    filename = info.path.Substring(info.path.LastIndexOf("/") + 1);
+                }
+                else
+                {
+                    filename = info.path;
+                }
 
                 // 创建文件
-                string dirPath = outpath + path.Substring(0, path.LastIndexOf('/'));
-                if (Directory.Exists(dirPath) == false)
+                string dirPath = outpath + parentDir;
+                if (!Directory.Exists(dirPath))
                     Directory.CreateDirectory(dirPath);
 
                 // 判断如果已经有文件了就删除，再生成.(相当于替换)
-                string filePath = outpath + path;
+                string filePath = dirPath + "/" + filename;
                 if (File.Exists(filePath))
                     File.Delete(filePath);
 

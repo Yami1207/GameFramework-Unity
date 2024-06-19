@@ -101,13 +101,6 @@ public class RenderChunkWorker
                     // 在主线程中执行
                     m_Dispatcher.UploadCompileTaskResult(task);
 
-                    // 生成中间数据
-                    //RenderSectionCompileTaskBuffer _switch_buffer = null;
-                    //if (_task.TaskType == RenderSectionCompileTask.Type.RebuildCollider)
-                    //{
-                    //    _switch_buffer = RenderSectionCompileTask.PullRenderSectionCompileTaskBuffer(_task);
-                    //}
-
                     // 完成任务(释放任务资源)
                     OnSuccess(task);
                 }

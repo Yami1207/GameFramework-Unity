@@ -16,14 +16,38 @@ public class DataExtractor
     /// </summary>
     public static void ExtractAll()
     {
+        if (SettingManager.instance.developMode || !IsNeedExtract())
+            return;
+
+        ExtractDataZip();
         ExtractMap();
+
+        // 更新数据版本
+        PlayerPrefs.SetInt("game_version", SettingManager.instance.gameVersion);
+    }
+
+    private static bool IsNeedExtract()
+    {
+        int gameVersion = PlayerPrefs.GetInt("game_version");
+        return gameVersion != SettingManager.instance.gameVersion;
+    }
+
+    private static void ExtractDataZip()
+    {
+        string dataFile = AssetPathDefine.packedDataPath;
+#if UNITY_ANDROID && !UNITY_EDITOR
+        var www = new WWW(dataFile);
+        CoroutineRunner.Wait(www);
+        ZipUtils.UnZipFileByBytes(www.bytes, AssetPathDefine.externalFilePath, false);
+#else
+        ZipUtils.UnZipFile(dataFile, AssetPathDefine.externalFilePath);
+#endif
     }
 
     private static void ExtractMap()
     {
-        if (Directory.Exists(SavePath.externalMapSavePath) == false)
-            Directory.CreateDirectory(SavePath.externalMapSavePath);
-        Debug.LogError(SavePath.externalMapSavePath);
+        if (Directory.Exists(SavePath.mapSavePath) == false)
+            Directory.CreateDirectory(SavePath.mapSavePath);
 
         string mapDir = Application.streamingAssetsPath + "/Map/";
 #if !UNITY_EDITOR && UNITY_ANDROID
@@ -53,7 +77,7 @@ public class DataExtractor
                     fileStream = File.OpenRead(path);
 #endif
 
-                    string distFile = SavePath.externalMapSavePath + "/" + file;
+                    string distFile = SavePath.mapSavePath + "/" + file;
                     var inStream = new LZ4.LZ4Stream(fileStream, LZ4.LZ4StreamMode.Decompress);
                     FileStream outStream = new FileStream(distFile, FileMode.Create);
 
