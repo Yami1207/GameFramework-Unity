@@ -14,3 +14,5 @@ UserSettings
 data/excel
 data/打表工具
 Assets/Scripts/Editor/BuildTools
+Assets/StreamingAssets
+/Assets/StreamingAssets
