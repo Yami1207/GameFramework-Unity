@@ -92,6 +92,14 @@ public static class AssetPathDefine
     }
 
     /// <summary>
+    /// 存放bundle的文件夹名
+    /// </summary>
+    public static string assetBundleFolder
+    {
+        get { return "AssetBundles"; }
+    }
+
+    /// <summary>
     /// 打包后的数据文件路径(非热更数据压缩包)
     /// </summary>
     private static string s_PackedDataPath = string.Empty;

@@ -75,7 +75,7 @@ struct Varyings
 {
     float4 positionCS : SV_POSITION;
     float4 positionWSAndFog : TEXCOORD0;
-    half2 texcoord : TEXCOORD1;
+    float2 texcoord : TEXCOORD1;
     float3 tangentWS : TEXCOORD2;
     float3 bitangentWS : TEXCOORD3;
     float3 normalWS : TEXCOORD4;
