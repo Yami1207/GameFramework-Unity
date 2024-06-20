@@ -100,6 +100,30 @@ public static class AssetPathDefine
     }
 
     /// <summary>
+    /// bundle表命名
+    /// </summary>
+    public static string bundleTableFileName
+    {
+        get { return "BundleTable.json"; }
+    }
+
+    /// <summary>
+    /// 依赖bundle表
+    /// </summary>
+    public static string depBundleTableFileName
+    {
+        get { return "DepBundleTable.json"; }
+    }
+
+    /// <summary>
+    /// 常驻内存列表
+    /// </summary>
+    public static string residentBundleTableName
+    {
+        get { return "ResidentBundles.json"; }
+    }
+
+    /// <summary>
     /// 打包后的数据文件路径(非热更数据压缩包)
     /// </summary>
     private static string s_PackedDataPath = string.Empty;

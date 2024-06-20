@@ -61,7 +61,7 @@ public class SettingManager : Singleton<SettingManager>
         node = xml.ToXml().SearchForChildByTag("Debug");
         m_EnableAssetBundle = XMLTool.GetBoolAttribute(node, "use_ab");
 #else
-        m_EnableAssetBundle = true
+        m_EnableAssetBundle = true;
 #endif
     }
 

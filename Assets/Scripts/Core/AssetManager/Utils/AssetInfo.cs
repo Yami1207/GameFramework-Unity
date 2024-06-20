@@ -91,6 +91,15 @@ public class AssetInfo
 
     private static Dictionary<int, AssetInfo> s_AssetInfoDict = new Dictionary<int, AssetInfo>();
 
+    /// <summary>
+    /// 获取枚举器
+    /// </summary>
+    /// <returns></returns>
+    public static Dictionary<int, AssetInfo>.Enumerator GetEnumerator()
+    {
+        return s_AssetInfoDict.GetEnumerator();
+    }
+
     public static bool isInitialized
     {
         get { return s_AssetInfoDict.Count > 0; }

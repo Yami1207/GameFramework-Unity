@@ -5,8 +5,6 @@ using System.Resources;
 using System.Xml.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
-using static UnityEditor.Rendering.CameraUI;
 
 public class World
 {

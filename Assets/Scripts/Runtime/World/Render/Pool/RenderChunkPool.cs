@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Xml.Linq;
 using UnityEngine;
-using static UnityEditor.Rendering.FilterWindow;
 
 public class RenderChunkPool
 {

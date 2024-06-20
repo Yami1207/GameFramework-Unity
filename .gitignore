@@ -18,3 +18,10 @@ Assets/Scripts/Editor/BuildTools
 Assets/StreamingAssets/Map.meta
 /Assets/StreamingAssets/Data
 Assets/StreamingAssets/Data.meta
+/ExtraResources
+Assets/BundleTable.asset
+Assets/BundleTable.asset.meta
+/Assets/StreamingAssets/AssetBundles
+Assets/StreamingAssets/AssetBundles.meta
+/Assets/Scripts/Core/AssetManager/AssetBundleManager
+Assets/Scripts/Core/AssetManager/AssetBundleManager.meta

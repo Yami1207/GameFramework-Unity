@@ -114,6 +114,22 @@ public static class ZipUtils
     /// <summary>
     /// 解压zip格式的文件
     /// </summary>
+    /// <param name="bytes"></param>
+    /// <param name="unZipDir"></param>
+    /// <param name="isSafeSave"></param>
+    /// <returns></returns>
+    public static string UnZipFileByBytes(byte[] bytes, string unZipDir, bool isSafeSave)
+    {
+        if (bytes == null)
+            return "bytes为空";
+
+        System.IO.Stream stream = new System.IO.MemoryStream(bytes);
+        return UnZipFile(stream, unZipDir, isSafeSave);
+    }
+
+    /// <summary>
+    /// 解压zip格式的文件
+    /// </summary>
     /// <param name="zipFilePath"></param>
     /// <param name="unZipDir"></param>
     /// <returns></returns>
