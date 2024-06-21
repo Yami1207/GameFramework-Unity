@@ -31,7 +31,7 @@ public class GameManager : Singleton<GameManager>
 
         m_World = new World();
         m_World.enableRenderWorld = false;
-        m_World.Load("demo_world.json");
+        m_World.Load("demo_world");
         m_World.LoadChunkNow(m_Player.actor.position, Define.kChunkLoadDistance, OnChunkLoaded);
     }
 

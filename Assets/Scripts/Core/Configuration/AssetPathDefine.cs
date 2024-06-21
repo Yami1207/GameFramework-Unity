@@ -124,6 +124,20 @@ public static class AssetPathDefine
     }
 
     /// <summary>
+    /// 指定的Bundle外部路径
+    /// </summary>
+    private static string s_ExternalBundlePath = string.Empty;
+    public static string externalBundlePath
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(s_ExternalBundlePath))
+                s_ExternalBundlePath = System.IO.Path.Combine(externalFilePath, assetBundleFolder);
+            return s_ExternalBundlePath;
+        }
+    }
+
+    /// <summary>
     /// 打包后的数据文件路径(非热更数据压缩包)
     /// </summary>
     private static string s_PackedDataPath = string.Empty;

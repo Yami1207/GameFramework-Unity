@@ -32,7 +32,7 @@ public class WorldInfo
 
     public void Load(string path)
     {
-        var textAsset = AssetManager.instance.LoadAsset<TextAsset>(path);
+        var textAsset = AssetManager.instance.LoadAsset<TextAsset>(path, "json");
         if (textAsset == null)
             return;
         var jsonObject = JObject.Parse(textAsset.text);

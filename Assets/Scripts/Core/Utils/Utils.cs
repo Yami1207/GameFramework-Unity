@@ -18,6 +18,55 @@ public static class Utils
         return string.Format("{0}{1}.{2}", AssetPathDefine.resFolder, resourcesPath, suffix);
     }
 
+    #region String
+
+    /// <summary>
+    /// 获取去除BOM的字符串
+    /// </summary>
+    /// <param name="array"></param>
+    /// <returns></returns>
+    public static string GetStringWithoutBOM(byte[] array)
+    {
+        if (array.Length > 3)
+        {
+            //去除bom
+            if (array[0] == 0xef && array[1] == 0xbb && array[2] == 0xbf)
+                return System.Text.Encoding.UTF8.GetString(array, 3, array.Length - 3);
+        }
+
+        return System.Text.Encoding.UTF8.GetString(array, 0, array.Length);
+    }
+
+    /// <summary>
+    /// 获取文件前缀,例如 table/hero.csv -> table/hero
+    /// </summary>
+    /// <param name="filename"></param>
+    /// <param name="c"></param>
+    /// <returns></returns>
+    public static string GetPrefix(string filename, string c)
+    {
+        int index = filename.LastIndexOf(c);
+        if (index > 0)
+            filename = filename.Substring(0, index);
+        return filename;
+    }
+
+    /// <summary>
+    /// 获取文件后缀,例如hero.csv -> .csv
+    /// </summary>
+    /// <param name="filename"></param>
+    /// <param name="c"></param>
+    /// <returns></returns>
+    public static string GetSuffix(string filename, string c)
+    {
+        int index = filename.LastIndexOf(c);
+        if (index > 0)
+            filename = filename.Substring(index);
+        return filename;
+    }
+
+    #endregion
+
     #region File
 
     public static string ReadAllText(string path)

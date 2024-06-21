@@ -33,10 +33,18 @@ public class AssetManager : Singleton<AssetManager>, IAssetLoader
 
     private Dictionary<int, CacheInfo> m_CacheAssetDict = new Dictionary<int, CacheInfo>();
 
-    private ResourceManager m_ResourceManager = new ResourceManager();
+    private ResourceManager m_ResourceManager;
+
+#if USING_ASSET_BUNDLE
+    /// <summary>
+    /// AssetBundle管理器
+    /// </summary>
+    private AssetBundleManager m_AssetBundleManager = null;
+    public AssetBundleManager assetBundleManager { get { return m_AssetBundleManager; } }
+#endif
 
 #if UNITY_EDITOR
-    private AssetDatabaseManager m_AssetDatabaseManager = new AssetDatabaseManager();
+    private AssetDatabaseManager m_AssetDatabaseManager;
 #endif
 
     /// <summary>
@@ -52,15 +60,18 @@ public class AssetManager : Singleton<AssetManager>, IAssetLoader
 
         if (enableAssetBundle)
         {
-
+#if USING_ASSET_BUNDLE
+            m_AssetBundleManager = new AssetBundleManager();
+            m_AssetBundleManager.Init();
+#endif
         }
-#if UNITY_EDITOR
         else
         {
+#if UNITY_EDITOR
             m_AssetDatabaseManager = new AssetDatabaseManager();
             m_AssetDatabaseManager.Init();
-        }
 #endif
+        }
 
         // Resources管理器
         m_ResourceManager = new ResourceManager();
@@ -80,6 +91,11 @@ public class AssetManager : Singleton<AssetManager>, IAssetLoader
         m_CacheAssetDict.Clear();
 
         m_PoolManager.Destroy();
+
+#if USING_ASSET_BUNDLE
+        if (enableAssetBundle)
+            m_AssetBundleManager.DoExitScene();
+#endif
 
         m_ResourceManager.DoExitScene();
     }
@@ -224,6 +240,15 @@ public class AssetManager : Singleton<AssetManager>, IAssetLoader
         //从缓存获取
         asset = GetAssetFromCache(assetId) as T;
 
+#if USING_ASSET_BUNDLE
+        // 从Assetbundle获取
+        if (enableAssetBundle)
+        {
+            asset = m_AssetBundleManager.LoadAsset<T>(assetId);
+        }
+#endif
+
+        // 从Resource获取
         if (asset == null)
             asset = m_ResourceManager.LoadAsset<T>(assetId);
 
@@ -237,19 +262,85 @@ public class AssetManager : Singleton<AssetManager>, IAssetLoader
     }
 
     /// <summary>
+    /// 通过路径加载资源
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="suffix"></param>
+    /// <returns></returns>
+    public Object LoadAsset(string path, string suffix = ".prefab")
+    {
+        return LoadAsset<Object>(path, suffix);
+    }
+
+    /// <summary>
     /// 加载资源
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="path"></param>
     /// <returns></returns>
-    public T LoadAsset<T>(string path) where T : Object
+    public T LoadAsset<T>(string path, string suffix = ".prefab") where T : Object
     {
-        T asset = m_ResourceManager.LoadAsset<T>(path);
-#if UNITY_EDITOR
-        if (asset == null)
-            asset = m_AssetDatabaseManager.LoadAsset<T>(AssetPathDefine.resFolder + path);
+        T asset = null;
+
+#if USING_ASSET_BUNDLE
+        if (enableAssetBundle)
+        {
+            //从Assetbundle获取
+            string assetPath = Utils.ToAssetPath(path, suffix);
+            asset = m_AssetBundleManager.LoadAsset<T>(assetPath);
+        }
 #endif
+
+#if UNITY_EDITOR
+        if (asset == null && !enableAssetBundle)
+        {
+            string assetPath = Utils.ToAssetPath(path, suffix);
+            asset = m_AssetDatabaseManager.LoadAsset<T>(assetPath);
+        }
+#endif
+
+        // 从resources获取
+        if (asset == null)
+            asset = m_ResourceManager.LoadAsset<T>(path);
+
         return asset;
+    }
+
+    public byte[] LoadFileData(string originName)
+    {
+        if (string.IsNullOrEmpty(originName))
+            return null;
+
+        byte[] bytes = null;
+        string filePath = originName;
+
+        // 开发模式读Doc
+        if (SettingManager.instance.developMode)
+        {
+            if (originName.StartsWith(AssetPathDefine.dataFolderName + "/") || originName.StartsWith(AssetPathDefine.dataFolderName.ToLower() + "/"))
+                filePath = AssetPathDefine.developDataPath + originName.Substring(4);
+            if (FilePath.Exists(filePath))
+                bytes = File.ReadAllBytes(filePath);
+        }
+        else
+        {
+            if (originName.StartsWith(AssetPathDefine.dataFolderName + "/") || originName.StartsWith(AssetPathDefine.dataFolderName.ToLower() + "/"))
+                filePath = AssetPathDefine.externalDataPath + originName.Substring(4);
+            if (FilePath.Exists(filePath))
+                bytes = File.ReadAllBytes(filePath);
+        }
+
+        if (bytes == null)
+        {
+            string fileName = Utils.GetPrefix(originName, ".");
+            fileName = fileName.Replace("\\", "/");
+            TextAsset asset = LoadAsset<TextAsset>(fileName, Utils.GetSuffix(originName, "."));
+            if (asset == null)
+                return null;
+            bytes = asset.bytes;
+        }
+
+        return bytes;
     }
 
     #endregion
@@ -282,17 +373,19 @@ public class AssetManager : Singleton<AssetManager>, IAssetLoader
 
         if (enableAssetBundle)
         {
+#if USING_ASSET_BUNDLE
             // 从Assetbundle加载
-            //m_AssetBundleManager.LoadAssetAsync(assetId, (asset, isOld) =>
-            //{
-            //    if (asset == null)
-            //    {
-            //        LoadAssetAsyncFromResourcesAndAssetDatabase(assetId, callBack, func);
-            //        return;
-            //    }
-            //    PutAssetToCache(assetId, asset);
-            //    Utils.OnCallBack(callBack, asset, func);
-            //}, func);
+            m_AssetBundleManager.LoadAssetAsync(assetId, (asset) =>
+            {
+                if (asset == null)
+                {
+                    LoadAssetAsyncFromResourcesAndAssetDatabase(assetId, callBack);
+                    return;
+                }
+                PutAssetToCache(assetId, asset);
+                callBack?.Invoke(asset);
+            });
+#endif
         }
         else
         {

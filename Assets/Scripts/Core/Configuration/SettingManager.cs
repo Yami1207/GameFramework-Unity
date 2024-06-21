@@ -50,7 +50,10 @@ public class SettingManager : Singleton<SettingManager>
         SecurityElement node = xml.ToXml().SearchForChildByTag("Publish");
         int version = XMLTool.GetIntAttribute(node, "version");
 #if UNITY_EDITOR
-        m_DevelopMode = XMLTool.GetBoolAttribute(node, "devel_mode");
+        if (UnityEditor.EditorApplication.isPlaying)
+            m_DevelopMode = XMLTool.GetBoolAttribute(node, "devel_mode");
+        else
+            m_DevelopMode = true;
 #endif
         m_EnableInstancing = XMLTool.GetBoolAttribute(node, "instancing");
         m_GameVersion = XMLTool.GetIntAttribute(node, "game_version");

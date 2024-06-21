@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!200 &20000000
+ShaderVariantCollection:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: dummy_shadervar
+  m_Shaders:
+  - first: {fileID: 4800000, guid: 888fb2edf64dcea43a49fb5c36051b3e, type: 3}
+    second:
+      variants:
+      - keywords: FOG_LINEAR INSTANCING_ON _USE_INTERACTIVE _USE_SWING
+        passType: 13
+      - keywords: FOG_LINEAR PROCEDURAL_INSTANCING_ON _USE_INTERACTIVE _USE_SWING
+        passType: 13
+      - keywords: FOG_LINEAR _USE_INTERACTIVE _USE_SWING
+        passType: 13
+      - keywords: INSTANCING_ON _USE_INTERACTIVE _USE_SWING
+        passType: 13
+      - keywords: PROCEDURAL_INSTANCING_ON _USE_INTERACTIVE _USE_SWING
+        passType: 13

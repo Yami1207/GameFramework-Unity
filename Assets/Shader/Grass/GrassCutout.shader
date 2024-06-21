@@ -18,7 +18,7 @@
         _SwingScale("修正频率", float) = 1
         _SwingAmp("摆动幅度", float) = 1
 
-		[Toggle(_USE_OBSTACLE)]_Obstacle("互动草", int) = 0
+		[Toggle(_USE_INTERACTIVE)]_Interactive("互动草", int) = 0
 		_GrassPivotPointTex("描点图", 2D) = "black" {}
 		_GrassPivotPointTexUnit("描点图单位", float) = 1
 		_GrassPushStrength("推力强度", float) = 1

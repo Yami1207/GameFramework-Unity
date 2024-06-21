@@ -86,7 +86,7 @@
 			// -------------------------------------
             // 自定义keywords
             #pragma shader_feature_local _USE_SWING
-			#pragma shader_feature_local _USE_OBSTACLE
+			#pragma shader_feature_local _USE_INTERACTIVE
 
 			#include "Grass.hlsl"
 
@@ -116,7 +116,7 @@
 			// -------------------------------------
             // 自定义keywords
             #pragma shader_feature_local _USE_SWING
-			#pragma shader_feature_local _USE_OBSTACLE
+			#pragma shader_feature_local _USE_INTERACTIVE
 
 			#include "Grass.hlsl"
 

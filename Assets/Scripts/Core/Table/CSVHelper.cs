@@ -9,6 +9,12 @@ public static class CSVHelper
 {
     private static readonly string s_PathName = "data/table";
 
+    /// <summary>
+    /// 数据加载委托
+    /// </summary>
+    public delegate byte[] LoadBytesHandler(string path);
+    public static LoadBytesHandler loadBytes { set; private get; }
+
     public static string Combine(string csv_name)
     {
         return Path.Combine(s_PathName, csv_name);
@@ -31,9 +37,14 @@ public static class CSVHelper
 #endif
     }
 
-    public static byte[] GetBytes(string tablePath, bool onlyResouces = false)
+    public static byte[] GetBytes(string tablePath)
     {
-        return null;
+        if (loadBytes == null)
+        {
+            Debug.LogError("没有实现加载委托！请先设置loadBytes！");
+            return null;
+        }
+        return loadBytes(tablePath);
     }
 
     public static byte[] GetBytesFromFile(string tablePath)
