@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using UnityEngine.TextCore;
 
 public class AssetManager : Singleton<AssetManager>, IAssetLoader
 {
@@ -55,7 +54,10 @@ public class AssetManager : Singleton<AssetManager>, IAssetLoader
     public void Init()
     {
 #if UNITY_EDITOR
-        m_EnableAssetBundleForEditor = SettingManager.instance.enableAssetBundle;
+        if (UnityEditor.EditorApplication.isPlaying)
+            m_EnableAssetBundleForEditor = SettingManager.instance.enableAssetBundle;
+        else
+            m_EnableAssetBundleForEditor = false;
 #endif
 
         if (enableAssetBundle)

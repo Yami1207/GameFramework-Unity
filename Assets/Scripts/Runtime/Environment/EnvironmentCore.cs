@@ -22,6 +22,7 @@ public class EnvironmentCore : SingletonMono<EnvironmentCore>
         if (m_Asset == null && !Application.isPlaying)
         {
             AssetManagerSetup.Setup();
+            AssetManager.instance.Init();
             m_Asset = AssetManager.instance.LoadAsset<EnvironmentAsset>(8000);
         }
     }
