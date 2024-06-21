@@ -1,5 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using UnityEngine;
 
 public static class Utils
@@ -14,6 +17,47 @@ public static class Utils
     {
         return string.Format("{0}{1}.{2}", AssetPathDefine.resFolder, resourcesPath, suffix);
     }
+
+    #region File
+
+    public static string ReadAllText(string path)
+    {
+        if (!File.Exists(path))
+            return null;
+
+        try
+        {
+            return File.ReadAllText(path);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogErrorFormat("ReadAllText Exception {0}", ex);
+            return null;
+        }
+    }
+
+    public static bool WriteAllText(string path, string text)
+    {
+        bool isSucess = false;
+        string directory = Path.GetDirectoryName(path);
+        if (!Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+        try
+        {
+            File.WriteAllText(path, text, Encoding.UTF8);
+            isSucess = true;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogErrorFormat("WriteAllText Exception {0}", ex);
+            isSucess = false;
+        }
+        return isSucess;
+    }
+
+    #endregion
 
     #region Time
 

@@ -63,6 +63,8 @@ public class SettingManager : Singleton<SettingManager>
 #else
         m_EnableAssetBundle = true;
 #endif
+
+        AppInfo.Setup(m_GameVersion);
     }
 
     /// <summary>

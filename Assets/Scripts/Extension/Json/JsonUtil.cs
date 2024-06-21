@@ -14,12 +14,10 @@ public static class JsonUtil
     /// <returns></returns>
     public static string ToPrettyJson(object obj)
     {
-        StringWriter sw = new StringWriter();
-        using (JsonWriter jsonWriter = new JsonTextWriter(sw))
-        {
-            jsonWriter.Formatting = Formatting.Indented;
-            JsonMapper.ToJson(obj, jsonWriter);
-        }
-        return sw.ToString();
+        StringBuilder sb = new StringBuilder();
+        LitJson.JsonWriter jsonWriter = new LitJson.JsonWriter(sb);
+        jsonWriter.PrettyPrint = true;
+        LitJson.JsonMapper.ToJson(obj, jsonWriter);
+        return sb.ToString();
     }
 }

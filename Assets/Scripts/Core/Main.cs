@@ -49,6 +49,7 @@ public class Main : MonoBehaviour
     private void InitManager()
     {
         AssetManagerSetup.Setup();
+        AppInfo.Init();
         AssetManager.instance.Init();
 
         CameraManager.instance.InitCamera(m_Camera);

@@ -23,13 +23,12 @@ public class DataExtractor
         ExtractMap();
 
         // 更新数据版本
-        PlayerPrefs.SetInt("game_version", SettingManager.instance.gameVersion);
+        AppInfo.SaveAll(AppInfo.gameVersion, AppInfo.resVersion);
     }
 
     private static bool IsNeedExtract()
     {
-        int gameVersion = PlayerPrefs.GetInt("game_version");
-        return gameVersion != SettingManager.instance.gameVersion;
+        return AppInfo.appVersion != AppInfo.gameVersion;
     }
 
     private static void ExtractDataZip()
