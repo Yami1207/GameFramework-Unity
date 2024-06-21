@@ -26,5 +26,4 @@ Assets/StreamingAssets/AssetBundles.meta
 /Assets/Scripts/Core/AssetManager/AssetBundleManager
 Assets/Scripts/Core/AssetManager/AssetBundleManager.meta
 /bin
-ProjectSettings/CommonBurstAotSettings.json
-ProjectSettings/BurstAotSettings_StandaloneWindows.json
+/ProjectSettings
