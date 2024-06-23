@@ -4,30 +4,10 @@ using UnityEngine;
 
 public class InstancingChunk
 {
-    public enum Status
-    {
-        Unknown,
-
-        // 镜头外
-        Outside,
-
-        // 视锥边缘
-        Intersect,
-
-        // 镜头内
-        Inside,
-    }
-
     private InstancingCore m_InstancingCore;
 
-    private Status m_Status = Status.Unknown;
-    public Status status { set { m_Status = value; } get { return m_Status; } }
-
-    /// <summary>
-    /// 渲染帧
-    /// </summary>
-    private int m_RenderFrame = 0;
-    public int renderFrame { set { m_RenderFrame = value; } get { return m_RenderFrame; } }
+    private InstancingChunkInfo m_ChunkInfo = new InstancingChunkInfo();
+    public InstancingChunkInfo info { get { return m_ChunkInfo; } }
 
     private ChunkPos m_ChunkPos;
     public ChunkPos chunkPos { get { return m_ChunkPos; } }
@@ -37,8 +17,6 @@ public class InstancingChunk
     /// </summary>
     private Bounds m_Bounds;
     public Bounds bounds { get { return m_Bounds; } }
-
-    public Vector3 chunkCenter { get { return m_Bounds.center; } }
 
     private Matrix4x4 m_Transform;
     public Matrix4x4 transform { get { return m_Transform; } }
@@ -50,9 +28,12 @@ public class InstancingChunk
 
     private readonly List<InstancingPrefab> m_InstancingPrefabs = new List<InstancingPrefab>();
 
-    public void Init(InstancingCore core, ChunkPos chunkPos)
+    public void Init(InstancingCore core, ChunkPos chunkPos, int index)
     {
-        m_Status = Status.Unknown;
+        m_ChunkInfo.x = chunkPos.x;
+        m_ChunkInfo.z = chunkPos.z;
+        m_ChunkInfo.index = index;
+
         m_ChunkPos = chunkPos;
         m_InstancingCore = core;
         m_InstancingTerrain = core.CreateOrGetInstancingTerrain(Helper.ChunkPosToScenePos(chunkPos));
@@ -60,8 +41,8 @@ public class InstancingChunk
 
     public void Clear()
     {
-        m_Status = Status.Unknown;
-        m_RenderFrame = 0;
+        m_ChunkInfo.index = -1;
+
         m_InstancingTerrain = null;
         m_InstancingCore = null;
 
@@ -70,9 +51,6 @@ public class InstancingChunk
 
     public void Perform()
     {
-        if (status == Status.Unknown || status == Status.Outside)
-            return;
-
         // 渲染地形
         m_InstancingTerrain.RenderChunk(this);
 
@@ -93,6 +71,8 @@ public class InstancingChunk
     public void SetBounds(Bounds bounds)
     {
         m_Bounds = bounds;
+        m_ChunkInfo.minBounds = bounds.min;
+        m_ChunkInfo.maxBounds = bounds.max;
 
         m_Transform = Matrix4x4.Translate(bounds.min);
     }

@@ -7,8 +7,10 @@ public class RenderChunk
 {
     private RenderWorld m_RenderWorld;
 
-    private ChunkPos m_ChunkPos;
-    public ChunkPos chunkPos { get { return m_ChunkPos; } }
+    private Chunk m_Chunk;
+    public Chunk chunk { get { return m_Chunk; } }
+
+    public ChunkPos chunkPos { get { return m_Chunk.chunkPos; } }
 
     private RenderChunkNode m_RenderChunkNode;
     public RenderChunkNode node { get { return m_RenderChunkNode; } }
@@ -61,7 +63,7 @@ public class RenderChunk
     public void InitChunk(RenderWorld renderWorld, ChunkPos chunkPos)
     {
         m_RenderWorld = renderWorld;
-        m_ChunkPos = chunkPos;
+        m_Chunk = m_RenderWorld.world.GetChunk(chunkPos);
     }
 
     public void CollectOrDestroy()
@@ -82,6 +84,7 @@ public class RenderChunk
             m_RenderChunkPool.Collect(this);
 
         m_RenderWorld = null;
+        m_Chunk = null;
         m_SortDistance = float.PositiveInfinity;
     }
 
@@ -100,10 +103,10 @@ public class RenderChunk
         if (task.status != RenderChunkCompileTask.Status.Compiling)
             return;
 
-        if (!m_RenderWorld.world.GetMapData(m_ChunkPos, out var mapData))
+        if (!m_RenderWorld.world.GetMapData(chunkPos, out var mapData))
             return;
 
-        task.GetRenderChunkCacheData().LoadChunkCache(mapData.id, mapData.pos, m_RenderWorld.world.GetChunk(m_ChunkPos));
+        task.GetRenderChunkCacheData().LoadChunkCache(mapData.id, mapData.pos, m_RenderWorld.world.GetChunk(chunkPos));
     }
 
     public void RebuildMesh(RenderChunkCompileTask task, RenderChunkDispatcher dispatcher)
@@ -114,7 +117,7 @@ public class RenderChunk
             return;
 
         // chunk世界坐标
-        var position = Helper.ChunkPosToWorld(m_ChunkPos);
+        var position = Helper.ChunkPosToWorld(chunkPos);
 
         // 创建chunk节点
         if (m_RenderChunkNode == null)
@@ -131,8 +134,6 @@ public class RenderChunk
         if (!m_RenderChunkNode.activeSelf)
             m_RenderChunkNode.activeSelf = true;
 
-        var chunk = m_RenderWorld.world.GetChunk(m_ChunkPos);
-
         // collider
         m_RenderChunkNode.CollectOrDestroyColliderNodes(m_ChunkNodePool);
         var colliderNode = CreateColliderNode(m_RenderChunkNode);
@@ -142,12 +143,10 @@ public class RenderChunk
         if (GameSetting.enableInstancing)
         {
             m_InstancingChunk = m_RenderWorld.instancingCore.CreateOrGetInstancingChunk(this);
-            m_InstancingChunk.SetBounds(chunk.bounds);
-            m_InstancingChunk.SetExtendDrawcall(chunk.extendDrawcall);
         }
         else
         {
-            if (m_RenderWorld.world.GetMapData(m_ChunkPos, out var mapData))
+            if (m_RenderWorld.world.GetMapData(chunkPos, out var mapData))
             {
                 m_RenderChunkNode.CollectOrDestroyMeshNodes(m_ChunkNodePool);
                 var meshNode = CreateMeshNode(m_RenderChunkNode, "Terrain Mesh Node");

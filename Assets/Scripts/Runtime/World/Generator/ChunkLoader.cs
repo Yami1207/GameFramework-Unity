@@ -16,13 +16,12 @@ public class ChunkLoader
         m_World = null;
     }
 
-    public Chunk LoadChunk(int x, int z)
+    public Chunk LoadChunk(ChunkPos pos)
     {
-        ChunkPos pos = new ChunkPos(x, z);
         if (m_World.IsOutOfRange(pos))
             return null;
 
-        Chunk newChunk = new Chunk(x, z);
+        Chunk newChunk = new Chunk(pos.x, pos.z);
         return newChunk;
     }
 }

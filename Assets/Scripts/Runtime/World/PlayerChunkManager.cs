@@ -86,7 +86,7 @@ public class PlayerChunkManager
         for (int x = minX; x <= maxX; ++x)
         {
             for (int z = minZ; z <= maxZ; ++z)
-                m_World.GetChunk(x, z);
+                m_World.GetChunk(new ChunkPos(x, z));
         }
     }
 

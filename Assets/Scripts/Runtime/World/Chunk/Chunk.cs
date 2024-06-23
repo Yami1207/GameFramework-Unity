@@ -25,37 +25,6 @@ public class Chunk
         m_ChunkPos = new ChunkPos(x, z);
     }
 
-    //public void Load(MapData data)
-    //{
-    //    string directory = SavePath.GetMapDir(data.id, SavePath.MapDirType.ShareMapSave);
-    //    if (string.IsNullOrEmpty(directory))
-    //        return;
-
-    //    ChunkPos pos = m_ChunkPos - data.pos;
-    //    string filename = string.Format("{0}/r.{1}.{2}.data", directory, pos.x, pos.z);
-    //    FileStream fileStream = new FileStream(filename, FileMode.Open);
-    //    if (fileStream.Length != 0)
-    //    {
-    //        BinaryReader binaryReader = new BinaryReader(fileStream);
-
-    //        // 包围盒
-    //        float minHeight = binaryReader.ReadSingle();
-    //        float maxHeight = binaryReader.ReadSingle();
-    //        Vector3 min = Helper.ChunkPosToWorld(pos);
-    //        Vector3 max = Helper.ChunkPosToWorld(pos + new ChunkPos(1, 1));
-    //        m_Bounds.SetMinMax(new Vector3(min.x, minHeight, min.z), new Vector3(max.x, maxHeight, max.z));
-
-    //        // 扩展dc
-    //        m_ExtendDrawcall = binaryReader.ReadBoolean();
-
-    //        var bytesSize = Buffer.ByteLength(m_Heights);
-    //        byte[] bytes = binaryReader.ReadBytes(bytesSize);
-    //        IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(m_Heights, 0);
-    //        Marshal.Copy(bytes, 0, ptr, bytesSize);
-    //    }
-    //    fileStream.Close();
-    //}
-
     public void OnChunkLoaded()
     {
     }

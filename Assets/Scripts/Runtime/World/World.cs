@@ -140,7 +140,7 @@ public class World
                 ChunkPos loadChunkPos = new ChunkPos(x, z);
                 if (!IsOutOfRange(loadChunkPos))
                 {
-                    m_ChunkProvider.ProvideChunk(x, z);
+                    m_ChunkProvider.ProvideChunk(loadChunkPos);
                     posList.Add(loadChunkPos);
                 }
             }
@@ -175,22 +175,17 @@ public class World
 
     #region Chunk
 
+
     /// <summary>
     /// 获取chunk
     /// </summary>
-    /// <param name="chunkX"></param>
-    /// <param name="chunkZ"></param>
+    /// <param name="pos"></param>
     /// <returns></returns>
     public Chunk GetChunk(ChunkPos pos)
     {
-        return GetChunk(pos.x, pos.z);
-    }
-
-    public Chunk GetChunk(int x, int z)
-    {
-        if (m_ChunkProvider == null || IsOutOfRange(x, z))
+        if (m_ChunkProvider == null || IsOutOfRange(pos))
             return null;
-        return m_ChunkProvider.GetChunk(x, z);
+        return m_ChunkProvider.GetChunk(pos);
     }
 
     public void NotifyChunkLoaded(Chunk chunk)

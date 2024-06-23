@@ -1,35 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Unity.Collections;
 using UnityEngine;
 
 public class InstancingRenderer
 {
-    private static class ShaderConstants
-    {
-        public static readonly int instancingCountPropID = Shader.PropertyToID("_InstancingCount");
-
-        public static readonly int instancingBufferPropID = Shader.PropertyToID("_InstancingBuffer");
-
-        public static readonly int visibleBufferPropID = Shader.PropertyToID("_VisibleBuffer");
-
-        public static readonly int enableFrustumCullingPropID = Shader.PropertyToID("_EnableFrustumCulling");
-
-        public static readonly int visibleDistancePropID = Shader.PropertyToID("_VisibleDistance");
-
-        public static readonly int instanceMinBoundsPropID = Shader.PropertyToID("_InstanceMinBounds");
-        public static readonly int instanceMaxBoundsPropID = Shader.PropertyToID("_InstanceMaxBounds");
-
-        public static readonly int[] LODGroupVisibleBuffer = new int[3]
-        {
-            Shader.PropertyToID("_VisibleBuffer_LOD0"),
-            Shader.PropertyToID("_VisibleBuffer_LOD1"),
-            Shader.PropertyToID("_VisibleBuffer_LOD2")
-    };
-
-        public static readonly int LODGroupDataPropID = Shader.PropertyToID("_LODGroupData");
-    }
-
     private class DrawcallGroup
     {
         /// <summary>
@@ -84,15 +58,13 @@ public class InstancingRenderer
             drawcall = null;
         }
 
-        public void Perform()
-        {
-            drawcall.Submit(ref visibleBuffer);
-        }
-
         public void Render(Bounds bounds)
         {
             if (drawcall != null)
+            {
+                drawcall.Submit(ref visibleBuffer);
                 drawcall.Render(bounds);
+            }
         }
     }
 
@@ -134,20 +106,14 @@ public class InstancingRenderer
     private List<Matrix4x4> m_InstanceList;
 
     /// <summary>
-    /// 是否重置缓存区
-    /// </summary>
-    private bool m_ResetInstancingBuffer = false;
-
-    /// <summary>
     /// 绘制包围体
     /// </summary>
     private Bounds m_RendererBounds;
 
-    private int m_InstancingBufferSize = 0;
-    private ComputeBuffer m_InstancingBuffer;
-
     private int m_DrawcallGroupCount = 0;
     private readonly DrawcallGroup[] m_DrawcallGroup;
+
+    private static ComputeBuffer s_InstancingBuffer = null;
 
     public InstancingRenderer()
     {
@@ -161,17 +127,12 @@ public class InstancingRenderer
         m_InstancingCore = core;
         m_RendererBounds = new Bounds(Vector3.zero, Vector3.one * 10000);
         m_InstanceList = core.factory.CreateList_Matrix4x4(1024);
-
-        m_ResetInstancingBuffer = true;
     }
 
     public void Clear()
     {
         if (m_InstanceList != null)
             m_InstancingCore.factory.Collect(m_InstanceList);
-
-        if (m_InstancingBuffer != null)
-            m_InstancingBuffer.Release();
 
         for (int i = 0; i < s_MaxLOD; ++i)
             m_DrawcallGroup[i].Clear();
@@ -180,8 +141,6 @@ public class InstancingRenderer
         m_EnableLODCulling = false;
         m_LODGroupData = Vector4.zero;
         m_InstanceList = null;
-        m_InstancingBufferSize = 0;
-        m_InstancingBuffer = null;
         m_DrawcallGroupCount = 0;
     }
 
@@ -261,7 +220,6 @@ public class InstancingRenderer
 
     public void Reset()
     {
-        m_ResetInstancingBuffer = true;
         m_InstanceList.Clear();
     }
 
@@ -270,8 +228,64 @@ public class InstancingRenderer
         if (m_InstanceList.Count == 0 || m_DrawcallGroupCount == 0)
             return;
 
-        // 重置渲染缓冲区
-        ResetInstancingBuffer();
+        // 创建instancingBuffer
+        CreateInstancingBuffer(m_InstanceList.Count);
+
+        // 创建visibleBuffer
+        if (m_DrawcallGroup[0].visibleBuffer == null || m_DrawcallGroup[0].visibleBuffer.count < m_InstanceList.Count)
+        {
+            int count = Mathf.NextPowerOfTwo(m_InstanceList.Count);
+            for (int i = 0; i < m_DrawcallGroupCount; ++i)
+            {
+                if (m_DrawcallGroup[i].visibleBuffer != null)
+                    m_DrawcallGroup[i].visibleBuffer.Release();
+                m_DrawcallGroup[i].visibleBuffer = new ComputeBuffer(count, 32 * sizeof(float), ComputeBufferType.Append);
+                m_DrawcallGroup[i].visibleBuffer.SetCounterValue(0);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < m_DrawcallGroupCount; ++i)
+                m_DrawcallGroup[i].visibleBuffer.SetCounterValue(0);
+        }
+
+        ComputeShader cs = m_InstancingCore.instancingDrwacallShader;
+
+        // 设置需要渲染对象数据
+        int instancingCount = m_InstanceList.Count;
+        s_InstancingBuffer.SetData(m_InstanceList);
+        cs.SetInt(InstancingCore.ShaderConstants.instancingCountPropID, instancingCount);
+
+        int kernel = -1;
+        if (m_EnableLODCulling)
+        {
+            kernel = m_InstancingCore.lodCullingKernel;
+            for (int i = 0; i < m_DrawcallGroupCount; ++i)
+                cs.SetBuffer(kernel, InstancingCore.ShaderConstants.LODGroupVisibleBuffer[i], m_DrawcallGroup[i].visibleBuffer);
+            cs.SetVector(InstancingCore.ShaderConstants.LODGroupDataPropID, m_LODGroupData);
+        }
+        else
+        {
+            kernel = m_InstancingCore.mainKernel;
+            cs.SetBuffer(kernel, InstancingCore.ShaderConstants.visibleBufferPropID, m_DrawcallGroup[0].visibleBuffer);
+        }
+        cs.SetBuffer(kernel, InstancingCore.ShaderConstants.instancingBufferPropID, s_InstancingBuffer);
+
+        // 可视距离
+        cs.SetFloat(InstancingCore.ShaderConstants.visibleDistancePropID, m_VisibleDistance * Define.kChunkSideLength);
+
+        // 视锥剔除
+        cs.SetBool(InstancingCore.ShaderConstants.enableFrustumCullingPropID, m_EnableFrustumCulling);
+        if (m_EnableFrustumCulling)
+        {
+            // 包围体使用首个Group数据
+            cs.SetVector(InstancingCore.ShaderConstants.instanceMinBoundsPropID, m_DrawcallGroup[0].minimumBounds);
+            cs.SetVector(InstancingCore.ShaderConstants.instanceMaxBoundsPropID, m_DrawcallGroup[0].maximumBounds);
+        }
+
+        // 执行计算
+        int threadX = (instancingCount >> 6) + 1;
+        cs.Dispatch(kernel, threadX, 1, 1);
 
         // 提交渲染
         for (int i = 0; i < m_DrawcallGroupCount; ++i)
@@ -288,77 +302,24 @@ public class InstancingRenderer
         m_InstanceList.AddRange(instances);
     }
 
-    private void ResetInstancingBuffer()
+    public static void DestroyBuffer()
     {
-        if (!m_ResetInstancingBuffer)
-            return;
+        if (s_InstancingBuffer != null)
+            s_InstancingBuffer.Release();
+        s_InstancingBuffer = null;
+    }
 
-        ComputeShader cs = m_InstancingCore.instancingDrwacallShader;
-
-        int instanceCount = m_InstanceList.Count;
-        if (m_InstancingBuffer != null && m_InstancingBufferSize < instanceCount)
+    private static void CreateInstancingBuffer(int count)
+    {
+        if (s_InstancingBuffer != null && s_InstancingBuffer.count < count)
         {
-            m_InstancingBuffer.Release();
-            m_InstancingBuffer = null;
+            s_InstancingBuffer.Release();
+            s_InstancingBuffer = null;
         }
-        if (m_InstancingBuffer == null)
+        if (s_InstancingBuffer == null)
         {
-            m_InstancingBufferSize = Mathf.NextPowerOfTwo(instanceCount);
-            m_InstancingBuffer = new ComputeBuffer(m_InstancingBufferSize, 16 * sizeof(float));
-
-            for (int i = 0; i < m_DrawcallGroupCount; ++i)
-            {
-                if (m_DrawcallGroup[i].visibleBuffer != null)
-                    m_DrawcallGroup[i].visibleBuffer.Release();
-                m_DrawcallGroup[i].visibleBuffer = new ComputeBuffer(m_InstancingBufferSize, 32 * sizeof(float), ComputeBufferType.Append);
-                m_DrawcallGroup[i].visibleBuffer.SetCounterValue(0);
-            } 
+            count = Mathf.NextPowerOfTwo(count);
+            s_InstancingBuffer = new ComputeBuffer(count, 16 * sizeof(float));
         }
-        else
-        {
-            for (int i = 0; i < m_DrawcallGroupCount; ++i)
-                m_DrawcallGroup[i].visibleBuffer.SetCounterValue(0);
-        }
-
-        // 设置需要渲染对象数据
-        int instancingCount = m_InstanceList.Count;
-        m_InstancingBuffer.SetData(m_InstanceList);
-        cs.SetInt(ShaderConstants.instancingCountPropID, instancingCount);
-
-        int kernel = -1;
-        if (m_EnableLODCulling)
-        {
-            kernel = m_InstancingCore.lodCullingKernel;
-            for (int i = 0; i < m_DrawcallGroupCount; ++i)
-                cs.SetBuffer(kernel, ShaderConstants.LODGroupVisibleBuffer[i], m_DrawcallGroup[i].visibleBuffer);
-            cs.SetVector(ShaderConstants.LODGroupDataPropID, m_LODGroupData);
-        }
-        else
-        {
-            kernel = m_InstancingCore.mainKernel;
-            cs.SetBuffer(kernel, ShaderConstants.visibleBufferPropID, m_DrawcallGroup[0].visibleBuffer);
-        }
-        cs.SetBuffer(kernel, ShaderConstants.instancingBufferPropID, m_InstancingBuffer);
-
-        // 可视距离
-        cs.SetFloat(ShaderConstants.visibleDistancePropID, m_VisibleDistance * Define.kChunkSideLength);
-
-        // 视锥剔除
-        cs.SetBool(ShaderConstants.enableFrustumCullingPropID, m_EnableFrustumCulling);
-        if (m_EnableFrustumCulling)
-        {
-            // 包围体使用首个Group数据
-            cs.SetVector(ShaderConstants.instanceMinBoundsPropID, m_DrawcallGroup[0].minimumBounds);
-            cs.SetVector(ShaderConstants.instanceMaxBoundsPropID, m_DrawcallGroup[0].maximumBounds);
-        }
-
-        // 执行计算
-        int threadX = (instancingCount >> 6) + 1;
-        cs.Dispatch(kernel, threadX, 1, 1);
-
-        for (int i = 0; i < m_DrawcallGroupCount; ++i)
-            m_DrawcallGroup[i].Perform();
-
-        m_ResetInstancingBuffer = false;
     }
 }

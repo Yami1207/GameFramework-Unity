@@ -7,15 +7,10 @@ public struct ChunkPos : System.IEquatable<ChunkPos>
     public int x { private set; get; }
     public int z { private set; get; }
 
-    private int m_HashCode;
-    public int hashCode { get { return m_HashCode; } }
-
     public ChunkPos(int _x, int _z)
     {
         x = _x;
         z = _z;
-
-        m_HashCode = Helper.GetHashCode(x, z);
     }
 
     public int GetCenterXPos()
@@ -55,7 +50,7 @@ public struct ChunkPos : System.IEquatable<ChunkPos>
 
     public override int GetHashCode()
     {
-        return m_HashCode;
+        return Helper.GetHashCode(x, z);
     }
 
     public bool Equals(ChunkPos other)
