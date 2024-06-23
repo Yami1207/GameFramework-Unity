@@ -5,9 +5,6 @@ using Unity.Jobs;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
-using System.Linq;
-using TMPro;
-using static UnityEditor.Experimental.GraphView.Port;
 
 public class InstancingCore
 {
