@@ -109,8 +109,13 @@ FragData frag(Varyings input)
     CustomInputData inputData;
     InitializeInputData(input, surfaceData, inputData);
     
-    half3 color = LightingPhysicallyBased(inputData, surfaceData);
-    color = MixFog(color, inputData.fogCoord);
+    half4 shadowMask = CalculateShadowMask(inputData);
+    AmbientOcclusionFactor aoFactor = CreateAmbientOcclusionFactor(inputData.normalizedScreenSpaceUV, surfaceData.occlusion);
+    Light mainLight = GetMainLight(inputData, shadowMask, aoFactor);
+    half3 mainLightColor = LightingPhysicallyBased(inputData, surfaceData, mainLight);
+    
+    half3 color = mainLightColor;
+    color = MixFog(color, inputData, surfaceData);
 
     FragData output = (FragData) 0;
     output.color = half4(color, surfaceData.alpha);

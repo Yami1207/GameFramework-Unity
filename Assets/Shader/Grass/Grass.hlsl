@@ -11,7 +11,7 @@
 #define USING_ALPHA_CUTOFF (USE_ALPHA_CUTOFF)
 
 #include "../Lib/Core.hlsl"
-#include "../Lib/Wind.hlsl"
+#include "../Lib/Utils/Wind.hlsl"
 #include "../Lib/Utils/PivotPainter2.hlsl"
 
 //--------------------------------------
@@ -142,7 +142,7 @@ inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, o
     
     inputData.bakedGI = G2L(SampleSHPixel(input.vertexSH, inputData.normalWS.xyz));
     inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
-    inputData.shadowMask = half4(1, 1, 1, 1);
+    inputData.shadowMask = SampleShadowMask();
 }
 
 Varyings vert(Attributes input)
@@ -179,7 +179,7 @@ FragData frag(Varyings input)
     BxDFContext bxdfContext = GetBxDFContext(inputData, mainLight.direction);
     
     // 阴影值
-    half shadowAtten = MainLightRealtimeShadow(inputData.shadowCoord);
+    half shadowAtten = mainLight.shadowAttenuation;
     half3 shadow = lerp(_GrassShadowColor, 1, shadowAtten);
 
     // GI
@@ -197,7 +197,7 @@ FragData frag(Varyings input)
     half3 color = lightColor + giColor;
 
     // 与雾混合
-    color = MixFog(color, inputData.fogCoord);
+    color = MixFog(color, inputData, surfaceData);
 
     FragData output = (FragData) 0;
     output.color = L2G(half4(color, 1));

@@ -11,6 +11,15 @@ ShaderVariantCollection:
   - first: {fileID: 4800000, guid: 888fb2edf64dcea43a49fb5c36051b3e, type: 3}
     second:
       variants:
+      - keywords: INSTANCING_ON _CASTING_PUNCTUAL_LIGHT_SHADOW _USE_INTERACTIVE _USE_SWING
+        passType: 8
+      - keywords: INSTANCING_ON _USE_INTERACTIVE _USE_SWING
+        passType: 8
+      - keywords: DOTS_INSTANCING_ON INSTANCING_ON _USE_INTERACTIVE _USE_SWING
+        passType: 13
+      - keywords: FOG_LINEAR INSTANCING_ON _MAIN_LIGHT_SHADOWS_CASCADE _USE_INTERACTIVE
+          _USE_SWING
+        passType: 13
       - keywords: FOG_LINEAR INSTANCING_ON _USE_INTERACTIVE _USE_SWING
         passType: 13
       - keywords: FOG_LINEAR PROCEDURAL_INSTANCING_ON _USE_INTERACTIVE _USE_SWING

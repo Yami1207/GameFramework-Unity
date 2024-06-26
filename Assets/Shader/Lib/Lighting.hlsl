@@ -25,8 +25,9 @@ inline half3 LightingHalfLambert(half3 lightColor, BxDFContext bxdfContext)
     return lightColor * bxdfContext.NoV_01;
 }
 
-/////////////////////////////////////////////////////////////////////////
-// PBR
+///////////////////////////////////////////////////////////////////////////////
+//                                PBR                                        //
+///////////////////////////////////////////////////////////////////////////////
 half3 LightingIndirect(CustomSurfaceData surfaceData, CustomBRDFData brdfData, BxDFContext bxdfContext, half3 bakedGI, half occlusion, TEXTURECUBE_PARAM(tex, texSampler), half4 hdr)
 {
     half3 indirectDiffuse = bakedGI;
@@ -53,25 +54,29 @@ half3 LightDirect(Light light, CustomSurfaceData surfaceData, CustomBRDFData brd
     return brdf * radiance;
 }
 
-half3 LightingPhysicallyBased(CustomInputData inputData, CustomSurfaceData surfaceData)
+half3 LightingPhysicallyBased(CustomInputData inputData, CustomSurfaceData surfaceData, Light light)
 {
     CustomBRDFData brdfData = GetBRDFData(surfaceData);
-    
-    half4 shadowMask = GetShadowMask(inputData);
-    AmbientOcclusionFactor aoFactor = CreateAmbientOcclusionFactor(inputData.normalizedScreenSpaceUV, surfaceData.occlusion);
-    Light mainLight = GetMainLight(inputData, shadowMask, aoFactor);
-    BxDFContext bxdfContext = GetBxDFContext(inputData, mainLight.direction);
+    BxDFContext bxdfContext = GetBxDFContext(inputData, light.direction);
     
     // NOTE: We don't apply AO to the GI here because it's done in the lighting calculation below...
-    MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI);
+    MixRealtimeAndBakedGI(light, inputData.normalWS, inputData.bakedGI);
     
     // 间接光
     half3 indirectColor = LightingIndirect(surfaceData, brdfData, bxdfContext, inputData.bakedGI, surfaceData.occlusion);
     
     // 直接光
-    half3 directColor = LightDirect(mainLight, surfaceData, brdfData, bxdfContext);
+    half3 directColor = LightDirect(light, surfaceData, brdfData, bxdfContext);
     
     return directColor + indirectColor;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//                              自发光                                       //
+///////////////////////////////////////////////////////////////////////////////
+half3 MixEmission(half3 fragColor, CustomSurfaceData surfaceData)
+{
+    return fragColor + surfaceData.emission;
 }
 
 #endif

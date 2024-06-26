@@ -10,5 +10,6 @@
 #include "Utils.hlsl"
 #include "Common.hlsl"
 #include "Lighting.hlsl"
+#include "Fog.hlsl"
 
 #endif

@@ -1,6 +1,8 @@
 ﻿#ifndef __LIGHTS_HLSL__
 #define __LIGHTS_HLSL__
 
+#include "Shadows.hlsl"
+
 inline Light GetMainLight(CustomInputData inputData, half4 shadowMask, AmbientOcclusionFactor aoFactor)
 {
     Light light = GetMainLight(inputData.shadowCoord, inputData.positionWS, shadowMask);
