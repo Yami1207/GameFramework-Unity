@@ -1,6 +1,7 @@
 ﻿#ifndef __BSDF_HLSL__
 #define __BSDF_HLSL__
 
+// 绝缘体反射率
 #define DIELECTRIC_SPEC half4(0.04, 0.04, 0.04, 1.0 - 0.04)
 
 struct CustomBRDFData

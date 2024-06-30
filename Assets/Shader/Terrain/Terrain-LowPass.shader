@@ -30,6 +30,7 @@ Shader "Rendering/Terrian/Low"
 			//--------------------------------------
 			// GPU Instancing
 			#pragma multi_compile_instancing
+            #pragma instancing_options assumeuniformscaling lodfade nolightprobe nolightmap
             #pragma instancing_options procedural:Setup
 
             #include "../Lib/Core.hlsl"
@@ -98,11 +99,11 @@ Shader "Rendering/Terrian/Low"
 
             FragData frag(Varyings input)
             {
-                half3 color = G2L(SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.texcoord.xy).rgb);
+                half3 color = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.texcoord.xy).rgb;
                 color = MixFog(color, input.lightingFog.w);
 
                 FragData output = (FragData) 0;
-                output.color = half4(L2G(color), 1.0);
+                output.color = half4(color, 1.0);
                 output.normal = float4(input.normalWS * 0.5 + 0.5, 0.0);
                 return output;
             }

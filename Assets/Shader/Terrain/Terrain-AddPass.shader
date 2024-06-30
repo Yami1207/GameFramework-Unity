@@ -42,6 +42,7 @@ Shader "Rendering/Terrian/Standard (Add)"
         Tags { "RenderType"="Opaque" "Queue" = "Geometry-99" }
 		ZWrite off
 		Blend One One
+		ColorMask RGB
 
         Pass
         {
@@ -71,5 +72,37 @@ Shader "Rendering/Terrian/Standard (Add)"
 
 			ENDHLSL
         }
+
+		Pass
+		{
+			Tags { "LightMode" = "PDO" }
+
+			HLSLPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+			#pragma target 3.0
+
+			// -------------------------------------
+			// Unity defined keywords
+			#pragma multi_compile_fog
+
+			//--------------------------------------
+			// GPU Instancing
+			#pragma multi_compile_instancing
+			#pragma instancing_options procedural:Setup
+
+			// -------------------------------------
+			// URP keywords
+			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+
+			//--------------------------------------
+            // ×Ô¶¨Òåºê
+            #define PIXEL_DEPTH_OFFSET_PASS    1
+			#define TERRAIN_ADD_PASS
+
+			#include "TerrainPass.hlsl"
+
+			ENDHLSL
+		}
     }
 }

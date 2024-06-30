@@ -3,14 +3,8 @@
 
 #include "TerrainInput.hlsl"
 
-inline void InitializeSurfaceData(Varyings input, out CustomSurfaceData surfaceData)
-{
-    float4 splatControl = SAMPLE_TEXTURE2D(_Control, sampler_Control, input.texcoord);
-    half weight = dot(splatControl, half4(1, 1, 1, 1));
-#if defined(TERRAIN_ADD_PASS)
-    clip(weight - 0.01);
-#endif
-    
+inline void InitializeSurfaceData(Varyings input, float4 splatControl, out CustomSurfaceData surfaceData)
+{    
     // uv
     float2 uvSplat0 = TRANSFORM_TEX(input.texcoord, _Splat0);
     float2 uvSplat1 = TRANSFORM_TEX(input.texcoord, _Splat1);
@@ -45,7 +39,6 @@ inline void InitializeSurfaceData(Varyings input, out CustomSurfaceData surfaceD
     surfaceData.smoothness = dot(splatControl, half4(_Smoothness0, _Smoothness1, _Smoothness2, _Smoothness3));
     
     surfaceData.occlusion = 1;
-
 }
 
 inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, out CustomInputData inputData)
@@ -65,9 +58,10 @@ inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, o
     // 雾
     inputData.fogCoord = InitializeInputDataFog(float4(inputData.positionWS, 1.0), input.positionWSAndFog.w);
     
-    inputData.bakedGI = G2L(SampleSHPixel(input.vertexSH, inputData.normalWS));
+    inputData.bakedGI = SampleSHPixel(input.vertexSH, inputData.normalWS);
     inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
-    inputData.shadowMask = SAMPLE_SHADOWMASK(input.staticLightmapUV);
+    
+    inputData.shadowMask = SampleShadowMask();
 }
 
 Varyings vert(Attributes input)
@@ -87,8 +81,6 @@ Varyings vert(Attributes input)
     float3 normalOS = SAMPLE_TEXTURE2D_LOD(_VertexNormalMap, sampler_VertexNormalMap, texcoord, 0.0).xyz;
     normalOS = 2.0 * normalOS - 1.0;
     VertexNormalInputs normalInput = GetVertexNormalInputs(normalOS);
-    //float3 bitangentWS = float3(0, 0, 1);
-    //float3 tangentWS = cross(normalWS, bitangentWS);
     output.normalWS = normalInput.normalWS;
     output.tangentWS = normalInput.tangentWS;
     output.bitangentWS = normalInput.bitangentWS;
@@ -102,9 +94,15 @@ Varyings vert(Attributes input)
 }
 
 FragData frag(Varyings input)
-{    
+{
+    float4 splatControl = SAMPLE_TEXTURE2D(_Control, sampler_Control, input.texcoord);
+    half weight = dot(splatControl, half4(1, 1, 1, 1));
+#if defined(TERRAIN_ADD_PASS)
+    clip(weight - 0.01);
+#endif
+    
     CustomSurfaceData surfaceData;
-    InitializeSurfaceData(input, surfaceData);
+    InitializeSurfaceData(input, splatControl, surfaceData);
 
     CustomInputData inputData;
     InitializeInputData(input, surfaceData, inputData);
@@ -112,14 +110,26 @@ FragData frag(Varyings input)
     half4 shadowMask = CalculateShadowMask(inputData);
     AmbientOcclusionFactor aoFactor = CreateAmbientOcclusionFactor(inputData.normalizedScreenSpaceUV, surfaceData.occlusion);
     Light mainLight = GetMainLight(inputData, shadowMask, aoFactor);
-    half3 mainLightColor = LightingPhysicallyBased(inputData, surfaceData, mainLight);
     
-    half3 color = mainLightColor;
+    // GI
+    MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI);
+    half3 giColor = inputData.bakedGI * surfaceData.albedo;
+    
+    half3 mainLightColor = LightingPhysicallyBased(inputData, surfaceData, mainLight);
+    half3 color = mainLightColor + giColor;
+    
     color = MixFog(color, inputData, surfaceData);
 
     FragData output = (FragData) 0;
-    output.color = half4(color, surfaceData.alpha);
-    output.normal = float4(inputData.normalWS * 0.5 + 0.5, 0.0);
+#if defined(PIXEL_DEPTH_OFFSET_PASS)
+    float4x4 viewMatrix = GetWorldToViewMatrix();
+    float depth = LinearEyeDepth(inputData.positionWS, viewMatrix);
+    output.color = half4(surfaceData.albedo * weight, depth);
+#else
+    output.color = half4(color * weight, surfaceData.alpha);
+#endif
+    output.normal = float4((inputData.normalWS * 0.5 + 0.5) * weight, 0.0);
+
     return output;
 }
 

@@ -5,12 +5,12 @@
 
 inline void InitializeSurfaceData(Varyings input, out CustomSurfaceData surfaceData)
 {
-    half4 albedoAlpha = G2L(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord));
+    half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord);
     
     surfaceData = (CustomSurfaceData) 0;
     surfaceData.albedo = _BaseColor * albedoAlpha.rgb;
     surfaceData.alpha = albedoAlpha.a;
-    
+        
 #if USING_BUMP_MAP
     surfaceData.normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, input.texcoord), _BumpScale);
 #endif
@@ -20,6 +20,8 @@ inline void InitializeSurfaceData(Varyings input, out CustomSurfaceData surfaceD
     
     // 自发光
     surfaceData.emission = surfaceData.albedo * _EmissionIntensity * _EmissionColor.rgb;
+    
+    surfaceData.occlusion = 1;
 }
 
 inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, out CustomInputData inputData)
@@ -47,7 +49,7 @@ inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, o
     // 雾
     inputData.fogCoord = InitializeInputDataFog(float4(inputData.positionWS, 1.0), input.vertexSHAndFog.w);
     
-    inputData.bakedGI = G2L(SampleSHPixel(input.vertexSHAndFog.xyz, inputData.normalWS));
+    inputData.bakedGI = SampleSHPixel(input.vertexSHAndFog.xyz, inputData.normalWS);
     inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
     
     inputData.shadowMask = SampleShadowMask();
@@ -97,26 +99,29 @@ FragData frag(Varyings input)
     CustomInputData inputData;
     InitializeInputData(input, surfaceData, inputData);
     
+#if USING_PDO
+    MixPixelDepthOffset(inputData.positionWS, _DepthDiffer, surfaceData, inputData);
+#endif
+    
     half4 shadowMask = CalculateShadowMask(inputData);
     AmbientOcclusionFactor aoFactor = CreateAmbientOcclusionFactor(inputData.normalizedScreenSpaceUV, surfaceData.occlusion);
     Light mainLight = GetMainLight(inputData, shadowMask, aoFactor);
     
     // GI
     MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI);
-    inputData.bakedGI *= surfaceData.albedo;
-    half3 giColor = inputData.bakedGI;
+    half3 giColor = inputData.bakedGI * surfaceData.albedo;
     
     half3 mainLightColor = LightingPhysicallyBased(inputData, surfaceData, mainLight);
-    half3 color = (mainLightColor + giColor);
+    half3 color = (giColor + mainLightColor);
     
     // 自发光
     color = MixEmission(color, surfaceData);
-
+    
     // 与雾混合
     color = MixFog(color, inputData, surfaceData);
 
     FragData output = (FragData) 0;
-    output.color = L2G(half4(color, 1));
+    output.color = half4(color, 1);
     output.normal = float4(inputData.normalWS * 0.5 + 0.5, 0.0);
     return output;
 }

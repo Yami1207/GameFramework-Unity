@@ -69,6 +69,37 @@
 			ENDHLSL
         }
 
+		Pass
+		{
+			Tags { "LightMode" = "PDO" }
+
+			HLSLPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+			#pragma target 3.0
+
+			// -------------------------------------
+			// Unity defined keywords
+			#pragma multi_compile_fog
+
+			//--------------------------------------
+			// GPU Instancing
+			#pragma multi_compile_instancing
+			#pragma instancing_options procedural:Setup
+
+			// -------------------------------------
+			// URP keywords
+			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+
+			//--------------------------------------
+            // 自定义宏
+            #define PIXEL_DEPTH_OFFSET_PASS    1
+
+			#include "TerrainPass.hlsl"
+
+			ENDHLSL
+		}
+
 		// Pass
 		// {
 		// 	Name "ShadowCaster"

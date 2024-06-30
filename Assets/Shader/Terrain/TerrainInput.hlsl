@@ -89,7 +89,11 @@ struct Varyings
 // 片元输出结构体
 struct FragData
 {
+#if defined(PIXEL_DEPTH_OFFSET_PASS)
+    float4 color : SV_Target0;
+#else
     half4 color : SV_Target0;
+#endif
     float4 normal : SV_Target1;
 };
 

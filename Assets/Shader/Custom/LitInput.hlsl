@@ -3,7 +3,8 @@
 
 // ========================= 开关定义 =========================
 // 法线贴图
-#define USING_BUMP_MAP (USE_BUMP_MAP) 
+#define USING_BUMP_MAP (USE_BUMP_MAP)
+#define USING_PDO (_USE_PDO)
 
 #include "../Lib/Core.hlsl"
 
@@ -17,6 +18,8 @@ uniform half _Smoothness;
 
 uniform half _EmissionIntensity;
 uniform half3 _EmissionColor;
+
+uniform half _DepthDiffer;
 
 //--------------------------------------
 // 贴图
@@ -63,5 +66,6 @@ struct FragData
 };
 
 #include "../Lib/Instancing.hlsl"
+#include "../Lib/Utils/PDO.hlsl"
 
 #endif

@@ -111,7 +111,7 @@ inline float3 GetGrassPosition(Attributes input, float3 normalWS)
 
 inline void InitializeSurfaceData(Varyings input, out CustomSurfaceData surfaceData)
 {
-    half4 albedoAlpha = G2L(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord));
+    half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord);
 #if USING_ALPHA_CUTOFF
     clip(albedoAlpha.a - _Cutoff);
 #endif
@@ -140,7 +140,7 @@ inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, o
     // 雾
     inputData.fogCoord = InitializeInputDataFog(float4(inputData.positionWS, 1.0), input.positionWSAndFog.w);
     
-    inputData.bakedGI = G2L(SampleSHPixel(input.vertexSH, inputData.normalWS.xyz));
+    inputData.bakedGI = SampleSHPixel(input.vertexSH, inputData.normalWS.xyz);
     inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
     inputData.shadowMask = SampleShadowMask();
 }
@@ -200,7 +200,7 @@ FragData frag(Varyings input)
     color = MixFog(color, inputData, surfaceData);
 
     FragData output = (FragData) 0;
-    output.color = L2G(half4(color, 1));
+    output.color = half4(color, 1);
     output.normal = float4(input.normalWS * 0.5 + 0.5, 0.0);
     return output;
 }
