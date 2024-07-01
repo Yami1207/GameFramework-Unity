@@ -25,7 +25,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d75df01f3c63fd8409deaa04111a44b6, type: 3}
   m_Name: SpecularReflection
   m_EditorClassIdentifier: 
-  m_Active: 0
+  m_Active: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -98,7 +98,7 @@ MonoBehaviour:
   m_Name: PixelDepthOffset
   m_EditorClassIdentifier: 
   m_Active: 1
-  m_TexQuality: 1
+  m_TexQuality: 2
   m_CullMask:
     serializedVersion: 2
     m_Bits: 64
