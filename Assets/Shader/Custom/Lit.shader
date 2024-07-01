@@ -14,7 +14,7 @@
         _EmissionIntensity("Emission Intensity", Range(0, 1)) = 0
         [Linear]_EmissionColor("Emission Color", Vector) = (0, 0, 0, 1)
 
-		[Toggle(_USE_PDO)]_PDO_ON("开启PDO", int) = 0
+		//[Toggle(_USE_PDO)]_PDO_ON("开启PDO", int) = 0
         _DepthDiffer("深度差", float) = 1.0
 
         [MaterialEnum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Int) = 0
@@ -108,4 +108,6 @@
 			ENDHLSL
 		}
     }
+
+	CustomEditor "LitShaderGUI"
 }
