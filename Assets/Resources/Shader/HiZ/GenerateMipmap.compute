@@ -1,0 +1,31 @@
+﻿#pragma kernel CSMain
+
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+
+uniform uint4 _TextureSize;
+
+// 上一层mipmap
+RWTexture2D<float> _PrevTexture;
+
+// 当前mipmap
+RWTexture2D<float> _TargetTexture;
+
+[numthreads(8, 8, 1)]
+void CSMain(uint2 id : SV_DispatchThreadID)
+{
+    if (id.x > _TextureSize.x || id.y > _TextureSize.y)
+        return;
+    
+    // 获取上一层对应的深度
+    uint2 prevId = id * 2;
+    float4 depth = float4(_PrevTexture[prevId], _PrevTexture[prevId + uint2(1, 0)], _PrevTexture[prevId + uint2(1, 1)], _PrevTexture[prevId + uint2(0, 1)]);
+    
+     // 离相机最近的深度值
+#ifdef UNITY_REVERSED_Z
+    depth.xy = min(depth.xy, depth.zw);
+    _TargetTexture[id] = min(depth.x, depth.y);
+#else
+    depth.xy = max(depth.xy, depth.zw);
+    _TargetTexture[id] = max(depth.x, depth.y);
+#endif
+}
