@@ -39,6 +39,7 @@ MonoBehaviour:
   m_Name: HiZDepth
   m_EditorClassIdentifier: 
   m_Active: 1
+  m_Quality: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

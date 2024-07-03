@@ -85,9 +85,14 @@ public class InstancingRenderer
     public bool enableFrustumCulling { set { m_EnableFrustumCulling = value; } get { return m_EnableFrustumCulling; } }
 
     /// <summary>
-    /// 是否进行LOD筛选
+    /// 是否进行遮挡剔除
     /// </summary>
-    private bool m_EnableLODCulling = false;
+    private bool m_EnableOcclusionCulling = false;
+
+    /// <summary>
+    /// 是否LOD
+    /// </summary>
+    private bool m_IsLODInstance = false;
 
     /// <summary>
     /// LODGroup数据
@@ -138,7 +143,7 @@ public class InstancingRenderer
             m_DrawcallGroup[i].Clear();
 
         m_InstancingCore = null;
-        m_EnableLODCulling = false;
+        m_IsLODInstance = false;
         m_LODGroupData = Vector4.zero;
         m_InstanceList = null;
         m_DrawcallGroupCount = 0;
@@ -151,9 +156,8 @@ public class InstancingRenderer
 
         var info = PrefabInfo.Get(prefabID);
         Debug.Assert(info != null);
-
-        // 可视距离
         m_VisibleDistance = info.visibleDistance;
+        m_EnableOcclusionCulling = info.occlusionCulling;
 
         GameObject prefab = AssetManager.instance.LoadAsset<GameObject>(info.assertID);
         if (prefab == null)
@@ -163,7 +167,7 @@ public class InstancingRenderer
         LODGroup lodGroup = prefab.GetComponent<LODGroup>();
         if (lodGroup != null)
         {
-            m_EnableLODCulling = true;
+            m_IsLODInstance = true;
             m_LODGroupData.Set(1.0f, 1.0f, 1.0f, lodGroup.size);
 
             var lods = lodGroup.GetLODs();
@@ -200,10 +204,12 @@ public class InstancingRenderer
                     ++m_DrawcallGroupCount;
                 }
             }
+
+            Debug.LogError(m_LODGroupData);
         }
         else
         {
-            m_EnableLODCulling = false;
+            m_IsLODInstance = false;
             if (m_DrawcallGroup[0].Init(m_InstancingCore, prefab))
                 m_DrawcallGroupCount = 1;
         }
@@ -257,9 +263,9 @@ public class InstancingRenderer
         cs.SetInt(InstancingCore.ShaderConstants.instancingCountPropID, instancingCount);
 
         int kernel = -1;
-        if (m_EnableLODCulling)
+        if (m_IsLODInstance)
         {
-            kernel = m_InstancingCore.lodCullingKernel;
+            kernel = m_InstancingCore.drawLODInstanceKernel;
             for (int i = 0; i < m_DrawcallGroupCount; ++i)
                 cs.SetBuffer(kernel, InstancingCore.ShaderConstants.LODGroupVisibleBuffer[i], m_DrawcallGroup[i].visibleBuffer);
             cs.SetVector(InstancingCore.ShaderConstants.LODGroupDataPropID, m_LODGroupData);
@@ -282,6 +288,9 @@ public class InstancingRenderer
             cs.SetVector(InstancingCore.ShaderConstants.instanceMinBoundsPropID, m_DrawcallGroup[0].minimumBounds);
             cs.SetVector(InstancingCore.ShaderConstants.instanceMaxBoundsPropID, m_DrawcallGroup[0].maximumBounds);
         }
+
+        // 遮挡剔除
+        cs.SetBool(InstancingCore.ShaderConstants.enableOcclusionCullingPropID, m_EnableOcclusionCulling);
 
         // 执行计算
         int threadX = (instancingCount >> 6) + 1;

@@ -13,6 +13,9 @@ public class PrefabInfo
     private int m_VisibleDistance;
     public int visibleDistance { get { return m_VisibleDistance; } }
 
+    private bool m_OcclusionCulling;
+    public bool occlusionCulling { get { return m_OcclusionCulling; } }
+
     #region 静态方法
 
     private static Dictionary<int, PrefabInfo> s_PrefabInfoDict = new Dictionary<int, PrefabInfo>();
@@ -37,6 +40,7 @@ public class PrefabInfo
             info.m_AssetID = node.asset_id;
             info.m_UseInstancing = node.instancing;
             info.m_VisibleDistance = node.visible;
+            info.m_OcclusionCulling = node.enable_occlusion_culling;
             s_PrefabInfoDict.Add(node.id, info);
         }
         iter.Dispose();

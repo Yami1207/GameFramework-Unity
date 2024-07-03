@@ -22,6 +22,8 @@ public class InstancingCore
 
         public static readonly int enableFrustumCullingPropID = Shader.PropertyToID("_EnableFrustumCulling");
 
+        public static readonly int enableOcclusionCullingPropID = Shader.PropertyToID("_EnableOcclusionCulling");
+
         public static readonly int visibleDistancePropID = Shader.PropertyToID("_VisibleDistance");
 
         public static readonly int instanceMinBoundsPropID = Shader.PropertyToID("_InstanceMinBounds");
@@ -178,8 +180,8 @@ public class InstancingCore
     private int m_MainKernel = -1;
     public int mainKernel { get { return m_MainKernel; } }
 
-    private int m_LODCullingKernel = -1;
-    public int lodCullingKernel { get { return m_LODCullingKernel; } }
+    private int m_DrawLODInstanceKernel = -1;
+    public int drawLODInstanceKernel { get { return m_DrawLODInstanceKernel; } }
 
     #endregion
 
@@ -252,7 +254,7 @@ public class InstancingCore
     {
         m_InstancingDrwacallShader = AssetManager.instance.LoadAsset<ComputeShader>("Shader/Utils/InstancingDrawcall");
         m_MainKernel = m_InstancingDrwacallShader.FindKernel("Main");
-        m_LODCullingKernel = m_InstancingDrwacallShader.FindKernel("LODCulling");
+        m_DrawLODInstanceKernel = m_InstancingDrwacallShader.FindKernel("DrawLODInstance");
     }
 
     public void Destroy()

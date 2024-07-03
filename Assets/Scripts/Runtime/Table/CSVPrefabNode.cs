@@ -32,6 +32,11 @@ public class CSVPrefabNode : CSVData
     /// </summary>
     public bool instancing { private set; get; }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public bool enable_occlusion_culling { private set; get; }
+
     #endregion
 
     #region Override
@@ -92,6 +97,7 @@ public class CSVPrefabNode : CSVData
             csvData.asset_id = bytesData.ReadToInt32();
             csvData.visible = bytesData.ReadToInt32();
             csvData.instancing = bytesData.ReadToBoolean();
+            csvData.enable_occlusion_culling = bytesData.ReadToBoolean();
 
         }
         catch (Exception exception)

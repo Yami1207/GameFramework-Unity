@@ -24,6 +24,8 @@ uniform float4 _CameraFrustumPlanes[6];
 
 uniform bool _EnableFrustumCulling;
 
+uniform bool _EnableOcclusionCulling;
+
 // 可视距离
 uniform float _VisibleDistance;
 
@@ -76,19 +78,12 @@ inline bool IsVisible(in float3 positionWS)
     return true;
 }
 
-inline bool IsCulling(in float3 positionWS)
+// 视锥剔除
+inline bool FrustumCulling(in float3 minimum, in float3 maximum)
 {
-    for (int index = 0; index < 6; ++index)
-    {
-        float4 plane = _CameraFrustumPlanes[index];
-        if (dot(positionWS, plane.xyz) + plane.w < -THICKNESS_PLANE)
-            return true;
-    }
-    return false;
-}
-
-inline bool IsCulling(in float3 minimum, in float3 maximum)
-{
+    if (!_EnableFrustumCulling)
+        return false;
+    
     float3 p;
     for (int index = 0; index < 6; ++index)
     {
@@ -119,10 +114,16 @@ inline bool IsCulling(in float3 minimum, in float3 maximum)
     return false;
 }
 
+// 遮挡剔除
+inline bool OcclusionCulling(in float3 minimum, in float3 maximum)
+{
+    return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// kernel: LODCulling
+// kernel: DrawLODInstance
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma kernel LODCulling
+#pragma kernel DrawLODInstance
 
 // xyz: lod每层高度 w: LODGroup size
 uniform float4 _LODGroupData;
@@ -133,13 +134,13 @@ AppendStructuredBuffer<InstanceParam> _VisibleBuffer_LOD2;
 
 inline float DistanceToRelativeHeight(float dist, float size)
 {
-    if (_CameraParam.x > 0.5)
-        return 0.5 * size / _CameraParam.y;
+    //if (_CameraParam.x > 0.5)
+    //    return 0.5 * size / _CameraParam.y;
     return 0.5 * size / (dist * _CameraParam.w);
 }
 
 [numthreads(NUM_THREAD_X_GROUP, 1, 1)]
-void LODCulling(uint3 id : SV_DispatchThreadID)
+void DrawLODInstance(uint3 id : SV_DispatchThreadID)
 {
     if (id.x >= _InstancingCount)
         return;
@@ -149,27 +150,30 @@ void LODCulling(uint3 id : SV_DispatchThreadID)
         return;
     
     float4x4 objectToWorld = _InstancingBuffer[id.x];
-    if (_EnableFrustumCulling)
-    {
-        float3 minBounds = mul(objectToWorld, _InstanceMinBounds).xyz;
-        float3 maxBounds = mul(objectToWorld, _InstanceMaxBounds).xyz;
-        float3 minimum = min(minBounds, maxBounds);
-        float3 maximum = max(minBounds, maxBounds);
-        if (IsCulling(minimum, maximum))
-            return;
-    }
+    float3 minBounds = mul(objectToWorld, _InstanceMinBounds).xyz;
+    float3 maxBounds = mul(objectToWorld, _InstanceMaxBounds).xyz;
+    float3 minimum = min(minBounds, maxBounds);
+    float3 maximum = max(minBounds, maxBounds);
     
+    // 进行视锥剔除检测
+    if (FrustumCulling(minimum, maximum))
+        return;
+    
+    // 进行遮挡剔除检测
+    if (OcclusionCulling(minimum, maximum))
+        return;
+
     InstanceParam instance = (InstanceParam) 0;
     instance.objectToWorld = objectToWorld;
     instance.worldToObject = InvMatrix(instance.objectToWorld);
 
     float dist = distance(positionWS, _CameraPosition.xyz);
     float height = DistanceToRelativeHeight(dist, _LODGroupData.w);
-    if (height >= _LODGroupData.x)
+    if (height > _LODGroupData.x)
         _VisibleBuffer_LOD0.Append(instance);
-    else if (height >= _LODGroupData.y)
+    else if (height > _LODGroupData.y)
         _VisibleBuffer_LOD1.Append(instance);
-    else if (height >= _LODGroupData.z)
+    else if (height > _LODGroupData.z)
         _VisibleBuffer_LOD2.Append(instance);
 }
 
@@ -189,18 +193,20 @@ void Main(uint3 id : SV_DispatchThreadID)
     float3 positionWS = _InstancingBuffer[id.x]._14_24_34;
     if (!IsVisible(positionWS))
         return;
-    
+
     float4x4 objectToWorld = _InstancingBuffer[id.x];
+    float3 minBounds = mul(objectToWorld, _InstanceMinBounds).xyz;
+    float3 maxBounds = mul(objectToWorld, _InstanceMaxBounds).xyz;
+    float3 minimum = min(minBounds, maxBounds);
+    float3 maximum = max(minBounds, maxBounds);
     
-    if (_EnableFrustumCulling)
-    {
-        float3 minBounds = mul(objectToWorld, _InstanceMinBounds).xyz;
-        float3 maxBounds = mul(objectToWorld, _InstanceMaxBounds).xyz;
-        float3 minimum = min(minBounds, maxBounds);
-        float3 maximum = max(minBounds, maxBounds);
-        if (IsCulling(minimum, maximum))
-            return;
-    }
+    // 进行视锥剔除检测
+    if (FrustumCulling(minimum, maximum))
+        return;
+    
+    // 进行遮挡剔除检测
+    if (OcclusionCulling(minimum, maximum))
+        return;
 
     InstanceParam instance = (InstanceParam) 0;
     instance.objectToWorld = objectToWorld;
