@@ -12,14 +12,14 @@ public class InstancingRenderer
         public float screenRelativeTransitionHeight = 1.0f;
 
         /// <summary>
-        /// 包围盒最小值（用于视锥剔除）
+        /// 包围盒中心点（用于视锥剔除）
         /// </summary>
-        public Vector4 minimumBounds;
+        public Vector4 boundsCenter;
 
         /// <summary>
-        /// 包围盒最大值（用于视锥剔除）
+        /// 包围盒范围（用于视锥剔除）
         /// </summary>
-        public Vector4 maximumBounds;
+        public Vector4 boundsExtent;
 
         public ComputeBuffer visibleBuffer;
 
@@ -41,9 +41,11 @@ public class InstancingRenderer
             if (meshFilter == null || renderer == null)
                 return false;
 
-            minimumBounds = renderer.bounds.min;
-            maximumBounds = renderer.bounds.max;
-            minimumBounds.w = maximumBounds.w = 1.0f;
+            boundsCenter = renderer.bounds.center;
+            boundsCenter.w = 1.0f;
+
+            boundsExtent = renderer.bounds.extents;
+            boundsExtent.w = 0.0f;
             drawcall = core.CreateInstancingDrawcall(meshFilter.sharedMesh, renderer.sharedMaterial, renderer);
             return true;
         }
@@ -204,8 +206,6 @@ public class InstancingRenderer
                     ++m_DrawcallGroupCount;
                 }
             }
-
-            Debug.LogError(m_LODGroupData);
         }
         else
         {
@@ -265,14 +265,14 @@ public class InstancingRenderer
         int kernel = -1;
         if (m_IsLODInstance)
         {
-            kernel = m_InstancingCore.drawLODInstanceKernel;
+            kernel = m_InstancingCore.GetShaderKernel(InstancingCore.drawLODKernel);
             for (int i = 0; i < m_DrawcallGroupCount; ++i)
                 cs.SetBuffer(kernel, InstancingCore.ShaderConstants.LODGroupVisibleBuffer[i], m_DrawcallGroup[i].visibleBuffer);
             cs.SetVector(InstancingCore.ShaderConstants.LODGroupDataPropID, m_LODGroupData);
         }
         else
         {
-            kernel = m_InstancingCore.mainKernel;
+            kernel = m_InstancingCore.GetShaderKernel(InstancingCore.defaultDrawKernel);
             cs.SetBuffer(kernel, InstancingCore.ShaderConstants.visibleBufferPropID, m_DrawcallGroup[0].visibleBuffer);
         }
         cs.SetBuffer(kernel, InstancingCore.ShaderConstants.instancingBufferPropID, s_InstancingBuffer);
@@ -285,12 +285,12 @@ public class InstancingRenderer
         if (m_EnableFrustumCulling)
         {
             // 包围体使用首个Group数据
-            cs.SetVector(InstancingCore.ShaderConstants.instanceMinBoundsPropID, m_DrawcallGroup[0].minimumBounds);
-            cs.SetVector(InstancingCore.ShaderConstants.instanceMaxBoundsPropID, m_DrawcallGroup[0].maximumBounds);
+            cs.SetVector(InstancingCore.ShaderConstants.instanceBoundsCenterPropID, m_DrawcallGroup[0].boundsCenter);
+            cs.SetVector(InstancingCore.ShaderConstants.instanceBoundsExtentPropID, m_DrawcallGroup[0].boundsExtent);
         }
 
         // 遮挡剔除
-        cs.SetBool(InstancingCore.ShaderConstants.enableOcclusionCullingPropID, m_EnableOcclusionCulling);
+        cs.SetBool(InstancingCore.ShaderConstants.enableOcclusionCullingPropID, HiZCore.instance.isVaild && m_EnableOcclusionCulling);
 
         // 执行计算
         int threadX = (instancingCount >> 6) + 1;

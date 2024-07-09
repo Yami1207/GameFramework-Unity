@@ -110,7 +110,7 @@ public class PixelDepthOffset : ScriptableRendererFeature
     }
 
     [SerializeField]
-    private TexQuality m_TexQuality = TexQuality.Middle;
+    private TexQuality m_TexQuality = TexQuality.Low;
 
     [SerializeField]
     private LayerMask m_CullMask = -1;
@@ -124,6 +124,7 @@ public class PixelDepthOffset : ScriptableRendererFeature
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-        renderer.EnqueuePass(m_ScriptablePass);
+        if (EnvironmentCore.instance.enablePixelDepthOffset)
+            renderer.EnqueuePass(m_ScriptablePass);
     }
 }

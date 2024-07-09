@@ -57,7 +57,7 @@
                 float p2 = SAMPLE_TEXTURE2D_LOD(_CameraDepthTexture, sampler_CameraDepthTexture, input.texcoord + float2(offset.x, -offset.y), 0).x;
                 float p3 = SAMPLE_TEXTURE2D_LOD(_CameraDepthTexture, sampler_CameraDepthTexture, input.texcoord + float2(-offset.x, offset.y), 0).x;
 
-                 // 离相机最近的深度值
+                // 离镜头最远的深度
                 float4 depth = float4(p0, p1, p2, p3);
 #if UNITY_REVERSED_Z
                 depth.xy = min(depth.xy, depth.zw);

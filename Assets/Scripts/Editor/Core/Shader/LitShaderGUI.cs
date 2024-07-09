@@ -81,19 +81,7 @@ public class LitShaderGUI : BaseShaderGUI
         EditorGUILayout.BeginVertical(BaseShaderGUI.Styles.frameBgStyle);
         {
             DoGUI_Title("< 地形融合 >");
-
-            bool lastEnablePDO = m_TargetMaterial.IsKeywordEnabled("_USE_PDO");
-            bool enablePDO = EditorGUILayout.Toggle("开启地形融合", lastEnablePDO);
-            if (lastEnablePDO != enablePDO)
-            {
-                if (enablePDO)
-                    m_TargetMaterial.EnableKeyword("_USE_PDO");
-                else
-                    m_TargetMaterial.DisableKeyword("_USE_PDO");
-            }
-
-            if (enablePDO)
-                DrawProperty("_DepthDiffer", "深度差", false);
+            DrawProperty("_MixDepthDiffer", "深度差", false);
         }
         EditorGUILayout.EndVertical();
     }

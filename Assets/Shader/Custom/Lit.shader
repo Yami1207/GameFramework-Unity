@@ -14,8 +14,7 @@
         _EmissionIntensity("Emission Intensity", Range(0, 1)) = 0
         [Linear]_EmissionColor("Emission Color", Vector) = (0, 0, 0, 1)
 
-		//[Toggle(_USE_PDO)]_PDO_ON("开启PDO", int) = 0
-        _DepthDiffer("深度差", float) = 1.0
+        _MixDepthDiffer("深度差", float) = 1.0
 
         [MaterialEnum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Int) = 0
     }
@@ -50,7 +49,7 @@
 
 			// -------------------------------------
             // 自定义keywords
-            #pragma shader_feature_local _USE_PDO
+			#pragma multi_compile _ _PIXEL_DEPTH_OFFSET_ON
 
             //--------------------------------------
             // 自定义宏

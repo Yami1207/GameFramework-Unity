@@ -26,8 +26,8 @@ public class InstancingCore
 
         public static readonly int visibleDistancePropID = Shader.PropertyToID("_VisibleDistance");
 
-        public static readonly int instanceMinBoundsPropID = Shader.PropertyToID("_InstanceMinBounds");
-        public static readonly int instanceMaxBoundsPropID = Shader.PropertyToID("_InstanceMaxBounds");
+        public static readonly int instanceBoundsCenterPropID = Shader.PropertyToID("_InstanceBoundsCenter");
+        public static readonly int instanceBoundsExtentPropID = Shader.PropertyToID("_InstanceBoundsExtent");
 
         public static readonly int[] LODGroupVisibleBuffer = new int[3]
         {
@@ -174,14 +174,18 @@ public class InstancingCore
 
     #region CS相关
 
+    public static readonly int defaultDrawKernel = 0;
+    public static readonly int drawLODKernel = 1;
+
     private ComputeShader m_InstancingDrwacallShader;
     public ComputeShader instancingDrwacallShader { get { return m_InstancingDrwacallShader; } }
 
-    private int m_MainKernel = -1;
-    public int mainKernel { get { return m_MainKernel; } }
+    private int[] m_ShaderKernels = new int[2];
 
-    private int m_DrawLODInstanceKernel = -1;
-    public int drawLODInstanceKernel { get { return m_DrawLODInstanceKernel; } }
+    public int GetShaderKernel(int type)
+    {
+        return m_ShaderKernels[type];
+    }
 
     #endregion
 
@@ -253,8 +257,8 @@ public class InstancingCore
     public InstancingCore()
     {
         m_InstancingDrwacallShader = AssetManager.instance.LoadAsset<ComputeShader>("Shader/Utils/InstancingDrawcall");
-        m_MainKernel = m_InstancingDrwacallShader.FindKernel("Main");
-        m_DrawLODInstanceKernel = m_InstancingDrwacallShader.FindKernel("DrawLODInstance");
+        m_ShaderKernels[0] = m_InstancingDrwacallShader.FindKernel("Main");
+        m_ShaderKernels[1] = m_InstancingDrwacallShader.FindKernel("DrawLODInstance");
     }
 
     public void Destroy()
@@ -329,8 +333,8 @@ public class InstancingCore
         if (camera == null)
             return;
 
-        UnityEngine.Profiling.Profiler.BeginSample("SetupCameraData");
-        SetupCameraData(camera);
+        UnityEngine.Profiling.Profiler.BeginSample("SetupShaderParams");
+        SetupShaderParams(camera);
         UnityEngine.Profiling.Profiler.EndSample();
 
         UnityEngine.Profiling.Profiler.BeginSample("HandleRenderChunk");
@@ -349,7 +353,7 @@ public class InstancingCore
         UnityEngine.Profiling.Profiler.EndSample();
     }
 
-    private void SetupCameraData(Camera camera)
+    private void SetupShaderParams(Camera camera)
     {
         // 镜头坐标
         m_CameraPosition = Helper.WorldPosToChunkPos(camera.transform.position);
@@ -372,6 +376,9 @@ public class InstancingCore
 
         // 镜头视锥体平面
         m_InstancingDrwacallShader.SetVectorArray(ShaderConstants.cameraFrustumPlanesPropID, m_CameraFrustumPlanes);
+
+        // 设置HiZ参数
+        HiZCore.instance.SetupShaderParams(camera, m_InstancingDrwacallShader, m_ShaderKernels);
     }
 
     private void HandleRenderChunk()

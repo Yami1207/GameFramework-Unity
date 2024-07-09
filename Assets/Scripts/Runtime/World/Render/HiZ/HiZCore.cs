@@ -17,14 +17,18 @@ public class HiZCore : Singleton<HiZCore>
 
     private static class ShaderConstants
     {
-        public static readonly int prevMipmapPropID = Shader.PropertyToID("_PrevTexture");
-        public static readonly int targetMipmapPropID = Shader.PropertyToID("_TargetTexture");
+        public static readonly int PREV_MIPMAP_PROP_ID = Shader.PropertyToID("_PrevTexture");
 
-        public static readonly int depthTextureSizePropID = Shader.PropertyToID("_TextureSize");
+        public static readonly int TARGET_MIPMAP_PROP_ID = Shader.PropertyToID("_TargetTexture");
+
+        public static readonly int DEPTH_TEXTURE_SIZE_PROP_ID = Shader.PropertyToID("_TextureSize");
+
+        public static readonly int DEPTH_VIEW_PROJECTION_PROP_ID = Shader.PropertyToID("_HiZViewProjection");
+
+        public static readonly int DEPTH_TEXTURE_PROP_ID = Shader.PropertyToID("_HiZDepthTexture");
+
+        public static readonly int DEPTH_TEXTURE_PARAMS_PROP_ID = Shader.PropertyToID("_HiZDepthTextureParams");
     }
-
-    private bool m_Enabled = true;
-    public bool enabled { get { return m_Enabled; } }
 
     private ComputeShader m_GenerateMipmapShader;
 
@@ -37,50 +41,83 @@ public class HiZCore : Singleton<HiZCore>
 
     private DepthQuality m_DepthQuality = DepthQuality.High;
 
-    private int m_DepthRTSize = 0;
-
-    private int m_DepthRTMipCount = 0;
+    /// <summary>
+    /// 深度图
+    /// </summary>
+    private RenderTexture m_DepthTexture;
 
     /// <summary>
-    /// 深度RT
+    /// 深度图大小
     /// </summary>
-    private RenderTexture m_DepthRT;
+    private int m_DepthTextureSize = 0;
+
+    /// <summary>
+    /// 深度图mipmap数
+    /// </summary>
+    private int m_DepthTextureMipLevel = 0;
+
+    /// <summary>
+    /// 深度图的视角投影矩阵
+    /// </summary>
+    private Matrix4x4 m_ViewProjectionMatrix;
+
+    private Vector4 m_DepthTextureParams = Vector4.zero;
+
+    public bool isVaild { get { return m_DepthTexture != null; } }
 
     public void Destroy()
     {
-        m_Enabled = false;
-
-        m_DepthRTSize = 0;
-        m_DepthRTMipCount = 0;
+        m_DepthTextureSize = 0;
+        m_DepthTextureMipLevel = 0;
     }
 
-    public void ExecuteCopyDepth(CommandBuffer cmd, DepthQuality quality)
+    public void SetupShaderParams(Camera camera, ComputeShader shader, int[] kernels)
     {
-        m_Enabled = true;
+        shader.SetMatrix(ShaderConstants.DEPTH_VIEW_PROJECTION_PROP_ID, m_ViewProjectionMatrix);
+        shader.SetVector(ShaderConstants.DEPTH_TEXTURE_PARAMS_PROP_ID, m_DepthTextureParams);
+
+        if (isVaild)
+        {
+            for (int i = 0; i < kernels.Length; ++i)
+                shader.SetTexture(kernels[i], ShaderConstants.DEPTH_TEXTURE_PROP_ID, m_DepthTexture);
+        }
+        else
+        {
+            for (int i = 0; i < kernels.Length; ++i)
+                shader.SetTexture(kernels[i], ShaderConstants.DEPTH_TEXTURE_PROP_ID, Texture2D.blackTexture);
+        }
+    }
+
+    public void ExecuteCopyDepth(ref Camera camera, ref CommandBuffer cmd, DepthQuality quality)
+    {
         m_DepthQuality = quality;
 
         // 检查资源
         CheckResourcesIfNeed();
         
         // 拷贝深度
-        cmd.Blit(Texture2D.blackTexture, m_DepthRT, m_CopyDepthMaterial);
+        cmd.Blit(null, m_DepthTexture, m_CopyDepthMaterial);
 
         // 生成mipmap数据
-        int w = m_DepthRTSize, h = m_DepthRTSize >> 1;
-        for (int i = 1; i < m_DepthRTMipCount; ++i)
+        int w = m_DepthTextureSize, h = m_DepthTextureSize >> 1;
+        for (int i = 1; i < m_DepthTextureMipLevel; ++i)
         {
             w = Mathf.Max(1, w >> 1);
             h = Mathf.Max(1, h >> 1);
 
-            cmd.SetComputeTextureParam(m_GenerateMipmapShader, m_GenerateMipmapKernel, ShaderConstants.prevMipmapPropID, m_DepthRT, i - 1);
-            cmd.SetComputeTextureParam(m_GenerateMipmapShader, m_GenerateMipmapKernel, ShaderConstants.targetMipmapPropID, m_DepthRT, i);
-            cmd.SetComputeVectorParam(m_GenerateMipmapShader, ShaderConstants.depthTextureSizePropID, new Vector4(w, h, 0f, 0f));
+            cmd.SetComputeTextureParam(m_GenerateMipmapShader, m_GenerateMipmapKernel, ShaderConstants.PREV_MIPMAP_PROP_ID, m_DepthTexture, i - 1);
+            cmd.SetComputeTextureParam(m_GenerateMipmapShader, m_GenerateMipmapKernel, ShaderConstants.TARGET_MIPMAP_PROP_ID, m_DepthTexture, i);
+            cmd.SetComputeVectorParam(m_GenerateMipmapShader, ShaderConstants.DEPTH_TEXTURE_SIZE_PROP_ID, new Vector4(w, h, 0f, 0f));
 
             int x, y;
             x = Mathf.CeilToInt(0.125f * w);
             y = Mathf.CeilToInt(0.125f * h);
             cmd.DispatchCompute(m_GenerateMipmapShader, m_GenerateMipmapKernel, x, y, 1);
         }
+
+        // 记录当前视角投影矩阵
+        var proj = GL.GetGPUProjectionMatrix(camera.projectionMatrix, true);
+        m_ViewProjectionMatrix = proj * camera.worldToCameraMatrix;
     }
 
     private void CheckResourcesIfNeed()
@@ -101,25 +138,29 @@ public class HiZCore : Singleton<HiZCore>
     private void CreateDepthRenderTexture()
     {
         int width = 1024 >> (int)(m_DepthQuality);
-        if (width != m_DepthRTSize && m_DepthRT != null)
+        if (width != m_DepthTextureSize && m_DepthTexture != null)
         {
-            GameObject.Destroy(m_DepthRT);
-            m_DepthRT = null;
+            GameObject.Destroy(m_DepthTexture);
+            m_DepthTexture = null;
         }
 
-        if (m_DepthRT == null)
+        if (m_DepthTexture == null)
         {
-            m_DepthRTSize = width;
-            m_DepthRTMipCount = 8 - (int)(m_DepthQuality);
+            m_DepthTextureSize = width;
 
-            m_DepthRT = new RenderTexture(m_DepthRTSize, m_DepthRTSize >> 1, 0, RenderTextureFormat.RHalf, m_DepthRTMipCount);
-            m_DepthRT.name = "HiZDepthRT";
-            m_DepthRT.useMipMap = true;
-            m_DepthRT.autoGenerateMips = false;
-            m_DepthRT.enableRandomWrite = true;
-            m_DepthRT.wrapMode = TextureWrapMode.Clamp;
-            m_DepthRT.filterMode = FilterMode.Point;
-            m_DepthRT.Create();
+            // 最小mipmap分辨率为2 * 1
+            m_DepthTextureMipLevel = 10 - (int)(m_DepthQuality);
+
+            m_DepthTexture = new RenderTexture(m_DepthTextureSize, m_DepthTextureSize >> 1, 0, RenderTextureFormat.RHalf, m_DepthTextureMipLevel);
+            m_DepthTexture.name = "HiZDepthRT";
+            m_DepthTexture.useMipMap = true;
+            m_DepthTexture.autoGenerateMips = false;
+            m_DepthTexture.enableRandomWrite = true;
+            m_DepthTexture.wrapMode = TextureWrapMode.Clamp;
+            m_DepthTexture.filterMode = FilterMode.Point;
+            m_DepthTexture.Create();
+
+            m_DepthTextureParams.Set(m_DepthTexture.width, m_DepthTexture.height, m_DepthTextureMipLevel, 0);
         }
     }
 }

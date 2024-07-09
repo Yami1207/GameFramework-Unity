@@ -3,6 +3,8 @@
 // 平面厚度
 #define THICKNESS_PLANE 0.1		
 
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+
 struct InstanceParam
 {
     float4x4 objectToWorld;
@@ -22,16 +24,19 @@ uniform float4 _CameraParam;
 // 镜头视锥体平面（xyz: 平面法线 w: 原点到平面距离）
 uniform float4 _CameraFrustumPlanes[6];
 
+// 开启视锥剔除
 uniform bool _EnableFrustumCulling;
 
+// 开启遮挡剔除
 uniform bool _EnableOcclusionCulling;
 
 // 可视距离
 uniform float _VisibleDistance;
 
-uniform float4 _InstanceMinBounds;
-uniform float4 _InstanceMaxBounds;
+uniform float4 _InstanceBoundsCenter;
+uniform float4 _InstanceBoundsExtent;
 
+// Instancing数
 uniform uint _InstancingCount;
 
 StructuredBuffer<float4x4> _InstancingBuffer;
@@ -66,23 +71,61 @@ inline float4x4 InvMatrix(float4x4 input)
     return transpose(cofactors) / determinant(input);
 }
 
-inline bool IsVisible(in float3 positionWS)
+inline void GetBoundsVertices(inout float4 vertices[8], in float4x4 objectToWorld)
+{
+    static const float4 kExtentArray[8] = {
+        float4(1, 1, 1, 0),
+        float4(1, 1, -1, 0),
+        float4(1, -1, 1, 0),
+        float4(1, -1, -1, 0),
+        float4(-1, 1, 1, 0),
+        float4(-1, 1, -1, 0),
+        float4(-1, -1, 1, 0),
+        float4(-1, -1, -1, 0)
+    };
+    
+    for (int i = 0; i < 8; ++i)
+        vertices[i] = mul(objectToWorld, _InstanceBoundsCenter + _InstanceBoundsExtent * kExtentArray[i]);
+}
+
+inline void GetBoundsMinMax(in float4x4 objectToWorld, out float3 minimum, out float3 maximum)
+{
+    float3 minBounds = mul(objectToWorld, _InstanceBoundsCenter - _InstanceBoundsExtent).xyz;
+    float3 maxBounds = mul(objectToWorld, _InstanceBoundsCenter + _InstanceBoundsExtent).xyz;
+    minimum = min(minBounds, maxBounds);
+    maximum = max(minBounds, maxBounds);
+}
+
+// 距离剔除
+inline bool DistanceCulling(in float3 positionWS)
 {
     if (_VisibleDistance >= 0)
     {
         float dx = positionWS.x - _CameraPosition.x;
         float dz = positionWS.z - _CameraPosition.z;
-        return dx * dx + dz * dz <= (_VisibleDistance * _VisibleDistance);
+        return dx * dx + dz * dz > (_VisibleDistance * _VisibleDistance);
     }
 
-    return true;
+    return false;
 }
 
 // 视锥剔除
-inline bool FrustumCulling(in float3 minimum, in float3 maximum)
+inline bool FrustumCulling(in float4x4 objectToWorld)
 {
     if (!_EnableFrustumCulling)
         return false;
+    
+    // 获取包围盒最小与最大值
+    //float3 minimum = vertices[0], maximum = vertices[0];
+    //for (int i = 1; i < 8; ++i)
+    //{
+    //    minimum = min(minimum, vertices[i]);
+    //    maximum = min(maximum, vertices[i]);
+    //}
+    
+    // 不需要太精确,使用包围盒最大与最小就可以
+    float3 minimum = 0, maximum = 0;
+    GetBoundsMinMax(objectToWorld, minimum, maximum);
     
     float3 p;
     for (int index = 0; index < 6; ++index)
@@ -114,10 +157,93 @@ inline bool FrustumCulling(in float3 minimum, in float3 maximum)
     return false;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // 遮挡剔除
-inline bool OcclusionCulling(in float3 minimum, in float3 maximum)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+uniform float4x4 _HiZViewProjection;
+
+// x: 深度图宽度 y: 深度图高度 z: 深度图MipLevel
+uniform float4 _HiZDepthTextureParams;
+
+Texture2D<half> _HiZDepthTexture;
+SamplerState sampler_HiZDepthTexture;
+
+inline bool OcclusionCulling(in float4x4 objectToWorld)
 {
-    return false;
+    if (!_EnableOcclusionCulling)
+        return false;
+        
+    // 获取包围盒顶点
+    float4 vertices[8];
+    GetBoundsVertices(vertices, objectToWorld);
+    
+    // 获取包围盒（屏幕空间）
+    float3 minimumXYZ = 1, maximumXYZ = -1;
+    for (int i = 0; i < 8; ++i)
+    {
+        float4 positionSS = mul(_HiZViewProjection, vertices[i]);
+        float3 positionNDC = positionSS.xyz / positionSS.w;
+        minimumXYZ = min(positionNDC, minimumXYZ);
+        maximumXYZ = max(positionNDC, maximumXYZ);
+    }
+        
+    // [-1, 1] to [0, 1]
+    float4 boundsUVs = float4(minimumXYZ.xy, maximumXYZ.xy);
+    boundsUVs = saturate(0.5 * boundsUVs + 0.5);
+    
+    // 计算出使用哪层mip
+    float2 size = (boundsUVs.zw - boundsUVs.xy) * _HiZDepthTextureParams.xy;
+    int mipLevel = floor(log2(max(size.x, size.y)));
+    if (mipLevel > _HiZDepthTextureParams.z)
+    {
+        // 对象占用像素过大
+        return false;
+    }
+    
+    // 获取深度值
+#ifdef UNITY_REVERSED_Z
+    float instanceDepth = maximumXYZ.z;
+#else
+    // [-1, 1] to [0, 1]
+    float instanceDepth = minimumXYZ.z;
+    instanceDepth = 0.5 * instanceDepth + 0.5;
+#endif
+    
+    // 采集包围盒所占的像素深度
+#if UNITY_UV_STARTS_AT_TOP
+    boundsUVs = float4(boundsUVs.x, 1 - boundsUVs.y, boundsUVs.z, 1 - boundsUVs.w);
+#endif
+    float4 depth = float4(_HiZDepthTexture.SampleLevel(sampler_HiZDepthTexture, boundsUVs.xy, mipLevel), _HiZDepthTexture.SampleLevel(sampler_HiZDepthTexture, boundsUVs.zy, mipLevel),
+        _HiZDepthTexture.SampleLevel(sampler_HiZDepthTexture, boundsUVs.xw, mipLevel), _HiZDepthTexture.SampleLevel(sampler_HiZDepthTexture, boundsUVs.zw, mipLevel));
+    
+#ifdef UNITY_REVERSED_Z
+    depth.xy = min(depth.xy, depth.zw);
+    depth.x = min(depth.x, depth.y);
+    return instanceDepth < depth.x;
+#else
+    depth.xy = max(depth.xy, depth.zw);
+    depth.x = max(depth.x, depth.y);
+    return instanceDepth > depth.x;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Instance是否可见
+////////////////////////////////////////////////////////////////////////////////////////////////////
+inline bool IsVisible(in float3 positionWS, in float4x4 objectToWorld)
+{
+    if (DistanceCulling(positionWS))
+        return false;
+
+    // 进行视锥剔除检测
+    if (FrustumCulling(objectToWorld))
+        return false;
+    
+    // 进行遮挡剔除检测
+    if (OcclusionCulling(objectToWorld))
+        return false;
+    
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -134,8 +260,8 @@ AppendStructuredBuffer<InstanceParam> _VisibleBuffer_LOD2;
 
 inline float DistanceToRelativeHeight(float dist, float size)
 {
-    //if (_CameraParam.x > 0.5)
-    //    return 0.5 * size / _CameraParam.y;
+    if (_CameraParam.x > 0.5)
+        return 0.5 * size / _CameraParam.y;
     return 0.5 * size / (dist * _CameraParam.w);
 }
 
@@ -145,24 +271,11 @@ void DrawLODInstance(uint3 id : SV_DispatchThreadID)
     if (id.x >= _InstancingCount)
         return;
     
-    float3 positionWS = _InstancingBuffer[id.x]._14_24_34;
-    if (!IsVisible(positionWS))
-        return;
-    
     float4x4 objectToWorld = _InstancingBuffer[id.x];
-    float3 minBounds = mul(objectToWorld, _InstanceMinBounds).xyz;
-    float3 maxBounds = mul(objectToWorld, _InstanceMaxBounds).xyz;
-    float3 minimum = min(minBounds, maxBounds);
-    float3 maximum = max(minBounds, maxBounds);
-    
-    // 进行视锥剔除检测
-    if (FrustumCulling(minimum, maximum))
+    float3 positionWS = objectToWorld._14_24_34;
+    if (!IsVisible(positionWS, objectToWorld))
         return;
     
-    // 进行遮挡剔除检测
-    if (OcclusionCulling(minimum, maximum))
-        return;
-
     InstanceParam instance = (InstanceParam) 0;
     instance.objectToWorld = objectToWorld;
     instance.worldToObject = InvMatrix(instance.objectToWorld);
@@ -190,22 +303,9 @@ void Main(uint3 id : SV_DispatchThreadID)
     if (id.x >= _InstancingCount)
         return;
     
-    float3 positionWS = _InstancingBuffer[id.x]._14_24_34;
-    if (!IsVisible(positionWS))
-        return;
-
     float4x4 objectToWorld = _InstancingBuffer[id.x];
-    float3 minBounds = mul(objectToWorld, _InstanceMinBounds).xyz;
-    float3 maxBounds = mul(objectToWorld, _InstanceMaxBounds).xyz;
-    float3 minimum = min(minBounds, maxBounds);
-    float3 maximum = max(minBounds, maxBounds);
-    
-    // 进行视锥剔除检测
-    if (FrustumCulling(minimum, maximum))
-        return;
-    
-    // 进行遮挡剔除检测
-    if (OcclusionCulling(minimum, maximum))
+    float3 positionWS = objectToWorld._14_24_34;
+    if (!IsVisible(positionWS, objectToWorld))
         return;
 
     InstanceParam instance = (InstanceParam) 0;

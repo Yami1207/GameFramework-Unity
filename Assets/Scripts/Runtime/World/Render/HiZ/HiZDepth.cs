@@ -26,7 +26,7 @@ public class HiZDepth : ScriptableRendererFeature
                 cmd.Clear();
                 cmd.BeginSample(s_ProfileTag);
                 {
-                    HiZCore.instance.ExecuteCopyDepth(cmd, m_Owner.m_Quality);
+                    HiZCore.instance.ExecuteCopyDepth(ref renderingData.cameraData.camera, ref cmd, m_Owner.m_Quality);
                 }
                 cmd.EndSample(s_ProfileTag);
                 context.ExecuteCommandBuffer(cmd);

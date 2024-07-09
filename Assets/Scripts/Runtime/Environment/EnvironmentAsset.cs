@@ -16,4 +16,8 @@ public class EnvironmentAsset : ScriptableObject
     public ObjectTrailsConfig objectTrails = new ObjectTrailsConfig();
 
     public Wind wind = new Wind();
+
+    [SerializeField]
+    private bool m_EnablePixelDepthOffset = false;
+    public bool enablePixelDepthOffset { get { return m_EnablePixelDepthOffset; } }
 }

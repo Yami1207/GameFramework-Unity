@@ -8,7 +8,7 @@ TEXTURE2D(_G_PDO_NormalTex);
 SAMPLER(sampler_G_PDO_NormalTex);
 
 inline void MixPixelDepthOffset(float3 positionWS, half differ, inout CustomSurfaceData surfaceData, inout CustomInputData inputData)
-{
+{   
     // 由于使用同一个相机,可用裁剪空间坐标做为UV
     float4 positionCS = TransformWorldToHClip(positionWS);
     half2 uv = 0.5 * (positionCS.xy / positionCS.w) + 0.5;

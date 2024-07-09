@@ -13,31 +13,50 @@ public class EnvironmentCore : SingletonMono<EnvironmentCore>
 
     [SerializeField]
     private EnvironmentAsset m_Asset;
-    
+
+    public bool enablePixelDepthOffset { get { return m_Asset.enablePixelDepthOffset; } }
+
     public ObjectTrailsConfig objectTrails { get { return m_Asset != null ? m_Asset.objectTrails : null; } }
 
-#if UNITY_EDITOR
     private void OnEnable()
     {
+#if UNITY_EDITOR
         if (m_Asset == null && !Application.isPlaying)
         {
             AssetManagerSetup.Setup();
             AssetManager.instance.Init();
             m_Asset = AssetManager.instance.LoadAsset<EnvironmentAsset>(8000);
         }
-    }
 #endif
 
+        if (m_Asset != null)
+            Setup();
+    }
+
+#if UNITY_EDITOR
     private void LateUpdate()
     {
         if (m_Asset == null)
             return;
 
-        SetupWind(m_Asset.wind);
+        Setup();
     }
+#endif
 
-    private void SetupWind(EnvironmentAsset.Wind wind)
+    private void Setup()
     {
-        Shader.SetGlobalVector(ShaderConstants.windParameterPropID, new Vector4(wind.speedX, wind.speedZ, wind.intensity));
+        Debug.Assert(m_Asset != null);
+
+        // 物体与地形混合
+        if (enablePixelDepthOffset)
+            Shader.EnableKeyword("_PIXEL_DEPTH_OFFSET_ON");
+        else
+            Shader.DisableKeyword("_PIXEL_DEPTH_OFFSET_ON");
+
+        // Wind
+        {
+            EnvironmentAsset.Wind wind = m_Asset.wind;
+            Shader.SetGlobalVector(ShaderConstants.windParameterPropID, new Vector4(wind.speedX, wind.speedZ, wind.intensity));
+        }
     }
 }

@@ -20,7 +20,7 @@ void CSMain(uint2 id : SV_DispatchThreadID)
     uint2 prevId = id * 2;
     float4 depth = float4(_PrevTexture[prevId], _PrevTexture[prevId + uint2(1, 0)], _PrevTexture[prevId + uint2(1, 1)], _PrevTexture[prevId + uint2(0, 1)]);
     
-     // 离相机最近的深度值
+    // 离镜头最远的深度
 #ifdef UNITY_REVERSED_Z
     depth.xy = min(depth.xy, depth.zw);
     _TargetTexture[id] = min(depth.x, depth.y);

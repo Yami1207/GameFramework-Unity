@@ -99,8 +99,8 @@ FragData frag(Varyings input)
     CustomInputData inputData;
     InitializeInputData(input, surfaceData, inputData);
     
-#if USING_PDO
-    MixPixelDepthOffset(inputData.positionWS, _DepthDiffer, surfaceData, inputData);
+#if defined(_PIXEL_DEPTH_OFFSET_ON)
+    MixPixelDepthOffset(inputData.positionWS, _MixDepthDiffer, surfaceData, inputData);
 #endif
     
     half4 shadowMask = CalculateShadowMask(inputData);

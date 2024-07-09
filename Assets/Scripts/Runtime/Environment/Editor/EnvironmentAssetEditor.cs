@@ -12,12 +12,20 @@ public class EnvironmentAssetEditor : Editor
 
         EditorGUILayout.BeginVertical();
         {
+            DoGUI_Rendering();
             DoGUI_ObjectTrails();
             DoGUI_Wind();
         }
         EditorGUILayout.EndVertical();
 
         serializedObject.ApplyModifiedProperties();
+    }
+
+    private void DoGUI_Rendering()
+    {
+        EditorGUIHelper.DrawTitleGUI("Rendering");
+
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("m_EnablePixelDepthOffset"), EditorDraw.TempContent("启动物体与地形融合"));
     }
 
     #region Character Trajectory

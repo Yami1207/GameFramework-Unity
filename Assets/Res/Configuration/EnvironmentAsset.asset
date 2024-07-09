@@ -12,13 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 961d433a87a68ea4f955f38e671a5402, type: 3}
   m_Name: EnvironmentAsset
   m_EditorClassIdentifier: 
-  characterTrajectory:
+  objectTrails:
     resolution: 512
     cameraHeight: 10
-    cameraRange: 24
+    cameraRange: 20
     cameraNear: 0
     cameraFar: 50
   wind:
     speedX: 0.1
     speedZ: 0.1
     intensity: 1
+  m_EnablePixelDepthOffset: 1
