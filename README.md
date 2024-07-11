@@ -10,4 +10,4 @@
 
 5、镜面反射（场景：SpecularReflection）
 
-6、自发光（场景：Highlights）
+6、外发光（场景：Highlights）
