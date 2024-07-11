@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using static Unity.VisualScripting.Member;
-using static UnityEditor.Progress;
 
 public class HighlightingPass : ScriptableRendererFeature
 {
