@@ -1,45 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-8499847633944705269
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55985a03be8d2e4439e354bd10b8a616, type: 3}
-  m_Name: ObjectTrails
-  m_EditorClassIdentifier: 
-  m_Active: 1
---- !u!114 &-7206989879901107285
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d75df01f3c63fd8409deaa04111a44b6, type: 3}
-  m_Name: SpecularReflection
-  m_EditorClassIdentifier: 
-  m_Active: 1
---- !u!114 &-5655963157021180432
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ac1f79fd1bbafb4bb59e7527bc13fa0, type: 3}
-  m_Name: HiZDepth
-  m_EditorClassIdentifier: 
-  m_Active: 1
-  m_Quality: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -50,19 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de640fe3d0db1804a85f9fc8f5cadab6, type: 3}
-  m_Name: RuntimeRenderPipelineAsset_Renderer
+  m_Name: RuntimeRenderPipelineAsset_HighlightingRenderer
   m_EditorClassIdentifier: 
   debugShaders:
     debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7, type: 3}
     hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
   m_RendererFeatures:
-  - {fileID: 6381482789918863231}
-  - {fileID: -8499847633944705269}
-  - {fileID: -7206989879901107285}
-  - {fileID: 6015525162752545563}
-  - {fileID: -5655963157021180432}
-  - {fileID: 1484748265903300909}
-  m_RendererFeatureMap: 7fef6171c9948f580b07c86d9c790a8aabcba874e3a0fb9b1b134a8f43707b53f03d0eab79fb81b12d210b6aaee29a14
+  - {fileID: 5999733324753393182}
+  m_RendererFeatureMap: 1ed6ffc0ab554353
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -101,7 +56,7 @@ MonoBehaviour:
   m_CopyDepthMode: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
---- !u!114 &1484748265903300909
+--- !u!114 &5999733324753393182
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -115,39 +70,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   m_RenderingEvent: 0
-  m_TexQuality: 0
-  m_BlurIterations: 9
-  m_BlurPixelOffset: 0.05
-  m_BlurIntensity: 0.9
-  m_HighlightColor: {r: 1, g: 0.3254717, b: 0.3254717, a: 1}
---- !u!114 &6015525162752545563
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c01aec6230bce148abe174e4816233c, type: 3}
-  m_Name: PixelDepthOffset
-  m_EditorClassIdentifier: 
-  m_Active: 1
   m_TexQuality: 2
-  m_CullMask:
-    serializedVersion: 2
-    m_Bits: 64
---- !u!114 &6381482789918863231
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d457bb816936254bac278e391c11651, type: 3}
-  m_Name: VolumetricCloud
-  m_EditorClassIdentifier: 
-  m_Active: 0
-  m_Material: {fileID: 2100000, guid: ff5fbf824445d8b43858dc6b222851f0, type: 2}
+  m_BlurIterations: 9
+  m_BlurPixelOffset: 0.052
+  m_BlurIntensity: 0.9
+  m_HighlightColor: {r: 0.8113208, g: 0.31763974, b: 0.31763974, a: 1}
