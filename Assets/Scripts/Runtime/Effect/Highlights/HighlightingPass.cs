@@ -26,6 +26,7 @@ public class HighlightingPass : ScriptableRendererFeature
         private const string PROFILE_TAG = "Highlighting Pass";
 
         private static readonly int HIGHLIGHTS_TEX_PROP_ID = Shader.PropertyToID("_HighlightsTex");
+        private static readonly int BLUR_V_HIGHLIGHTS_TEX_PROP_ID = Shader.PropertyToID("_BlurVHighlightsTex");
         private static readonly int BLUR_HIGHLIGHTS_TEX_PROP_ID = Shader.PropertyToID("_BlurHighlightsTex");
 
         private static readonly int BLUR_ITERATIONS_PROP_ID = Shader.PropertyToID("_BlurIterations");
@@ -69,6 +70,7 @@ public class HighlightingPass : ScriptableRendererFeature
             blurDesc.depthBufferBits = 0;
             blurDesc.msaaSamples = 1;
             blurDesc.sRGB = false;
+            cmd.GetTemporaryRT(BLUR_V_HIGHLIGHTS_TEX_PROP_ID, blurDesc);
             cmd.GetTemporaryRT(BLUR_HIGHLIGHTS_TEX_PROP_ID, blurDesc);
         }
 
@@ -98,8 +100,16 @@ public class HighlightingPass : ScriptableRendererFeature
 
                 cmd.Clear();
                 CoreUtils.SetRenderTarget(cmd, source);
-                cmd.Blit(HIGHLIGHTS_TEX_PROP_ID, BLUR_HIGHLIGHTS_TEX_PROP_ID, m_BlurMaterial, 0);
-                cmd.Blit(Texture2D.blackTexture, source, m_BlurMaterial, 1);
+                cmd.Blit(HIGHLIGHTS_TEX_PROP_ID, BLUR_V_HIGHLIGHTS_TEX_PROP_ID, m_BlurMaterial, 0);
+                if (m_Owner.m_TexQuality != TexQuality.High)
+                {
+                    cmd.Blit(BLUR_V_HIGHLIGHTS_TEX_PROP_ID, BLUR_HIGHLIGHTS_TEX_PROP_ID, m_BlurMaterial, 1);
+                    cmd.Blit(Texture2D.blackTexture, source, m_BlurMaterial, 2);
+                }
+                else
+                {
+                    cmd.Blit(Texture2D.blackTexture, source, m_BlurMaterial, 3);
+                }
                 context.ExecuteCommandBuffer(cmd);
 
                 cmd.Clear();
@@ -112,6 +122,7 @@ public class HighlightingPass : ScriptableRendererFeature
         public override void FrameCleanup(CommandBuffer cmd)
         {
             cmd.ReleaseTemporaryRT(HIGHLIGHTS_TEX_PROP_ID);
+            cmd.ReleaseTemporaryRT(BLUR_V_HIGHLIGHTS_TEX_PROP_ID);
             cmd.ReleaseTemporaryRT(BLUR_HIGHLIGHTS_TEX_PROP_ID);
         }
 
