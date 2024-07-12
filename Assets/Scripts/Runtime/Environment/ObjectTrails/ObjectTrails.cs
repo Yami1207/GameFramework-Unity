@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -52,9 +52,15 @@ public class ObjectTrails : ScriptableRendererFeature
         {
             var config = EnvironmentCore.instance.objectTrails;
             ref CameraData cameraData = ref renderingData.cameraData;
+            ref ScriptableRenderer renderer = ref cameraData.renderer;
             Camera camera = cameraData.camera;
-            RenderTargetIdentifier source = cameraData.renderer.cameraColorTargetHandle;
-            RenderTargetIdentifier depth = cameraData.renderer.cameraDepthTargetHandle;
+#if UNITY_2022_1_OR_NEWER
+            RTHandle colorTarget = renderer.cameraColorTargetHandle;
+            RTHandle depthTarget = renderer.cameraDepthTargetHandle;
+#else
+            RenderTargetIdentifier colorTarget = renderer.cameraColorTarget;
+            RenderTargetIdentifier depthTarget = renderer.cameraDepthTarget;
+#endif
 
             CommandBuffer cmd = CommandBufferPool.Get();
             {
@@ -62,38 +68,38 @@ public class ObjectTrails : ScriptableRendererFeature
                 cmd.BeginSample(s_ProfileTag);
                 context.ExecuteCommandBuffer(cmd);
 
-                // Çå³ı¾ÉÊı¾İ
+                // æ¸…é™¤æ—§æ•°æ®
                 cmd.Clear();
                 cmd.SetRenderTarget(s_ObjectTrailsTexPropID);
                 cmd.ClearRenderTarget(true, true, new Color(0.0f, 0.0f, 0.0f, 0.0f));
                 context.ExecuteCommandBuffer(cmd);
 
-                // ÊÓ½Ç¾ØÕó
+                // è§†è§’çŸ©é˜µ
                 Vector3 position = camera.transform.position + new Vector3(0.0f, config.cameraHeight, 0.0f);
                 Matrix4x4 worldToCameraMatrix = Matrix4x4.LookAt(position, position + Vector3.down, Vector3.forward);
                 worldToCameraMatrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1.0f, 1.0f, -1.0f)) * worldToCameraMatrix.inverse;
 
-                // Í¶Ó°¾ØÕó
+                // æŠ•å½±çŸ©é˜µ
                 float halfRange = 0.5f * config.cameraRange;
                 Matrix4x4 projectionMatrix = Matrix4x4.Ortho(-halfRange, halfRange, -halfRange, halfRange, config.cameraNear, config.cameraFar);
                 projectionMatrix = GL.GetGPUProjectionMatrix(projectionMatrix, true);
 
-                // ÉèÖÃÊÓ½ÇÓëÍ¶Ó°¾ØÕó
+                // è®¾ç½®è§†è§’ä¸æŠ•å½±çŸ©é˜µ
                 cmd.Clear();
                 cmd.SetViewProjectionMatrices(worldToCameraMatrix, projectionMatrix);
                 cmd.SetGlobalVector(s_ObjectTrailsTexPosPropID, new Vector4(position.x - halfRange, position.z - halfRange, config.cameraRange));
                 cmd.SetGlobalVector(s_ObjectTrailsTexHeightPropID, new Vector4(position.y - (config.cameraFar - config.cameraNear), position.y, 0.0f));
                 context.ExecuteCommandBuffer(cmd);
 
-                // Ö»äÖÈ¾²»Í¸Ã÷Îï
+                // åªæ¸²æŸ“ä¸é€æ˜ç‰©
                 m_FilteringSettings.renderQueueRange = RenderQueueRange.opaque;
                 DrawingSettings drawingOpaqueSettings = CreateDrawingSettings(m_ShaderTagIdList, ref renderingData, SortingCriteria.CommonOpaque);
                 context.DrawRenderers(renderingData.cullResults, ref drawingOpaqueSettings, ref m_FilteringSettings);
 
-                // »Ö¸´FrameBuffer
+                // æ¢å¤FrameBuffer
                 cmd.Clear();
                 cmd.SetViewProjectionMatrices(cameraData.GetViewMatrix(), cameraData.GetProjectionMatrix());
-                cmd.SetRenderTarget(source, depth);
+                cmd.SetRenderTarget(colorTarget, depthTarget);
                 cmd.EndSample(s_ProfileTag);
                 context.ExecuteCommandBuffer(cmd);
             }

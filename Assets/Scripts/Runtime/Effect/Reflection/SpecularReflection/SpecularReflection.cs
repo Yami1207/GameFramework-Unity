@@ -32,10 +32,16 @@ public class SpecularReflection : ScriptableRendererFeature
             CommandBuffer cmd = CommandBufferPool.Get();
             {
                 bool invertCulling = GL.invertCulling;
-                ref UnityEngine.Rendering.Universal.CameraData cameraData = ref renderingData.cameraData;
+                ref CameraData cameraData = ref renderingData.cameraData;
+                ref ScriptableRenderer renderer = ref cameraData.renderer;
                 Camera camera = cameraData.camera;
-                RenderTargetIdentifier source = renderingData.cameraData.renderer.cameraColorTargetHandle;
-                RenderTargetIdentifier depth = renderingData.cameraData.renderer.cameraDepthTargetHandle;
+#if UNITY_2022_1_OR_NEWER
+                RTHandle colorTarget = renderer.cameraColorTargetHandle;
+                RTHandle depthTarget = renderer.cameraDepthTargetHandle;
+#else
+                RenderTargetIdentifier colorTarget = renderer.cameraColorTarget;
+                RenderTargetIdentifier depthTarget = renderer.cameraDepthTarget;
+#endif
 
                 cmd.Clear();
                 cmd.BeginSample(s_ProfileTag);
@@ -89,7 +95,7 @@ public class SpecularReflection : ScriptableRendererFeature
                 // 恢复FrameBuffer
                 cmd.Clear();
                 cmd.SetViewProjectionMatrices(cameraData.GetViewMatrix(), cameraData.GetProjectionMatrix());
-                cmd.SetRenderTarget(source, depth);
+                cmd.SetRenderTarget(colorTarget, depthTarget);
                 cmd.SetInvertCulling(invertCulling);
                 cmd.EndSample(s_ProfileTag);
                 context.ExecuteCommandBuffer(cmd);

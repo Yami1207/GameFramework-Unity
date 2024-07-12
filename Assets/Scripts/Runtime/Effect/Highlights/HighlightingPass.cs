@@ -36,15 +36,31 @@ public class HighlightingPass : ScriptableRendererFeature
         private HighlightingPass m_Owner;
 
         private Material m_RendererMaterial;
+        public Material rendererMaterial
+        {
+            get
+            {
+                if (m_RendererMaterial == null)
+                    m_RendererMaterial = new Material(Shader.Find("Hidden/Highlighting/Renderer"));
+                return m_RendererMaterial;
+            }
+        }
+
         private Material m_BlurMaterial;
+        public Material blurMaterial
+        {
+            get
+            {
+                if (m_BlurMaterial == null)
+                    m_BlurMaterial = new Material(Shader.Find("Hidden/Highlighting/Blur"));
+                return m_BlurMaterial;
+            }
+        }
 
         public CustomRenderPass(HighlightingPass owner)
         {
             m_Owner = owner;
             renderPassEvent = owner.renderPassEvent;
-
-            m_RendererMaterial = new Material(Shader.Find("Hidden/Highlighting/Renderer"));
-            m_BlurMaterial = new Material(Shader.Find("Hidden/Highlighting/Blur"));
         }
 
         public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
@@ -77,7 +93,13 @@ public class HighlightingPass : ScriptableRendererFeature
             ref CameraData cameraData = ref renderingData.cameraData;
             ref ScriptableRenderer renderer = ref cameraData.renderer;
             Camera camera = cameraData.camera;
-            RTHandle source = renderer.cameraColorTargetHandle;
+#if UNITY_2022_1_OR_NEWER
+            RTHandle colorTarget = renderer.cameraColorTargetHandle;
+            RTHandle depthTarget = renderer.cameraDepthTargetHandle;
+#else
+            RenderTargetIdentifier colorTarget = renderer.cameraColorTarget;
+            RenderTargetIdentifier depthTarget = renderer.cameraDepthTarget;
+#endif
             var renderers = m_Owner.m_RenderersToDraw;
 
             SetupMaterial();
@@ -93,20 +115,20 @@ public class HighlightingPass : ScriptableRendererFeature
                 cmd.SetRenderTarget(HIGHLIGHTS_TEX_PROP_ID);
                 cmd.ClearRenderTarget(false, true, Color.black);
                 for (int i = 0; i < renderers.Count; ++i)
-                    cmd.DrawRenderer(renderers[i], m_RendererMaterial);
+                    cmd.DrawRenderer(renderers[i], rendererMaterial);
                 context.ExecuteCommandBuffer(cmd);
 
                 cmd.Clear();
-                CoreUtils.SetRenderTarget(cmd, source);
-                cmd.Blit(HIGHLIGHTS_TEX_PROP_ID, BLUR_V_HIGHLIGHTS_TEX_PROP_ID, m_BlurMaterial, 0);
+                cmd.SetRenderTarget(colorTarget, depthTarget);
+                cmd.Blit(HIGHLIGHTS_TEX_PROP_ID, BLUR_V_HIGHLIGHTS_TEX_PROP_ID, blurMaterial, 0);
                 if (m_Owner.m_TexQuality != TexQuality.High)
                 {
-                    cmd.Blit(BLUR_V_HIGHLIGHTS_TEX_PROP_ID, BLUR_HIGHLIGHTS_TEX_PROP_ID, m_BlurMaterial, 1);
-                    cmd.Blit(Texture2D.blackTexture, source, m_BlurMaterial, 2);
+                    cmd.Blit(BLUR_V_HIGHLIGHTS_TEX_PROP_ID, BLUR_HIGHLIGHTS_TEX_PROP_ID, blurMaterial, 1);
+                    cmd.Blit(Texture2D.blackTexture, colorTarget, blurMaterial, 2);
                 }
                 else
                 {
-                    cmd.Blit(Texture2D.blackTexture, source, m_BlurMaterial, 3);
+                    cmd.Blit(Texture2D.blackTexture, colorTarget, blurMaterial, 3);
                 }
                 context.ExecuteCommandBuffer(cmd);
 
@@ -126,10 +148,10 @@ public class HighlightingPass : ScriptableRendererFeature
 
         private void SetupMaterial()
         {
-            m_BlurMaterial.SetFloat(BLUR_ITERATIONS_PROP_ID, m_Owner.m_BlurIterations);
-            m_BlurMaterial.SetFloat(BLUR_PIXEL_OFFSET_PROP_ID, m_Owner.m_BlurPixelOffset);
-            m_BlurMaterial.SetFloat(BLUR_INTENSITY_PROP_ID, m_Owner.m_BlurIntensity);
-            m_BlurMaterial.SetColor(HIGHLIGHT_COLOR_PROP_ID, m_Owner.m_HighlightColor);
+            blurMaterial.SetFloat(BLUR_ITERATIONS_PROP_ID, m_Owner.m_BlurIterations);
+            blurMaterial.SetFloat(BLUR_PIXEL_OFFSET_PROP_ID, m_Owner.m_BlurPixelOffset);
+            blurMaterial.SetFloat(BLUR_INTENSITY_PROP_ID, m_Owner.m_BlurIntensity);
+            blurMaterial.SetColor(HIGHLIGHT_COLOR_PROP_ID, m_Owner.m_HighlightColor);
         }
     }
 

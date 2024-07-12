@@ -3,6 +3,7 @@
     SubShader
     {
         Tags { "RenderPipeline" = "UniversalPipeline" }
+        ZWrite Off
 
         Pass
         {

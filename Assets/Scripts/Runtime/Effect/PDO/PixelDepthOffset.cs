@@ -71,7 +71,13 @@ public class PixelDepthOffset : ScriptableRendererFeature
             ref CameraData cameraData = ref renderingData.cameraData;
             ref ScriptableRenderer renderer = ref cameraData.renderer;
             Camera camera = cameraData.camera;
-            RTHandle source = renderer.cameraColorTargetHandle;
+#if UNITY_2022_1_OR_NEWER
+            RTHandle colorTarget = renderer.cameraColorTargetHandle;
+            RTHandle depthTarget = renderer.cameraDepthTargetHandle;
+#else
+            RenderTargetIdentifier colorTarget = renderer.cameraColorTarget;
+            RenderTargetIdentifier depthTarget = renderer.cameraDepthTarget;
+#endif
 
             CommandBuffer cmd = CommandBufferPool.Get();
             {
@@ -95,7 +101,7 @@ public class PixelDepthOffset : ScriptableRendererFeature
 
                 // 恢复FrameBuffer
                 cmd.Clear();
-                CoreUtils.SetRenderTarget(cmd, source);
+                cmd.SetRenderTarget(colorTarget, depthTarget);
                 cmd.EndSample(s_ProfileTag);
                 context.ExecuteCommandBuffer(cmd);
             }
