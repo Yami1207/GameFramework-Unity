@@ -99,20 +99,11 @@ FragData frag(Varyings input)
     CustomInputData inputData;
     InitializeInputData(input, surfaceData, inputData);
     
-#if defined(_PIXEL_DEPTH_OFFSET_ON)
+#if defined(_ENABLE_MIX_TERRAIN) && defined(_PIXEL_DEPTH_OFFSET_ON)
     MixPixelDepthOffset(inputData.positionWS, _MixDepthDiffer, surfaceData, inputData);
 #endif
     
-    half4 shadowMask = CalculateShadowMask(inputData);
-    AmbientOcclusionFactor aoFactor = CreateAmbientOcclusionFactor(inputData.normalizedScreenSpaceUV, surfaceData.occlusion);
-    Light mainLight = GetMainLight(inputData, shadowMask, aoFactor);
-    
-    // GI
-    MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI);
-    half3 giColor = inputData.bakedGI * surfaceData.albedo;
-    
-    half3 mainLightColor = LightingPhysicallyBased(inputData, surfaceData, mainLight);
-    half3 color = (giColor + mainLightColor);
+    half3 color = LightingPhysicallyBased(inputData, surfaceData);
     
     // 自发光
     color = MixEmission(color, surfaceData);

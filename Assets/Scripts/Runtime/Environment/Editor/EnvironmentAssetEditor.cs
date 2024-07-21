@@ -51,9 +51,10 @@ public class EnvironmentAssetEditor : Editor
         EditorGUIHelper.DrawTitleGUI("Wind");
 
         var so = serializedObject.FindProperty("wind");
-        EditorGUILayout.PropertyField(so.FindPropertyRelative("speedX"), EditorDraw.TempContent("Speed X"));
-        EditorGUILayout.PropertyField(so.FindPropertyRelative("speedZ"), EditorDraw.TempContent("Speed Z"));
-        EditorGUILayout.PropertyField(so.FindPropertyRelative("intensity"), EditorDraw.TempContent("Intensity"));
+        EditorGUILayout.PropertyField(so.FindPropertyRelative("directionX"), EditorDraw.TempContent("方向(X)"));
+        EditorGUILayout.PropertyField(so.FindPropertyRelative("directionZ"), EditorDraw.TempContent("方向(Z)"));
+        EditorGUILayout.PropertyField(so.FindPropertyRelative("speed"), EditorDraw.TempContent("风速"));
+        EditorGUILayout.PropertyField(so.FindPropertyRelative("intensity"), EditorDraw.TempContent("强度"));
     }
 
     #endregion

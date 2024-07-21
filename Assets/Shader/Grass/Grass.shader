@@ -10,10 +10,6 @@
 		_ReflectionIntensity("反射强度", Range(0, 1.0)) = 0.5
 
         [Toggle(_USE_SWING)]_Swing("摆动开启", int) = 0
-        _SwingFeq("最小摆动频率", float) = 0.1
-        _SwingFeqMax("最大摆动频率", float) = 0.6
-        _SwingScale("修正频率", float) = 1
-        _SwingAmp("摆动幅度", float) = 1
 
 		[Toggle(_USE_INTERACTIVE)]_Interactive("互动草", int) = 0
 		_GrassPivotPointTex("描点图", 2D) = "black" {}

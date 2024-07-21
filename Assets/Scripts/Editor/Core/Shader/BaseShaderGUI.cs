@@ -327,7 +327,11 @@ public class BaseShaderGUI : ShaderGUI
 
     protected void DrawProperty(string name, string text, bool propertyIsMandatory)
     {
-        var prop = FindProperty(name, propertyIsMandatory);
+        DrawProperty(FindProperty(name, propertyIsMandatory), text);
+    }
+
+    protected void DrawProperty(MaterialProperty prop, string text)
+    {
         if (prop != null)
             m_Editor.ShaderProperty(prop, text);
     }

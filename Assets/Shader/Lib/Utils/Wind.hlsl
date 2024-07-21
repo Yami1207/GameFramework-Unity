@@ -1,12 +1,21 @@
 ﻿#ifndef __WIND_HLSL_H__
 #define __WIND_HLSL_H__
 
-// xy: 风速 z: 强度
+#include "Noise.hlsl"
+
+// xy: 方向 z: 风速 w: 强度
 uniform half4 _G_WindParameter;
 
 inline float GetWindIntensity()
 {
-    return _G_WindParameter.z;
+    return _G_WindParameter.w;
+}
+
+inline float3 SimpleGrassWind(float3 positionWS, float weight)
+{
+    float speed = _G_WindParameter.z * _Time.y;
+    float noise = fbm(positionWS.xz + _G_WindParameter.xy * speed, 3);
+    return weight * noise * _G_WindParameter.w;
 }
 
 inline float3 SimpleSwingPositionOS(float3 positionOS, float frequency, float amplitude, float stiffness, float phase, float windIntensity)

@@ -3,7 +3,6 @@
 
 struct CustomSurfaceData
 {
-    //
     half3 albedo;
     
     // 高光
@@ -50,6 +49,18 @@ struct CustomInputData
     
     half3x3 tangentToWorld;
 };
+
+inline CustomSurfaceData GetDefaultSurfaceData()
+{
+    CustomSurfaceData surfaceData = (CustomSurfaceData) 0;
+    return surfaceData;
+}
+
+inline CustomInputData GetDefaultInputData()
+{
+    CustomInputData inputData = (CustomInputData) 0;
+    return inputData;
+}
 
 ////////////////////////////////////////////////
 //// 功能结构体与函数

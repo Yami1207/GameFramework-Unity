@@ -2,7 +2,7 @@
 {
     Properties
     {
-        _BaseMap("Albedo", 2D) = "white" {}
+        [NoScaleOffset]_BaseMap("Albedo", 2D) = "white" {}
         [Linear]_BaseColor("颜色", Vector) = (1, 1, 1, 1)
 
         _BumpMap("Normal Map", 2D) = "bump" {}
@@ -14,6 +14,7 @@
         _EmissionIntensity("Emission Intensity", Range(0, 1)) = 0
         [Linear]_EmissionColor("Emission Color", Vector) = (0, 0, 0, 1)
 
+		[Toggle(_ENABLE_MIX_TERRAIN)]_EnableMixTerrain("与地形融合", Float) = 0
         _MixDepthDiffer("深度差", float) = 1.0
 
         [MaterialEnum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Int) = 0
@@ -50,6 +51,8 @@
 			// -------------------------------------
             // 自定义keywords
 			#pragma multi_compile _ _PIXEL_DEPTH_OFFSET_ON
+
+			#pragma shader_feature_local _ENABLE_MIX_TERRAIN
 
             //--------------------------------------
             // 自定义宏

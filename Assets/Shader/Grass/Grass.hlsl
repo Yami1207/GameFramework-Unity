@@ -24,11 +24,6 @@ uniform half _Cutoff;
 uniform half _Roughness;
 uniform half _ReflectionIntensity;
 
-uniform half _SwingFeq;
-uniform half _SwingFeqMax;
-uniform half _SwingScale;
-uniform half _SwingAmp;
-
 uniform half _GrassPivotPointTexUnit;
 uniform half _GrassPushStrength;
 
@@ -78,13 +73,11 @@ inline float3 GetGrassPosition(Attributes input, float3 normalWS)
     float3 positionOS = input.positionOS;
     float lerpY = input.texcoord.y;// * input.texcoord.y;
     
-#if USING_SWING
-    float phase = UNITY_MATRIX_M._m10 - input.texcoord.x;
-    float feq = lerp(_SwingFeq, _SwingFeqMax, GetWindIntensity() * _SwingScale);
-    positionOS = SimpleSwingPositionOS(positionOS, feq, _SwingAmp, lerpY, phase);
-#endif
-
     float3 positionWS = TransformObjectToWorld(positionOS);
+#if USING_SWING
+    positionWS += SimpleGrassWind(positionWS, lerpY);
+#endif
+    
 #if USING_INTERACTIVE    
      // 获取周围角色信息
     float4 playerPosWS = GetTrailObject(positionWS);

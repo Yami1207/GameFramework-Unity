@@ -1,7 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditorInternal.VR;
 using UnityEngine;
 
 public class LitShaderGUI : BaseShaderGUI
@@ -23,6 +23,8 @@ public class LitShaderGUI : BaseShaderGUI
     private MaterialProperty m_BumpMapProp;
     private MaterialProperty m_BumpMapScaleProp;
 
+    private MaterialProperty m_EnableMixTerrainProp;
+
     protected override void FindProperties(MaterialProperty[] properties)
     {
         base.FindProperties(properties);
@@ -32,6 +34,8 @@ public class LitShaderGUI : BaseShaderGUI
 
         m_BumpMapProp = FindProperty("_BumpMap", false);
         m_BumpMapScaleProp = FindProperty("_BumpScale", false);
+
+        m_EnableMixTerrainProp = FindProperty("_EnableMixTerrain", false);
     }
 
     protected override void DoGUI()
@@ -40,6 +44,7 @@ public class LitShaderGUI : BaseShaderGUI
         DoGUI_PBR();
         DoGUI_Emission();
         DoGUI_PDO();
+        DoGUI_Other();
         DoGUI_UnityDefaultPart();
     }
 
@@ -81,7 +86,20 @@ public class LitShaderGUI : BaseShaderGUI
         EditorGUILayout.BeginVertical(BaseShaderGUI.Styles.frameBgStyle);
         {
             DoGUI_Title("< 地形融合 >");
-            DrawProperty("_MixDepthDiffer", "深度差", false);
+
+            DrawProperty(m_EnableMixTerrainProp, "与地形融合");
+            if (m_EnableMixTerrainProp.floatValue > 0.5f)
+                DrawProperty("_MixDepthDiffer", "深度差", false);
+        }
+        EditorGUILayout.EndVertical();
+    }
+
+    private void DoGUI_Other()
+    {
+        EditorGUILayout.BeginVertical(BaseShaderGUI.Styles.frameBgStyle);
+        {
+            DoGUI_Title("< Other >");
+            DrawProperty("_Cull", "三角型正反面裁剪", false);
         }
         EditorGUILayout.EndVertical();
     }

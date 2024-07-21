@@ -56,7 +56,11 @@ public class EnvironmentCore : SingletonMono<EnvironmentCore>
         // Wind
         {
             EnvironmentAsset.Wind wind = m_Asset.wind;
-            Shader.SetGlobalVector(ShaderConstants.windParameterPropID, new Vector4(wind.speedX, wind.speedZ, wind.intensity));
+
+            float length = Mathf.Abs(wind.directionX) + Mathf.Abs(wind.directionZ);
+            Vector2 direction = new Vector2(wind.directionX, wind.directionZ);
+            direction.Normalize();
+            Shader.SetGlobalVector(ShaderConstants.windParameterPropID, new Vector4(direction.x, direction.y, 0.3f * wind.speed, 0.02f * wind.intensity));
         }
     }
 }

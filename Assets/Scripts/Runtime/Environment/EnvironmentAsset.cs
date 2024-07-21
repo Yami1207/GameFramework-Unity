@@ -8,9 +8,17 @@ public class EnvironmentAsset : ScriptableObject
     [Serializable]
     public class Wind
     {
-        public float speedX = 0.1f;
-        public float speedZ = 0.1f;
-        public float intensity = 1;
+        // x方向
+        public float directionX = 1.0f;
+
+        // z方向
+        public float directionZ = 0.0f;
+
+        // 速度
+        public float speed = 1.0f;
+
+        // 强度
+        public float intensity = 1.0f;
     }
 
     public ObjectTrailsConfig objectTrails = new ObjectTrailsConfig();

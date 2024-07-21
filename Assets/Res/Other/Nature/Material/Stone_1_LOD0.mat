@@ -11,7 +11,8 @@ Material:
   m_Shader: {fileID: 4800000, guid: 4af3871624b42d14ba2f378115a5617f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _ENABLE_MIX_TERRAIN
   m_InvalidKeywords:
   - _USE_PDO
   m_LightmapFlags: 4
@@ -37,6 +38,7 @@ Material:
     - _BumpScale: 1
     - _Cull: 2
     - _EmissionIntensity: 0.05
+    - _EnableMixTerrain: 1
     - _Metallic: 0
     - _MixDepthDiffer: 1
     - _Smoothness: 0.3

@@ -19,7 +19,8 @@ MonoBehaviour:
     cameraNear: 0
     cameraFar: 50
   wind:
-    speedX: 0.1
-    speedZ: 0.1
-    intensity: 1
+    directionX: 1
+    directionZ: 1
+    speed: 2
+    intensity: 5
   m_EnablePixelDepthOffset: 1

@@ -39,25 +39,20 @@ inline float4 SmoothTriangleWave(float4 x)
     return SmoothCurve(TriangleWave(x));
 }
 
-// 
-inline float3x3 MatrixRotate(float radian, float3 axis)
+// 获取旋转矩阵
+inline float3x3 MatrixRotate(float3 axis, float radian)
 {
-    float s, c, t;
-    float tx, ty, tz;
-    float sx, sy, sz;
-
-    //s = sin(radian);
-    //c = cos(radian);
+    float s, c;
     sincos(radian, s, c);
-    t = 1.f - c;
+    float t = 1.f - c;
 
-    tx = t * axis.x;
-    ty = t * axis.y;
-    tz = t * axis.z;
+    float tx = t * axis.x;
+    float ty = t * axis.y;
+    float tz = t * axis.z;
 
-    sx = s * axis.x;
-    sy = s * axis.y;
-    sz = s * axis.z;
+    float sx = s * axis.x;
+    float sy = s * axis.y;
+    float sz = s * axis.z;
 
     float3x3 mat;
     mat._m00 = tx * axis.x + c;
@@ -75,22 +70,28 @@ inline float3x3 MatrixRotate(float radian, float3 axis)
     return mat;
 }
 
-inline float3 RotateAboutAxis(float4 NormalizedRotationAxisAndAngle, float3 PositionOnAxis, float3 Position)
+inline float3 RotateAboutAxis(float3 position, float3 axis, float radian)
 {
-			// Project Position onto the rotation axis and find the closest point on the axis to Position
-    float3 ClosestPointOnAxis = PositionOnAxis + NormalizedRotationAxisAndAngle.xyz * dot(NormalizedRotationAxisAndAngle.xyz, Position - PositionOnAxis);
-			// Construct orthogonal axes in the plane of the rotation
-    float3 UAxis = Position - ClosestPointOnAxis;
-    float3 VAxis = cross(NormalizedRotationAxisAndAngle.xyz, UAxis);
-    float CosAngle;
-    float SinAngle;
-    sincos(NormalizedRotationAxisAndAngle.w, SinAngle, CosAngle);
-			// Rotate using the orthogonal axes
-    float3 R = UAxis * CosAngle + VAxis * SinAngle;
-			// Reconstruct the rotated world space position
+    return mul(MatrixRotate(axis, radian), position);
+}
+
+inline float3 RotateAboutAxis(float4 rotationAxisAndAngle, float3 positionOnAxis, float3 position)
+{
+    float s, c;
+    sincos(ANGLE_TO_RADIAN(rotationAxisAndAngle.w), s, c);
+    
+    // Project Position onto the rotation axis and find the closest point on the axis to Position
+    float3 ClosestPointOnAxis = positionOnAxis + rotationAxisAndAngle.xyz * dot(rotationAxisAndAngle.xyz, position - positionOnAxis);
+	// Construct orthogonal axes in the plane of the rotation
+    float3 UAxis = position - ClosestPointOnAxis;
+    float3 VAxis = cross(rotationAxisAndAngle.xyz, UAxis);
+
+    // Rotate using the orthogonal axes
+    float3 R = UAxis * c + VAxis * s;
+	// Reconstruct the rotated world space position
     float3 RotatedPosition = ClosestPointOnAxis + R;
-			// Convert from position to a position offset
-    return RotatedPosition - Position;
+    // Convert from position to a position offset
+    return RotatedPosition - position;
 }
 
 #endif
