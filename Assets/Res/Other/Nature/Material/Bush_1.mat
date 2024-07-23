@@ -51,12 +51,13 @@ Material:
     - _Cull: 0
     - _EnableSubsurfaceScattering: 1
     - _EnableWind: 1
+    - _SubsurfaceColorIntensity: 1
     - _SubsurfaceRadius: 0.4
     - _UseAlphaCutoff: 1
     - _UseGradientColor: 1
     m_Colors:
     - _BaseBottomColor: {r: 0.022173883, g: 0.18116423, b: 0.09758736, a: 1}
     - _BaseColor: {r: 0.07430992, g: 0.39362136, b: 0.16932403, a: 1}
-    - _BaseTopColor: {r: 0.13642614, g: 0.5600193, b: 0.270423, a: 1}
+    - _ShadowColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
     - _SubsurfaceColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

@@ -6,9 +6,10 @@
 
         [Toggle(_USE_GRADIENT_COLOR)]_UseGradientColor("Use Gradient Color", Float) = 0
         [Linear]_BaseColor("颜色", Vector) = (1, 1, 1, 1)
-        [Linear]_BaseTopColor("Top颜色", Vector) = (1, 1, 1, 1)
-        [Linear]_BaseBottomColor("Bottom颜色", Vector) = (1, 1, 1, 1)
+        [Linear]_BaseBottomColor("底部颜色", Vector) = (1, 1, 1, 1)
         _ColorMaskHeight("Color Mask Height", Range(0.0, 2.0)) = 1.0
+
+        [Linear]_ShadowColor("阴影色", Vector) = (0.7, 0.7, 0.7, 1.0)
 
         // 透明通道裁剪(只在面板设置用)
 		[Toggle(_USE_ALPHA_CUTOFF)]_UseAlphaCutoff("Use Alpha Off", Float) = 0
@@ -17,6 +18,7 @@
         [Toggle(_ENABLE_SSS_ON)]_EnableSubsurfaceScattering("次表面散射", Float) = 0
 		_SubsurfaceRadius("Subsurface Radius", Range(0.0, 1.0)) = 1.0
 		[Linear]_SubsurfaceColor("Subsurface Color", Vector) = (1, 1, 1, 1)
+        _SubsurfaceColorIntensity("Subsurface Color Color", Float) = 1
 
         [Toggle(_ENABLE_WIND_ON)]_EnableWind("风动效果", Float) = 0
 

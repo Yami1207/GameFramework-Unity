@@ -27,7 +27,7 @@ inline void InitializeSurfaceData(Varyings input, inout CustomSurfaceData surfac
     albedoMask = albedoMask * 0.5 + 0.5;
     albedoMask *= _ColorMaskHeight;
     albedoMask = smoothstep(0, 1, albedoMask);
-    half3 albedo = lerp(_BaseBottomColor, _BaseTopColor, albedoMask);
+    half3 albedo = lerp(_BaseBottomColor, _BaseColor, albedoMask);
 #else
     half3 albedo = _BaseColor;
 #endif
@@ -108,11 +108,11 @@ FragData frag(Varyings input)
         BxDFContext bxdfContext = GetBxDFContext(inputData, mainLight.direction);
         half rim = 1.0 - bxdfContext.NoV_abs;
 
-        half3 backLightDir = inputData.normalWS * max(_SubsurfaceRadius, 0.001) + mainLight.direction;
+        half3 backLightDir = inputData.normalWS * max(1 - _SubsurfaceRadius, 0.001) + mainLight.direction;
         half backSSS = saturate(dot(inputData.viewDirectionWS, -backLightDir));
         backSSS = backSSS * backSSS * backSSS;
     
-        half3 subsurfaceColor = saturate(surfaceData.albedo - max(Max3(surfaceData.albedo) - 0.2, 0.1)) * _SubsurfaceColor;
+        half3 subsurfaceColor = saturate(surfaceData.albedo - max(Max3(surfaceData.albedo) - 0.2, 0.1)) * _SubsurfaceColor * _SubsurfaceColorIntensity;
         color += rim * backSSS * mainLight.color * subsurfaceColor;
     }
 #endif

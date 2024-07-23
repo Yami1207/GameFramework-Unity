@@ -17,7 +17,6 @@
 //--------------------------------------
 // 材质属性
 uniform half3 _BaseColor;
-uniform half3 _BaseTopColor;
 uniform half3 _BaseBottomColor;
 uniform half _ColorMaskHeight;
 
@@ -25,6 +24,7 @@ uniform half _AlphaCutoff;
 
 uniform half _SubsurfaceRadius;
 uniform half3 _SubsurfaceColor;
+uniform half _SubsurfaceColorIntensity;
 
 //--------------------------------------
 // 顶点结构体

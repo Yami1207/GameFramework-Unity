@@ -12,6 +12,8 @@ public class FoliageShaderGUI : BaseShaderGUI
     }
 
     private MaterialProperty m_BaseMapProp;
+    private MaterialProperty m_BaseColorProp;
+
     private MaterialProperty m_EnableSubsurfaceScattering;
     private MaterialProperty m_UseGradientColorProp;
 
@@ -20,6 +22,8 @@ public class FoliageShaderGUI : BaseShaderGUI
         base.FindProperties(properties);
 
         m_BaseMapProp = FindProperty("_BaseMap", false);
+        m_BaseColorProp = FindProperty("_BaseColor", false);
+
         m_EnableSubsurfaceScattering = FindProperty("_EnableSubsurfaceScattering", false);
         m_UseGradientColorProp = FindProperty("_UseGradientColor", false);
     }
@@ -39,18 +43,16 @@ public class FoliageShaderGUI : BaseShaderGUI
         {
             DoGUI_Title("< Main >");
 
-            m_Editor.TexturePropertySingleLine(Styles.baseMap, m_BaseMapProp);
+            m_Editor.TexturePropertySingleLine(Styles.baseMap, m_BaseMapProp, m_BaseColorProp);
 
-            DrawProperty(m_UseGradientColorProp, "Gradient Color");
+            DrawProperty(m_UseGradientColorProp, "颜色渐变");
             if (m_UseGradientColorProp.floatValue > 0.5f)
             {
-                DrawProperty("_BaseTopColor", "Top Color", false);
-                DrawProperty("_BaseBottomColor", "Bottom Color", false);
+                DrawProperty("_BaseBottomColor", "底部颜色", false);
+                DrawProperty("_ColorMaskHeight", "颜色占比", false);
             }
-            else
-            {
-                DrawProperty("_BaseColor", "Color", false);
-            }
+
+            DrawProperty("_ShadowColor", "阴影色", false);
         }
         EditorGUILayout.EndVertical();
     }
@@ -81,6 +83,7 @@ public class FoliageShaderGUI : BaseShaderGUI
             {
                 DrawProperty("_SubsurfaceRadius", "散射半径", false);
                 DrawProperty("_SubsurfaceColor", "散射颜色", false);
+                DrawProperty("_SubsurfaceColorIntensity", "散射颜色强度", false);
             }
         }
         EditorGUILayout.EndVertical();
