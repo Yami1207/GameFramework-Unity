@@ -8,12 +8,13 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Grass_LOD1
-  m_Shader: {fileID: 4800000, guid: 888fb2edf64dcea43a49fb5c36051b3e, type: 3}
+  m_Shader: {fileID: 4800000, guid: 8d5c0e4cb691f9147a3418405c7a3e65, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _ENABLE_WIND_ON
+  m_InvalidKeywords:
   - _USE_SWING
-  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
@@ -87,6 +88,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaClip: 0
+    - _AlphaCutoff: 0.35
     - _AlphaToMask: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
@@ -99,6 +101,8 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _EnableInteractive: 0
+    - _EnableWind: 1
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
@@ -125,6 +129,7 @@ Material:
     - _SwingFeq: 0.1
     - _SwingFeqMax: 0.6
     - _SwingScale: 0.5
+    - _UseAlphaCutoff: 0
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:

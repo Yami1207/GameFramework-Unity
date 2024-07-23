@@ -1,73 +1,7 @@
-﻿#ifndef __GRASS_HLSL__
-#define __GRASS_HLSL__
+﻿#ifndef __GRASS_PASS_HLSL__
+#define __GRASS_PASS_HLSL__
 
-// ========================= 开关定义 =========================
-#define USING_SWING (_USE_SWING)
-
-#define USING_INTERACTIVE  (_USE_INTERACTIVE)
-
-#define USING_SOLID_COLOR (USE_SOLID_COLOR)
-
-#define USING_ALPHA_CUTOFF (USE_ALPHA_CUTOFF)
-
-#include "../Lib/Core.hlsl"
-#include "../Lib/Utils/Wind.hlsl"
-#include "../Lib/Utils/PivotPainter2.hlsl"
-
-//--------------------------------------
-// 材质属性
-uniform half3 _BaseColor;
-uniform half3 _GrassTipColor;
-uniform half3 _GrassShadowColor;
-uniform half _Cutoff;
-
-uniform half _Roughness;
-uniform half _ReflectionIntensity;
-
-uniform half _GrassPivotPointTexUnit;
-uniform half _GrassPushStrength;
-
-//--------------------------------------
-// 贴图
-TEXTURE2D(_GrassPivotPointTex);
-SAMPLER(sampler_GrassPivotPointTex);
-
-//--------------------------------------
-// 顶点结构体
-struct Attributes
-{
-    float3 positionOS   : POSITION;
-    float3 normalOS     : NORMAL;
-    half2 texcoord      : TEXCOORD0;
-    float2 texcoord2    : TEXCOORD2;
-    float2 texcoord3    : TEXCOORD3;
-	UNITY_VERTEX_INPUT_INSTANCE_ID
-};
-
-//--------------------------------------
-// 片元结构体
-struct Varyings
-{
-    float4 positionCS       : SV_POSITION;
-    half2 texcoord          : TEXCOORD0;
-    float4 positionWSAndFog : TEXCOORD1;
-    float3 normalWS         : TEXCOORD2;
-    float4 shadowCoord      : TEXCOORD3;
-    half3 vertexSH          : TEXCOORD4;
-    
-    UNITY_VERTEX_OUTPUT_STEREO
-};
-
-//--------------------------------------
-// 片元输出结构体
-struct FragData
-{
-    half4 color : SV_Target0;
-    float4 normal : SV_Target1;
-};
-
-#include "../Lib/Instancing.hlsl"
-#include "../Lib/Utils/ObjectTrails.hlsl"
+#include "GrassInput.hlsl"
 
 inline float3 GetGrassPosition(Attributes input, float3 normalWS)
 {
@@ -75,7 +9,7 @@ inline float3 GetGrassPosition(Attributes input, float3 normalWS)
     float lerpY = input.texcoord.y * input.texcoord.y;
     
     float3 positionWS = TransformObjectToWorld(positionOS);
-#if USING_SWING
+#if USING_WIND
     positionWS += SimpleGrassWind(positionWS, lerpY);
 #endif
     
@@ -89,7 +23,6 @@ inline float3 GetGrassPosition(Attributes input, float3 normalWS)
         // 草的描点
         float3 pivotPointWS = TransformObjectToWorld(float3(input.texcoord2, input.texcoord3.x));
         //pivotPointWS.y = unity_ObjectToWorld._24;
-    
         float pushDown = saturate((1 - dist / playerPosWS.w) * lerpY) * _GrassPushStrength;
         float3 direction = normalize(playerPosWS - pivotPointWS);
         float3 newPos = positionWS + (direction * pushDown);
@@ -101,25 +34,24 @@ inline float3 GetGrassPosition(Attributes input, float3 normalWS)
     return positionWS;
 }
 
-inline void InitializeSurfaceData(Varyings input, out CustomSurfaceData surfaceData)
+///////////////////////////////////////////////////////////////////////////////
+//                               Forward                                      /
+///////////////////////////////////////////////////////////////////////////////
+inline void InitializeSurfaceData(Varyings input, inout CustomSurfaceData surfaceData)
 {
-    half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord);
 #if USING_ALPHA_CUTOFF
+    half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord);
     clip(albedoAlpha.a - _Cutoff);
+#else
+    half4 albedoAlpha = (half4) 1;
 #endif
     
-    surfaceData = (CustomSurfaceData) 0;
-#if USING_SOLID_COLOR
-    surfaceData.albedo = lerp(_BaseColor, _GrassTipColor, input.texcoord.y * input.texcoord.y);
-#else
     surfaceData.albedo = albedoAlpha.rgb * lerp(_BaseColor, _GrassTipColor, input.texcoord.y * input.texcoord.y);
-#endif
     surfaceData.alpha = albedoAlpha.a;
 }
 
-inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, out CustomInputData inputData)
+inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, inout CustomInputData inputData)
 {
-    inputData = (CustomInputData) 0;
     inputData.positionWS = input.positionWSAndFog.xyz;
     inputData.normalWS = input.normalWS;
 
@@ -160,10 +92,10 @@ Varyings vert(Attributes input)
 
 FragData frag(Varyings input)
 {
-    CustomSurfaceData surfaceData;
+    CustomSurfaceData surfaceData = GetDefaultSurfaceData();
     InitializeSurfaceData(input, surfaceData);
 
-    CustomInputData inputData;
+    CustomInputData inputData = GetDefaultInputData();
     InitializeInputData(input, surfaceData, inputData);
     
     half4 shadowMask = CalculateShadowMask(inputData);
@@ -184,9 +116,9 @@ FragData frag(Varyings input)
     giColor += _ReflectionIntensity * GetGlossyEnvironmentReflection(bxdfContext.R, perceptualRoughness);
 
     // 主灯颜色(草不要暗部效果)
-    half3 lightColor = surfaceData.albedo * mainLight.color * shadow * bxdfContext.NoL_01;
+    half3 mainLightColor = surfaceData.albedo * mainLight.color * shadow * bxdfContext.NoL_01;
     
-    half3 color = lightColor + giColor;
+    half3 color = mainLightColor + giColor;
 
     // 与雾混合
     color = MixFog(color, inputData, surfaceData);
