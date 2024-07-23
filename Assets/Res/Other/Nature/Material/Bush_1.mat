@@ -51,8 +51,8 @@ Material:
     - _Cull: 0
     - _EnableSubsurfaceScattering: 1
     - _EnableWind: 1
-    - _SubsurfaceColorIntensity: 1
-    - _SubsurfaceRadius: 0.4
+    - _SubsurfaceColorIntensity: 1.5
+    - _SubsurfaceRadius: 0.9
     - _UseAlphaCutoff: 1
     - _UseGradientColor: 1
     m_Colors:
