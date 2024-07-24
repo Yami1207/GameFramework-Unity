@@ -38,19 +38,19 @@ Material:
     m_Floats:
     - _AlphaCutoff: 0.35
     - _Cull: 0
-    - _EmissionIntensity: 0.428
+    - _EmissionIntensity: 0.299
     - _EnableInteractive: 0
     - _EnableRipplingWheat: 1
     - _EnableWind: 1
     - _GrassPushStrength: 5
     - _ReflectionIntensity: 0.037
     - _RipplingWheatWaveSize: 74.2
-    - _RipplingWheatWaveSpeed: 0.76
+    - _RipplingWheatWaveSpeed: 0.96
     - _Roughness: 0.056
     - _UseAlphaCutoff: 0
     m_Colors:
     - _BaseColor: {r: 0.012181613, g: 0.060834274, b: 0.006397843, a: 1}
-    - _EmissionColor: {r: 0.9477959, g: 1, b: 0.45202947, a: 1}
+    - _EmissionColor: {r: 0.72404146, g: 0.77996576, b: 0.24131086, a: 1}
     - _GrassShadowColor: {r: 0.701102, g: 0.701102, b: 0.701102, a: 1}
     - _GrassTipColor: {r: 0.04825714, g: 0.2411783, b: 0.025027307, a: 1}
   m_BuildTextureStacks: []

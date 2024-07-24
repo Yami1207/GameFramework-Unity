@@ -23,6 +23,11 @@ inline half4 Min3(half4 x, half4 y, half4 z)
     return min(x, min(y, z));
 }
 
+inline float Pow2(float x)
+{
+    return x * x;
+}
+
 inline float Pow3(float x)
 {
     return x * x * x;

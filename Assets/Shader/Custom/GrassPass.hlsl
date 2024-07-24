@@ -17,7 +17,7 @@ inline float4 GetGrassPosition(Attributes input, float3 normalWS)
 #if USING_RIPPLING_WHEAT
     float2 sampleUV2 = positionWS.xz / _RipplingWheatWaveSize + _Time.x * _RipplingWheatWaveSpeed * GetWindDirection();
     float mask = 1 - SAMPLE_TEXTURE2D_LOD(_RipplingWheatMap, sampler_RipplingWheatMap, sampleUV2, 0).x;
-    wave = (mask * mask) * PowOptimize(lerpY, 9);
+    wave = Pow2(mask * lerpY);
     positionWS.xz -= sin(0.1 * wave) * _RipplingWheatWaveSpeed * lerpY * 2;
 #endif
 
