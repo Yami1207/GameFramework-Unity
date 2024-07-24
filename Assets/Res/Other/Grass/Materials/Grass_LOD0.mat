@@ -13,6 +13,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _ENABLE_INTERACTIVE_ON
+  - _ENABLE_RIPPLING_WHEAT_ON
   - _ENABLE_WIND_ON
   m_InvalidKeywords:
   - _USE_INTERACTIVE
@@ -31,20 +32,29 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _RipplingWheatMap:
+        m_Texture: {fileID: 2800000, guid: 569313e8cc7297441ae2f5761cbefc13, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _AlphaCutoff: 0.35
     - _Cull: 0
+    - _EmissionIntensity: 0.428
     - _EnableInteractive: 1
+    - _EnableRipplingWheat: 1
     - _EnableWind: 1
     - _GrassPushStrength: 10
     - _ReflectionIntensity: 0.037
+    - _RipplingWheatWaveSize: 74.2
+    - _RipplingWheatWaveSpeed: 0.76
     - _Roughness: 0.056
     - _UseAlphaCutoff: 0
     m_Colors:
-    - _BaseColor: {r: 0.15292618, g: 0.33245158, b: 0.018500218, a: 1}
-    - _GrassShadowColor: {r: 0.701102, g: 0.701102, b: 0.701102, a: 1}
-    - _GrassTipColor: {r: 0.44365925, g: 0.5754442, b: 0.27932364, a: 1}
+    - _BaseColor: {r: 0.012181613, g: 0.060834274, b: 0.006397843, a: 1}
+    - _EmissionColor: {r: 0.9477959, g: 1, b: 0.45202947, a: 1}
+    - _GrassShadowColor: {r: 0.70110214, g: 0.70110214, b: 0.70110214, a: 1}
+    - _GrassTipColor: {r: 0.04825714, g: 0.2411783, b: 0.025027307, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &8534407050064550864
 MonoBehaviour:

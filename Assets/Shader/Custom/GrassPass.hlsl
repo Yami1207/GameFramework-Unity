@@ -3,16 +3,24 @@
 
 #include "GrassInput.hlsl"
 
-inline float3 GetGrassPosition(Attributes input, float3 normalWS)
+inline float4 GetGrassPosition(Attributes input, float3 normalWS)
 {
     float3 positionOS = input.positionOS;
-    float lerpY = input.texcoord.y * input.texcoord.y;
-    
+    float lerpY = input.texcoord.y;// * input.texcoord.y;
+
+    float wave = 0;
     float3 positionWS = TransformObjectToWorld(positionOS);
 #if USING_WIND
     positionWS += SimpleGrassWind(positionWS, lerpY);
 #endif
     
+#if USING_RIPPLING_WHEAT
+    float2 sampleUV2 = positionWS.xz / _RipplingWheatWaveSize + _Time.x * _RipplingWheatWaveSpeed * GetWindDirection();
+    float mask = 1 - SAMPLE_TEXTURE2D_LOD(_RipplingWheatMap, sampler_RipplingWheatMap, sampleUV2, 0).x;
+    wave = (mask * mask) * PowOptimize(lerpY, 9);
+    positionWS.xz -= sin(0.1 * wave) * _RipplingWheatWaveSpeed * lerpY * 2;
+#endif
+
 #if USING_INTERACTIVE    
      // 获取周围角色信息
     float4 playerPosWS = GetTrailObject(positionWS);
@@ -31,7 +39,7 @@ inline float3 GetGrassPosition(Attributes input, float3 normalWS)
     }
 #endif
     
-    return positionWS;
+    return float4(positionWS, wave);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,14 +48,23 @@ inline float3 GetGrassPosition(Attributes input, float3 normalWS)
 inline void InitializeSurfaceData(Varyings input, inout CustomSurfaceData surfaceData)
 {
 #if USING_ALPHA_CUTOFF
-    half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord);
+    half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord.xy);
     clip(albedoAlpha.a - _Cutoff);
 #else
     half4 albedoAlpha = (half4) 1;
 #endif
-    
+
     surfaceData.albedo = albedoAlpha.rgb * lerp(_BaseColor, _GrassTipColor, input.texcoord.y * input.texcoord.y);
     surfaceData.alpha = albedoAlpha.a;
+    
+    surfaceData.smoothness = 1 - _Roughness;
+    
+    // 自发光
+#if USING_RIPPLING_WHEAT
+    surfaceData.emission = _EmissionIntensity * _EmissionColor * input.texcoord.z;
+#else
+    surfaceData.emission = _EmissionIntensity * _EmissionColor;
+#endif
 }
 
 inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, inout CustomInputData inputData)
@@ -74,15 +91,15 @@ Varyings vert(Attributes input)
     UNITY_SETUP_INSTANCE_ID(input);
 
     float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
-    float3 positionWS = GetGrassPosition(input, normalWS);
+    float4 positionWS = GetGrassPosition(input, normalWS);
 
     Varyings output;
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
     output.positionCS = TransformWorldToHClip(positionWS);
-    output.texcoord = input.texcoord;
+    output.texcoord = half3(input.texcoord, positionWS.w);
     output.normalWS = normalWS;
-    output.positionWSAndFog = float4(positionWS, ComputeFogFactor(output.positionCS.z));
-    output.shadowCoord = GetShadowCoord(positionWS, output.positionCS);
+    output.positionWSAndFog = float4(positionWS.xyz, ComputeFogFactor(output.positionCS.z));
+    output.shadowCoord = GetShadowCoord(positionWS.xyz, output.positionCS);
 
     // sh
     output.vertexSH = SampleSHVertex(output.normalWS);
@@ -117,8 +134,11 @@ FragData frag(Varyings input)
 
     // 主灯颜色(草不要暗部效果)
     half3 mainLightColor = surfaceData.albedo * mainLight.color * shadow * bxdfContext.NoL_01;
-    
+
     half3 color = mainLightColor + giColor;
+    
+    // 自发光
+    color = MixEmission(color, surfaceData);
 
     // 与雾混合
     color = MixFog(color, inputData, surfaceData);
@@ -140,7 +160,7 @@ Varyings ShadowPassVertex(Attributes input)
     UNITY_SETUP_INSTANCE_ID(input);
     
     float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
-    float3 positionWS = GetGrassPosition(input, normalWS);
+    float4 positionWS = GetGrassPosition(input, normalWS);
     
     Varyings output = (Varyings) 0;
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
@@ -150,12 +170,12 @@ Varyings ShadowPassVertex(Attributes input)
 #endif
 
 #if _CASTING_PUNCTUAL_LIGHT_SHADOW
-	float3 lightDirectionWS = normalize(_LightPosition - vertexInput.positionWS);
+	float3 lightDirectionWS = normalize(_LightPosition - positionWS.xyz);
 #else
     float3 lightDirectionWS = _LightDirection;
 #endif
 
-    float4 positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, lightDirectionWS));
+    float4 positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS.xyz, normalWS, lightDirectionWS));
 #if UNITY_REVERSED_Z
 	positionCS.z = min(positionCS.z, UNITY_NEAR_CLIP_VALUE);
 #else
@@ -183,11 +203,11 @@ Varyings DepthOnlyVertex(Attributes input)
     UNITY_SETUP_INSTANCE_ID(input);
     
     float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
-    float3 positionWS = GetGrassPosition(input, normalWS);
+    float4 positionWS = GetGrassPosition(input, normalWS);
     
     Varyings output = (Varyings) 0;
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
-    output.positionCS = TransformWorldToHClip(positionWS);
+    output.positionCS = TransformWorldToHClip(positionWS.xyz);
 #if USING_ALPHA_CUTOFF
     output.texcoord = input.texcoord;
 #endif

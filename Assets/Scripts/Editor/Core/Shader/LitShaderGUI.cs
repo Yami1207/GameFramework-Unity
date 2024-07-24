@@ -64,7 +64,7 @@ public class LitShaderGUI : BaseShaderGUI
         EditorGUILayout.BeginVertical(BaseShaderGUI.Styles.frameBgStyle);
         {
             DoGUI_Title("< PBR >");
-            DrawProperty("_Metallic", "金属强", false);
+            DrawProperty("_Metallic", "金属度", false);
             DrawProperty("_Smoothness", "平滑度", false);
         }
         EditorGUILayout.EndVertical();

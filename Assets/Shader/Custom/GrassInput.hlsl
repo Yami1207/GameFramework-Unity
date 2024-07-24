@@ -6,6 +6,8 @@
 
 #define USING_WIND (_ENABLE_WIND_ON)
 
+#define USING_RIPPLING_WHEAT (_ENABLE_RIPPLING_WHEAT_ON)
+
 #define USING_INTERACTIVE (_ENABLE_INTERACTIVE_ON)
 
 #include "../Lib/Core.hlsl"
@@ -17,11 +19,23 @@ uniform half3 _GrassTipColor;
 uniform half3 _GrassShadowColor;
 uniform half _AlphaCutoff;
 
+uniform half _Metallic;
 uniform half _Roughness;
 uniform half _ReflectionIntensity;
 
 uniform half _GrassPivotPointTexUnit;
 uniform half _GrassPushStrength;
+
+uniform half _RipplingWheatWaveSize;
+uniform half _RipplingWheatWaveSpeed;
+
+uniform half _EmissionIntensity;
+uniform half3 _EmissionColor;
+
+//--------------------------------------
+// 贴图
+TEXTURE2D(_RipplingWheatMap);
+SAMPLER(sampler_RipplingWheatMap);
 
 //--------------------------------------
 // 顶点结构体
@@ -40,7 +54,7 @@ struct Attributes
 struct Varyings
 {
     float4 positionCS       : SV_POSITION;
-    half2 texcoord          : TEXCOORD0;
+    half3 texcoord          : TEXCOORD0;
     float4 positionWSAndFog : TEXCOORD1;
     float3 normalWS         : TEXCOORD2;
     float4 shadowCoord      : TEXCOORD3;

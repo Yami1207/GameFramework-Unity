@@ -11,6 +11,11 @@ inline float GetWindIntensity()
     return _G_WindParameter.w;
 }
 
+inline float GetWindDirection()
+{
+    return _G_WindParameter.xy;
+}
+
 inline float3 SimpleGrassWind(float3 positionWS, float weight)
 {
     float speed = _G_WindParameter.z * _Time.y;
