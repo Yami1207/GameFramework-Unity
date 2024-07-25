@@ -4,7 +4,7 @@
 
 2、基于GPU-Driven渲染场景（场景：SampleScene)
 
-3、草互动（场景：GrassScene)
+3、草与物体互动、风浪等效果（场景：GrassScene)
 
 4、物体与地形融合（场景：PDO）
 
