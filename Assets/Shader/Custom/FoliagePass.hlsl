@@ -11,7 +11,7 @@ inline float3 GetVertexPosition(in float3 positionOS)
 #elif USING_WIND_WAVE
     // 风浪效果
     float4 windWave = SimpleWindWave(positionWS, 1);
-    positionWS -= windWave.xyz;
+    positionWS += windWave.xyz;
 #endif
 
     return positionWS;

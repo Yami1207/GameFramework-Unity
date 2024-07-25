@@ -6,7 +6,9 @@
 uniform half4 _G_WindParameter;
 
 // 风方向
-#define WIND_DIRECTION  _G_WindParameter.xy
+#define WIND_DIRECTION      _G_WindParameter.xy
+#define WIND_DIRECTION_X    _G_WindParameter.x
+#define WIND_DIRECTION_Z    _G_WindParameter.y
 
 // 风速
 #define WIND_SPEED      _G_WindParameter.z
@@ -25,16 +27,17 @@ inline float3 SimpleGrassWind(float3 positionWS, float weight)
 {
     float speed = _Time.y * WIND_SPEED;
     float noise = fbm(positionWS.xz + WIND_DIRECTION * speed, 3);
-    return weight * noise * WIND_INTENSITY;
+    float offset = weight * noise * WIND_INTENSITY;
+    return float3(WIND_DIRECTION_X * offset, 0, WIND_DIRECTION_Z * offset);
 }
 
 inline float4 SimpleWindWave(float3 positionWS, float weight)
 {
-    float2 uv = positionWS.xz * _G_WindWavePrams.y + _Time.x * WIND_SPEED * WIND_DIRECTION;
+    float2 uv = positionWS.xz * _G_WindWavePrams.y - _Time.x * WIND_SPEED * WIND_DIRECTION;
     float mask = 1 - SAMPLE_TEXTURE2D_LOD(_G_WindWaveMap, sampler_G_WindWaveMap, uv, 0).x;
     float wave = Pow2(mask * weight);
-    float3 offset = sin(0.1 * wave) * WIND_SPEED * weight * _G_WindWavePrams.z;
-    return float4(offset, wave);
+    float offset = sin(0.1 * wave) * WIND_SPEED * weight * _G_WindWavePrams.z;
+    return float4(WIND_DIRECTION_X * offset, 0, WIND_DIRECTION_Z * offset, wave);
 }
 
 //inline float3 SimpleSwingPositionOS(float3 positionOS, float frequency, float amplitude, float stiffness, float phase, float windIntensity)

@@ -9,15 +9,14 @@ inline float4 GetGrassPosition(Attributes input, float3 normalWS)
     float3 positionWS = TransformObjectToWorld(positionOS);
     float lerpY = input.texcoord.y;// * input.texcoord.y;
     float wave = Pow2(lerpY);
-    
-    
+
 #if USING_WIND
     // 风动效果
     positionWS += SimpleGrassWind(positionWS, lerpY);
 #elif USING_WIND_WAVE
     // 风浪效果
     float4 windWave = SimpleWindWave(positionWS, lerpY);
-    positionWS -= windWave.xyz;
+    positionWS += windWave.xyz;
     wave = windWave.w;
 #endif
 
