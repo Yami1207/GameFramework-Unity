@@ -9,8 +9,6 @@
         [Linear]_BaseBottomColor("底部颜色", Vector) = (1, 1, 1, 1)
         _ColorMaskHeight("Color Mask Height", Range(0.0, 2.0)) = 1.0
 
-        [Linear]_ShadowColor("阴影色", Vector) = (0.7, 0.7, 0.7, 1.0)
-
         // 透明通道裁剪(只在面板设置用)
 		[Toggle(_USE_ALPHA_CUTOFF)]_UseAlphaCutoff("Use Alpha Off", Float) = 0
 		_AlphaCutoff("Alpha Cutoff", Range(0, 1)) = 0.35
@@ -19,8 +17,6 @@
 		_SubsurfaceRadius("Subsurface Radius", Range(0.0, 1.0)) = 1.0
 		[Linear]_SubsurfaceColor("Subsurface Color", Vector) = (1, 1, 1, 1)
         _SubsurfaceColorIntensity("Subsurface Color Color", Float) = 1
-
-        [Toggle(_ENABLE_WIND_ON)]_EnableWind("风动效果", Float) = 0
 
         [MaterialEnum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Int) = 0
     }
@@ -55,10 +51,11 @@
 
             // -------------------------------------
             // 自定义keywords
+            #pragma multi_compile __ _USE_WIND_OFF _USE_WIND_ON _USE_WIND_WAVE
+
             #pragma shader_feature_local _USE_GRADIENT_COLOR
             #pragma shader_feature_local _USE_ALPHA_CUTOFF
             #pragma shader_feature_local _ENABLE_SSS_ON
-            #pragma shader_feature_local _ENABLE_WIND_ON
 
             //--------------------------------------
             // 自定义宏
@@ -88,8 +85,8 @@
 
 			// -------------------------------------
             // 自定义keywords
+            #pragma multi_compile __ _USE_WIND_OFF _USE_WIND_ON _USE_WIND_WAVE
             #pragma shader_feature_local _USE_ALPHA_CUTOFF
-			#pragma shader_feature_local _ENABLE_WIND_ON
 
 			#include "FoliagePass.hlsl"
 

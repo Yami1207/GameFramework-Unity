@@ -4,9 +4,9 @@
 // ========================= 开关定义 =========================
 #define USING_ALPHA_CUTOFF (_USE_ALPHA_CUTOFF)
 
-#define USING_WIND (_ENABLE_WIND_ON)
+#define USING_WIND (_USE_WIND_ON)
 
-#define USING_RIPPLING_WHEAT (_ENABLE_RIPPLING_WHEAT_ON)
+#define USING_WIND_WAVE (_USE_WIND_WAVE)
 
 #define USING_INTERACTIVE (_ENABLE_INTERACTIVE_ON)
 
@@ -16,7 +16,6 @@
 // 材质属性
 uniform half3 _BaseColor;
 uniform half3 _GrassTipColor;
-uniform half3 _GrassShadowColor;
 uniform half _AlphaCutoff;
 
 uniform half _Metallic;
@@ -26,16 +25,8 @@ uniform half _ReflectionIntensity;
 uniform half _GrassPivotPointTexUnit;
 uniform half _GrassPushStrength;
 
-uniform half _RipplingWheatWaveSize;
-uniform half _RipplingWheatWaveSpeed;
-
 uniform half _EmissionIntensity;
 uniform half3 _EmissionColor;
-
-//--------------------------------------
-// 贴图
-TEXTURE2D(_RipplingWheatMap);
-SAMPLER(sampler_RipplingWheatMap);
 
 //--------------------------------------
 // 顶点结构体

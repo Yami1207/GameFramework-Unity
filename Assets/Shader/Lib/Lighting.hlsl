@@ -40,8 +40,10 @@ inline half3 LightingSpecular(half3 lightColor, CustomSurfaceData surfaceData, B
 inline half3 CalculateBlinnPhong(Light light, CustomInputData inputData, CustomSurfaceData surfaceData)
 {
     BxDFContext bxdfContext = GetBxDFContext(inputData, light.direction);
-    half3 lightColor = light.color * light.distanceAttenuation * light.shadowAttenuation;
-    
+    half shadowAtten = light.distanceAttenuation * light.shadowAttenuation;
+    half3 shadow = lerp(_G_ShadowColor, 1, shadowAtten);
+    half3 lightColor = light.color * shadow;
+
     // 漫反射
 #if USING_HALF_LAMBERT
     half3 diffuseColor = LightingHalfLambert(lightColor, bxdfContext);
@@ -93,7 +95,9 @@ inline half3 LightingIndirect(CustomSurfaceData surfaceData, CustomBRDFData brdf
 inline half3 LightDirect(Light light, CustomSurfaceData surfaceData, CustomBRDFData brdfData, BxDFContext bxdfContext)
 {
     half attenuation = light.distanceAttenuation * light.shadowAttenuation;
-    half3 radiance = light.color * (attenuation * bxdfContext.NoL_sat);
+    half3 shadow = lerp(_G_ShadowColor, 1, attenuation);
+    half3 lightColor = light.color * shadow;
+    half3 radiance = lightColor * (attenuation * bxdfContext.NoL_sat);
     half3 brdf = brdfData.diffuseColor;
     brdf += brdfData.specularColor * DirectBRDFSpecular(brdfData, bxdfContext);
     return brdf * radiance;

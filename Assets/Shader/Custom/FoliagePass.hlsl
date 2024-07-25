@@ -6,9 +6,14 @@
 inline float3 GetVertexPosition(in float3 positionOS)
 {
     float3 positionWS = TransformObjectToWorld(positionOS);
-#if _ENABLE_WIND_ON
+#if USING_WIND
     positionWS += SimpleGrassWind(positionWS, 1);
+#elif USING_WIND_WAVE
+    // 风浪效果
+    float4 windWave = SimpleWindWave(positionWS, 1);
+    positionWS -= windWave.xyz;
 #endif
+
     return positionWS;
 }
 
@@ -38,9 +43,7 @@ inline void InitializeSurfaceData(Varyings input, inout CustomSurfaceData surfac
     surfaceData.metallic = 0;
     surfaceData.smoothness = 0;
     
-    // 自发光
     surfaceData.emission = 0;
-    
     surfaceData.occlusion = input.color.r;
 }
 

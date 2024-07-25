@@ -6,7 +6,6 @@
 
         [Linear]_BaseColor("颜色", Vector) = (1, 1, 1, 1)
 		[Linear]_GrassTipColor("草尖颜色", Vector) = (1, 1, 1, 1)
-        [Linear]_GrassShadowColor("阴影色", Vector) = (0.7, 0.7, 0.7, 1.0)
 
         // 透明通道裁剪(只在面板设置用)
 		[Toggle(_USE_ALPHA_CUTOFF)]_UseAlphaCutoff("Use Alpha Off", Float) = 0
@@ -17,13 +16,6 @@
 
 		_EmissionIntensity("Emission Intensity", Range(0, 1)) = 0
         [Linear]_EmissionColor("Emission Color", Vector) = (0, 0, 0, 1)
-
-        [Toggle(_ENABLE_WIND_ON)]_EnableWind("风动效果", Float) = 0
-
-		[Toggle(_ENABLE_RIPPLING_WHEAT_ON)]_EnableRipplingWheat("麦浪", Float) = 0
-		_RipplingWheatMap("Rippling Wheat Map", 2D) = "black" {}
-		_RipplingWheatWaveSize("Rippling Wheat Wave Size", Range(0, 100)) = 20
-        _RipplingWheatWaveSpeed("Rippling Wheat Wave Speed", Range(0, 10)) = 1
 
 		[Toggle(_ENABLE_INTERACTIVE_ON)]_EnableInteractive("互动草", Float) = 0
 		_GrassPushStrength("推力强度", float) = 1
@@ -62,8 +54,7 @@
 
             // -------------------------------------
             // 自定义keywords
-            #pragma shader_feature_local _ENABLE_WIND_ON
-			#pragma shader_feature_local _ENABLE_RIPPLING_WHEAT_ON
+            #pragma multi_compile __ _USE_WIND_OFF _USE_WIND_ON _USE_WIND_WAVE
 			#pragma shader_feature_local _ENABLE_INTERACTIVE_ON
 
 			//--------------------------------------
@@ -94,8 +85,7 @@
 
             // -------------------------------------
             // 自定义keywords
-            #pragma shader_feature_local _ENABLE_WIND_ON
-			#pragma shader_feature_local _ENABLE_RIPPLING_WHEAT_ON
+            #pragma multi_compile __ _USE_WIND_OFF _USE_WIND_ON _USE_WIND_WAVE
 			#pragma shader_feature_local _ENABLE_INTERACTIVE_ON
 
 			#include "GrassPass.hlsl"
@@ -125,8 +115,7 @@
 
             // -------------------------------------
             // 自定义keywords
-            #pragma shader_feature_local _ENABLE_WIND_ON
-			#pragma shader_feature_local _ENABLE_RIPPLING_WHEAT_ON
+            #pragma multi_compile __ _USE_WIND_OFF _USE_WIND_ON _USE_WIND_WAVE
 			#pragma shader_feature_local _ENABLE_INTERACTIVE_ON
 
 			#include "GrassPass.hlsl"

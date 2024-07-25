@@ -10,7 +10,9 @@
 
 #define USING_SSS (USE_SSS)
 
-#define USING_WIND (_ENABLE_WIND_ON)
+#define USING_WIND (_USE_WIND_ON)
+
+#define USING_WIND_WAVE (_USE_WIND_WAVE)
 
 #include "../Lib/Core.hlsl"
 

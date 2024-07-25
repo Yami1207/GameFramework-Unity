@@ -25,6 +25,7 @@ public class EnvironmentAssetEditor : Editor
     {
         EditorGUIHelper.DrawTitleGUI("Rendering");
 
+        EditorGUIHelper.LinearPropertyField(serializedObject.FindProperty("m_ShadowColor"), "阴影色");
         EditorGUILayout.PropertyField(serializedObject.FindProperty("m_EnablePixelDepthOffset"), EditorDraw.TempContent("启动物体与地形融合"));
     }
 
@@ -51,10 +52,28 @@ public class EnvironmentAssetEditor : Editor
         EditorGUIHelper.DrawTitleGUI("Wind");
 
         var so = serializedObject.FindProperty("wind");
+
+        var typeProp = so.FindPropertyRelative("type");
+        EditorGUILayout.PropertyField(typeProp, EditorDraw.TempContent("类型"));
+
+        var type = (EnvironmentAsset.WindType)typeProp.intValue;
+        if (type == EnvironmentAsset.WindType.Off)
+            return;
+
         EditorGUILayout.PropertyField(so.FindPropertyRelative("directionX"), EditorDraw.TempContent("方向(X)"));
         EditorGUILayout.PropertyField(so.FindPropertyRelative("directionZ"), EditorDraw.TempContent("方向(Z)"));
         EditorGUILayout.PropertyField(so.FindPropertyRelative("speed"), EditorDraw.TempContent("风速"));
-        EditorGUILayout.PropertyField(so.FindPropertyRelative("intensity"), EditorDraw.TempContent("强度"));
+
+        if (type == EnvironmentAsset.WindType.On)
+        {
+            EditorGUILayout.PropertyField(so.FindPropertyRelative("intensity"), EditorDraw.TempContent("强度"));
+        }
+        else
+        {
+            EditorGUILayout.PropertyField(so.FindPropertyRelative("waveMap"), EditorDraw.TempContent("风浪图"));
+            EditorGUILayout.PropertyField(so.FindPropertyRelative("waveSize"), EditorDraw.TempContent("风浪范围"));
+            EditorGUILayout.PropertyField(so.FindPropertyRelative("waveIntensity"), EditorDraw.TempContent("风浪强度"));
+        }
     }
 
     #endregion

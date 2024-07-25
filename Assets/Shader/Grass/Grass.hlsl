@@ -18,7 +18,6 @@
 // 材质属性
 uniform half3 _BaseColor;
 uniform half3 _GrassTipColor;
-uniform half3 _GrassShadowColor;
 uniform half _Cutoff;
 
 uniform half _Roughness;
@@ -172,7 +171,7 @@ FragData frag(Varyings input)
     
     // 阴影值
     half shadowAtten = mainLight.shadowAttenuation;
-    half3 shadow = lerp(_GrassShadowColor, 1, shadowAtten);
+    half3 shadow = lerp(_G_ShadowColor, 1, shadowAtten);
 
     // GI
     MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI);

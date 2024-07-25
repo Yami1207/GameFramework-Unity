@@ -51,8 +51,6 @@ public class FoliageShaderGUI : BaseShaderGUI
                 DrawProperty("_BaseBottomColor", "底部颜色", false);
                 DrawProperty("_ColorMaskHeight", "颜色占比", false);
             }
-
-            DrawProperty("_ShadowColor", "阴影色", false);
         }
         EditorGUILayout.EndVertical();
     }

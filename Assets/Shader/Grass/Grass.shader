@@ -4,7 +4,6 @@
     {
         [Linear]_BaseColor("颜色", Vector) = (1, 1, 1, 1)
 		[Linear]_GrassTipColor("草尖颜色", Vector) = (1, 1, 1, 1)
-        [Linear]_GrassShadowColor("阴影色", Vector) = (0.7, 0.7, 0.7, 1.0)
 
 		_Roughness("粗糙度", Range(0, 1.0)) = 1
 		_ReflectionIntensity("反射强度", Range(0, 1.0)) = 0.5

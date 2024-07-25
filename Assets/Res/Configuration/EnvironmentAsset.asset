@@ -19,8 +19,13 @@ MonoBehaviour:
     cameraNear: 0
     cameraFar: 50
   wind:
+    type: 2
     directionX: 1
     directionZ: 1
-    speed: 2
+    speed: 0.4
     intensity: 5
+    waveSize: 80
+    waveIntensity: 5
+    waveMap: {fileID: 2800000, guid: 569313e8cc7297441ae2f5761cbefc13, type: 3}
   m_EnablePixelDepthOffset: 1
+  m_ShadowColor: {x: 0.701102, y: 0.701102, z: 0.701102, w: 0}

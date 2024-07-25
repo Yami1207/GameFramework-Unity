@@ -1,6 +1,8 @@
 ﻿#ifndef __INPUT_HLSL__
 #define __INPUT_HLSL__
 
+//////////////////////////////////////////////
+// 材质表面输入参数
 struct CustomSurfaceData
 {
     half3 albedo;
@@ -27,6 +29,14 @@ struct CustomSurfaceData
     half alpha;
 };
 
+inline CustomSurfaceData GetDefaultSurfaceData()
+{
+    CustomSurfaceData surfaceData = (CustomSurfaceData) 0;
+    return surfaceData;
+}
+
+//////////////////////////////////////////////
+// 片元顶点参数
 struct CustomInputData
 {
     float3 positionWS;
@@ -50,17 +60,15 @@ struct CustomInputData
     half3x3 tangentToWorld;
 };
 
-inline CustomSurfaceData GetDefaultSurfaceData()
-{
-    CustomSurfaceData surfaceData = (CustomSurfaceData) 0;
-    return surfaceData;
-}
-
 inline CustomInputData GetDefaultInputData()
 {
     CustomInputData inputData = (CustomInputData) 0;
     return inputData;
 }
+
+//////////////////////////////////////////////
+// 全局变量
+uniform half3 _G_ShadowColor;
 
 ////////////////////////////////////////////////
 //// 功能结构体与函数
@@ -97,42 +105,6 @@ inline CustomInputData GetDefaultInputData()
 //	tbn.bitangentWS = cross(tbn.normalWS, tbn.tangentWS) * sign;
 
 //	return tbn;
-//}
-
-////////////////////////////////////////////////
-//// 材质表面输入参数
-//struct SurfaceData
-//{
-//	half3 albedo;
-//	half alpha;
-
-//	half specGloss;
-//	half3 specularColor;
-
-//	// 暗部阈值
-//	half darkThreshold;
-//};
-
-//SurfaceData GetDefaultSurfaceData()
-//{
-//	SurfaceData data = (SurfaceData)0;
-//	return data;
-//}
-
-////////////////////////////////////////////////
-//// 片元顶点参数
-//struct InputData
-//{
-//	float3  positionWS;
-//	float4	positionSS;
-//	float3  normalWS;
-//	float3  viewDirectionWS;
-//};
-
-//InputData GetDefaultInputData()
-//{
-//	InputData data = (InputData)0;
-//	return data;
 //}
 
 #endif

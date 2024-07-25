@@ -6,21 +6,22 @@
 inline float4 GetGrassPosition(Attributes input, float3 normalWS)
 {
     float3 positionOS = input.positionOS;
-    float lerpY = input.texcoord.y;// * input.texcoord.y;
-
-    float wave = 0;
     float3 positionWS = TransformObjectToWorld(positionOS);
-#if USING_WIND
-    positionWS += SimpleGrassWind(positionWS, lerpY);
-#endif
+    float lerpY = input.texcoord.y;// * input.texcoord.y;
+    float wave = Pow2(lerpY);
     
-#if USING_RIPPLING_WHEAT
-    float2 sampleUV2 = positionWS.xz / _RipplingWheatWaveSize + _Time.x * _RipplingWheatWaveSpeed * GetWindDirection();
-    float mask = 1 - SAMPLE_TEXTURE2D_LOD(_RipplingWheatMap, sampler_RipplingWheatMap, sampleUV2, 0).x;
-    wave = Pow2(mask * lerpY);
-    positionWS.xz -= sin(0.1 * wave) * _RipplingWheatWaveSpeed * lerpY * 2;
+    
+#if USING_WIND
+    // 风动效果
+    positionWS += SimpleGrassWind(positionWS, lerpY);
+#elif USING_WIND_WAVE
+    // 风浪效果
+    float4 windWave = SimpleWindWave(positionWS, lerpY);
+    positionWS -= windWave.xyz;
+    wave = windWave.w;
 #endif
 
+    // 与物体互动
 #if USING_INTERACTIVE    
      // 获取周围角色信息
     float4 playerPosWS = GetTrailObject(positionWS);
@@ -60,11 +61,7 @@ inline void InitializeSurfaceData(Varyings input, inout CustomSurfaceData surfac
     surfaceData.smoothness = 1 - _Roughness;
     
     // 自发光
-#if USING_RIPPLING_WHEAT
     surfaceData.emission = _EmissionIntensity * _EmissionColor * input.texcoord.z;
-#else
-    surfaceData.emission = _EmissionIntensity * _EmissionColor;
-#endif
 }
 
 inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, inout CustomInputData inputData)
@@ -121,7 +118,7 @@ FragData frag(Varyings input)
     
     // 阴影值
     half shadowAtten = mainLight.shadowAttenuation;
-    half3 shadow = lerp(_GrassShadowColor, 1, shadowAtten);
+    half3 shadow = lerp(_G_ShadowColor, 1, shadowAtten);
 
     // GI
     MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI);
@@ -138,7 +135,7 @@ FragData frag(Varyings input)
     half3 color = mainLightColor + giColor;
     
     // 自发光
-    color = MixEmission(color, surfaceData);
+    color += surfaceData.emission * shadow;
 
     // 与雾混合
     color = MixFog(color, inputData, surfaceData);

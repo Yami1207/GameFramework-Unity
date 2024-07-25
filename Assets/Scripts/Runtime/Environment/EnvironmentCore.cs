@@ -8,7 +8,13 @@ public class EnvironmentCore : SingletonMono<EnvironmentCore>
 {
     private static class ShaderConstants
     {
-        public static readonly int windParameterPropID = Shader.PropertyToID("_G_WindParameter");
+        public static readonly int SHADOW_COLOR_PROP_ID = Shader.PropertyToID("_G_ShadowColor");
+
+        public static readonly int WIND_PARAMETER_PROP_ID = Shader.PropertyToID("_G_WindParameter");
+
+        public static readonly int WIND_WAVE_PARAMS_PROP_ID = Shader.PropertyToID("_G_WindWavePrams");
+
+        public static readonly int WIND_WAVE_MAP_PROP_ID = Shader.PropertyToID("_G_WindWaveMap");
     }
 
     [SerializeField]
@@ -36,10 +42,8 @@ public class EnvironmentCore : SingletonMono<EnvironmentCore>
 #if UNITY_EDITOR
     private void LateUpdate()
     {
-        if (m_Asset == null)
-            return;
-
-        Setup();
+        if (m_Asset != null)
+            Setup();
     }
 #endif
 
@@ -53,14 +57,45 @@ public class EnvironmentCore : SingletonMono<EnvironmentCore>
         else
             Shader.DisableKeyword("_PIXEL_DEPTH_OFFSET_ON");
 
+        // ÒõÓ°É«
+        Shader.SetGlobalVector(ShaderConstants.SHADOW_COLOR_PROP_ID, m_Asset.shadowColor);
+
         // Wind
+        SetupWind();
+    }
+
+    private void SetupWind()
+    {
+        EnvironmentAsset.Wind wind = m_Asset.wind;
+        if (wind.type == EnvironmentAsset.WindType.Off)
         {
-            EnvironmentAsset.Wind wind = m_Asset.wind;
+            Shader.EnableKeyword("_USE_WIND_OFF");
+            Shader.DisableKeyword("_USE_WIND_ON");
+            Shader.DisableKeyword("_USE_WIND_WAVE");
+        }
+        else
+        {
+            Shader.DisableKeyword("_USE_WIND_OFF");
 
             float length = Mathf.Abs(wind.directionX) + Mathf.Abs(wind.directionZ);
             Vector2 direction = new Vector2(wind.directionX, wind.directionZ);
             direction.Normalize();
-            Shader.SetGlobalVector(ShaderConstants.windParameterPropID, new Vector4(direction.x, direction.y, 0.3f * wind.speed, 0.02f * wind.intensity));
+            Shader.SetGlobalVector(ShaderConstants.WIND_PARAMETER_PROP_ID, new Vector4(direction.x, direction.y, wind.speed, 0.02f * wind.intensity));
+
+            if (wind.type == EnvironmentAsset.WindType.On)
+            {
+                Shader.EnableKeyword("_USE_WIND_ON");
+                Shader.DisableKeyword("_USE_WIND_WAVE");
+            }
+            else
+            {
+                Shader.DisableKeyword("_USE_WIND_ON");
+                Shader.EnableKeyword("_USE_WIND_WAVE");
+
+                Shader.SetGlobalVector(ShaderConstants.WIND_WAVE_PARAMS_PROP_ID, new Vector4(wind.waveSize, 1.0f / wind.waveSize, wind.waveIntensity));
+                Texture2D windWaveTexture = wind.waveMap;
+                Shader.SetGlobalTexture(ShaderConstants.WIND_WAVE_MAP_PROP_ID, windWaveTexture == null ? Texture2D.blackTexture : windWaveTexture);
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public static class EditorGUIHelper
 {
@@ -34,5 +35,31 @@ public static class EditorGUIHelper
             GUILayout.FlexibleSpace();
         }
         EditorGUILayout.EndHorizontal();
+    }
+
+    public static void LinearPropertyField(SerializedProperty prop, string title)
+    {
+        if (prop == null)
+            return;
+
+        if(prop.propertyType == SerializedPropertyType.Vector4)
+        {
+            var v = prop.vector4Value;
+            Color linearColor = v;
+            Color gammaColor = linearColor.gamma;
+
+            EditorGUI.BeginChangeCheck();
+            // 界面显示的是Gamma值
+            gammaColor = EditorGUILayout.ColorField(EditorDraw.TempContent(title), gammaColor);
+            if (EditorGUI.EndChangeCheck())
+            {
+                linearColor = gammaColor.linear;
+                prop.vector4Value = linearColor;
+            }
+        }
+        else
+        {
+            EditorGUILayout.PropertyField(prop, EditorDraw.TempContent(title));
+        }
     }
 }

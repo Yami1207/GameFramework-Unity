@@ -13,10 +13,11 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _ENABLE_SSS_ON
-  - _ENABLE_WIND_ON
   - _USE_ALPHA_CUTOFF
   - _USE_GRADIENT_COLOR
-  m_InvalidKeywords: []
+  - _USE_WIND_WAVE
+  m_InvalidKeywords:
+  - _ENABLE_WIND_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
@@ -42,6 +43,7 @@ Material:
     - _SubsurfaceRadius: 0.9
     - _UseAlphaCutoff: 1
     - _UseGradientColor: 1
+    - _Use_Wind: 2
     m_Colors:
     - _BaseBottomColor: {r: 0.021779275, g: 0.18076065, b: 0.09742317, a: 1}
     - _BaseColor: {r: 0.07421358, g: 0.39157256, b: 0.1682694, a: 1}

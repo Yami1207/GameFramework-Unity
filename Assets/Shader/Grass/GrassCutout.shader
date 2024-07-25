@@ -7,8 +7,6 @@
         _BaseMap("Texture", 2D) = "white" {}
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
-        [Linear]_GrassShadowColor("阴影色", Vector) = (0.7, 0.7, 0.7, 1.0)
-
 		_Roughness("粗糙度", Range(0, 1.0)) = 1
 		_ReflectionIntensity("反射强度", Range(0, 1.0)) = 0.5
 

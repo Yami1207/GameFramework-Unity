@@ -14,8 +14,6 @@ public class GrassShaderGUI : BaseShaderGUI
     private MaterialProperty m_BaseMapProp;
     private MaterialProperty m_BaseColorProp;
 
-    private MaterialProperty m_EnableRipplingWheatProp;
-
     private MaterialProperty m_EnableInteractiveProp;
 
     protected override void FindProperties(MaterialProperty[] properties)
@@ -25,7 +23,6 @@ public class GrassShaderGUI : BaseShaderGUI
         m_BaseMapProp = FindProperty("_BaseMap", false);
         m_BaseColorProp = FindProperty("_BaseColor", false);
 
-        m_EnableRipplingWheatProp = FindProperty("_EnableRipplingWheat", false);
         m_EnableInteractiveProp = FindProperty("_EnableInteractive", false);
     }
 
@@ -47,7 +44,6 @@ public class GrassShaderGUI : BaseShaderGUI
 
             m_Editor.TexturePropertySingleLine(Styles.baseMap, m_BaseMapProp, m_BaseColorProp);
             DrawProperty("_GrassTipColor", "草尖颜色", false);
-            DrawProperty("_GrassShadowColor", "阴影色", false);
         }
         EditorGUILayout.EndVertical();
     }
@@ -92,15 +88,7 @@ public class GrassShaderGUI : BaseShaderGUI
         {
             DoGUI_Title("< Other >");
             DrawProperty("_Cull", "三角型正反面裁剪", false);
-            DrawProperty("_EnableWind", "风动效果", false);
-
-            DrawProperty(m_EnableRipplingWheatProp, "麦浪");
-            if (m_EnableInteractiveProp.floatValue > 0.5f)
-            {
-                DrawProperty("_RipplingWheatMap", "扰动图", false);
-                DrawProperty("_RipplingWheatWaveSize", "偏移范围", false);
-                DrawProperty("_RipplingWheatWaveSpeed", "速度", false);
-            }
+            DrawProperty("_Use_Wind", "风动效果", false);
 
             DrawProperty(m_EnableInteractiveProp, "与物体交互");
             if (m_EnableInteractiveProp.floatValue > 0.5f)
