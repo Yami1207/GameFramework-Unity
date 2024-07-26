@@ -28,8 +28,8 @@ public class GrassShaderGUI : BaseShaderGUI
 
     protected override void DoGUI()
     {
-        DoGUI_AlphaCutoff();
         DoGUI_Main();
+        DoGUI_AlphaCutoff();
         DoGUI_PBR();
         DoGUI_Emission();
         DoGUI_Other();

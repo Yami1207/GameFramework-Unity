@@ -55,6 +55,8 @@
             // -------------------------------------
             // 自定义keywords
             #pragma multi_compile __ _USE_WIND_OFF _USE_WIND_ON _USE_WIND_WAVE
+
+			#pragma shader_feature_local _USE_ALPHA_CUTOFF
 			#pragma shader_feature_local _ENABLE_INTERACTIVE_ON
 
 			//--------------------------------------
@@ -86,6 +88,8 @@
             // -------------------------------------
             // 自定义keywords
             #pragma multi_compile __ _USE_WIND_OFF _USE_WIND_ON _USE_WIND_WAVE
+
+			#pragma shader_feature_local _USE_ALPHA_CUTOFF
 			#pragma shader_feature_local _ENABLE_INTERACTIVE_ON
 
 			#include "GrassPass.hlsl"
@@ -116,6 +120,8 @@
             // -------------------------------------
             // 自定义keywords
             #pragma multi_compile __ _USE_WIND_OFF _USE_WIND_ON _USE_WIND_WAVE
+
+			#pragma shader_feature_local _USE_ALPHA_CUTOFF
 			#pragma shader_feature_local _ENABLE_INTERACTIVE_ON
 
 			#include "GrassPass.hlsl"

@@ -49,7 +49,7 @@ inline void InitializeSurfaceData(Varyings input, inout CustomSurfaceData surfac
 {
 #if USING_ALPHA_CUTOFF
     half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord.xy);
-    clip(albedoAlpha.a - _Cutoff);
+    clip(albedoAlpha.a - _AlphaCutoff);
 #else
     half4 albedoAlpha = (half4) 1;
 #endif
@@ -162,7 +162,7 @@ Varyings ShadowPassVertex(Attributes input)
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
     
 #if USING_ALPHA_CUTOFF
-    output.texcoord = input.texcoord;
+    output.texcoord = half3(input.texcoord, 1);
 #endif
 
 #if _CASTING_PUNCTUAL_LIGHT_SHADOW
@@ -186,7 +186,7 @@ half4 ShadowPassFragment(Varyings input) : SV_Target
 {
 #if USING_ALPHA_CUTOFF
     half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord.xy);
-    clip(albedoAlpha.a - _Cutoff);
+    clip(albedoAlpha.a - _AlphaCutoff);
 #endif
     return 0;
 }
@@ -205,7 +205,7 @@ Varyings DepthOnlyVertex(Attributes input)
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
     output.positionCS = TransformWorldToHClip(positionWS.xyz);
 #if USING_ALPHA_CUTOFF
-    output.texcoord = input.texcoord;
+    output.texcoord = half3(input.texcoord, 1);
 #endif
     return output;
 }
@@ -215,7 +215,7 @@ half4 DepthOnlyFragment(Varyings input) : SV_TARGET
 #if USING_ALPHA_CUTOFF
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
     half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord.xy);
-	clip(albedoAlpha.a - _Cutoff);
+	clip(albedoAlpha.a - _AlphaCutoff);
 #endif
     return 0;
 }

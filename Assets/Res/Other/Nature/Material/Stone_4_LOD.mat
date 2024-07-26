@@ -7,17 +7,12 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Grass_LOD0
-  m_Shader: {fileID: 4800000, guid: 8d5c0e4cb691f9147a3418405c7a3e65, type: 3}
+  m_Name: Stone_4_LOD
+  m_Shader: {fileID: 4800000, guid: 4af3871624b42d14ba2f378115a5617f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - _ENABLE_INTERACTIVE_ON
-  - _USE_WIND_WAVE
-  m_InvalidKeywords:
-  - _ENABLE_RIPPLING_WHEAT_ON
-  - _USE_INTERACTIVE
-  - _USE_SWING
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
@@ -29,25 +24,27 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 7e5a931c7735b204b8de6fc12955b88b, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: 4d0dfa0ca7a2dca459636d40fce365fa, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AlphaCutoff: 0.35
-    - _Cull: 0
-    - _EmissionIntensity: 0.338
-    - _EnableInteractive: 1
-    - _GrassPushStrength: 10
-    - _ReflectionIntensity: 0.037
-    - _Roughness: 0.056
-    - _UseAlphaCutoff: 0
+    - _BumpScale: 1
+    - _Cull: 2
+    - _EmissionIntensity: 0
+    - _EnableMixTerrain: 0
+    - _Metallic: 0
+    - _MixDepthDiffer: 1
+    - _Smoothness: 0.3
     m_Colors:
-    - _BaseColor: {r: 0.030452916, g: 0.105611615, b: 0.019721245, a: 1}
-    - _EmissionColor: {r: 0.72404146, g: 0.77996576, b: 0.24131086, a: 1}
-    - _GrassTipColor: {r: 0.04825714, g: 0.2411783, b: 0.025027307, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
---- !u!114 &8534407050064550864
+--- !u!114 &120478593560094678
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
