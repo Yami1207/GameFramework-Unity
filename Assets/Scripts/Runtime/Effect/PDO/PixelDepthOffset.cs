@@ -83,6 +83,8 @@ public class PixelDepthOffset : ScriptableRendererFeature
             {
                 cmd.Clear();
                 cmd.BeginSample(s_ProfileTag);
+                // 注意：RenderPassEvent.BeforeRendering需要设置相机和投影矩阵,不然矩阵是上帧数据
+                cmd.SetViewProjectionMatrices(cameraData.GetViewMatrix(), cameraData.GetProjectionMatrix());
                 context.ExecuteCommandBuffer(cmd);
 
                 // 清除旧数据
