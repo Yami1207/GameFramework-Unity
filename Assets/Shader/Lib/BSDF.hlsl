@@ -34,34 +34,12 @@ struct CustomBRDFData
     half grazingTerm;
 };
 
-struct BxDFContext
+CustomBRDFData GetBRDFData(half3 albedo, half metallic, half smoothness)
 {
-    float NoV;      // -1 to 1
-    float NoV_01;   // 0 to 1
-    float NoV_sat;  // clamp 0 to 1
-    float NoV_abs;  // abs 0 to 1
-
-    float NoL;      // -1 to 1
-    float NoL_01;   // 0 to 1
-    float NoL_sat;  // clamp 0 to 1
-    float NoL_abs;  // abs 0 to 1
-
-    float3 R;       // ReflectVector
-
-    float3 H;       // half dir
-    float NoH;
-    float LoH;
-};
-
-CustomBRDFData GetBRDFData(CustomSurfaceData surfaceData)
-{
-    half3 albedo = surfaceData.albedo;
-    half metallic = surfaceData.metallic;
-    half smoothness = surfaceData.smoothness;
     half roughness = 1 - smoothness;
     half oneMinusReflectivity = OneMinusReflectivityMetallic(metallic);
 
-    CustomBRDFData data = (CustomBRDFData)0;
+    CustomBRDFData data = (CustomBRDFData) 0;
     data.fresnel0 = lerp(DIELECTRIC_SPEC.rgb, albedo, metallic);
     data.diffuseColor = albedo * lerp(0.96, 0.0, metallic);
     data.specularColor = data.fresnel0;
@@ -79,27 +57,56 @@ CustomBRDFData GetBRDFData(CustomSurfaceData surfaceData)
     return data;
 }
 
-BxDFContext GetBxDFContext(CustomInputData inputData, float3 lightDir)
+CustomBRDFData GetBRDFData(CustomSurfaceData surfaceData)
 {
-    BxDFContext context;
+    return GetBRDFData(surfaceData.albedo, surfaceData.metallic, surfaceData.smoothness);
+}
 
-    context.NoV = dot(inputData.normalWS, inputData.viewDirectionWS);
+struct BxDFContext
+{
+    float NoV; // -1 to 1
+    float NoV_01; // 0 to 1
+    float NoV_sat; // clamp 0 to 1
+    float NoV_abs; // abs 0 to 1
+
+    float NoL; // -1 to 1
+    float NoL_01; // 0 to 1
+    float NoL_sat; // clamp 0 to 1
+    float NoL_abs; // abs 0 to 1
+
+    float3 R; // ReflectVector
+
+    float3 H; // half dir
+    float NoH;
+    float LoH;
+};
+
+BxDFContext GetBxDFContext(float3 normalWS, float3 viewDirectionWS, float3 lightDir)
+{
+    BxDFContext context = (BxDFContext)0;
+
+    context.NoV = dot(normalWS, viewDirectionWS);
     context.NoV_01 = context.NoV * 0.5 + 0.5;
     context.NoV_sat = saturate(context.NoV);
     context.NoV_abs = abs(context.NoV);
 
-    context.NoL = dot(inputData.normalWS, lightDir);
+    context.NoL = dot(normalWS, lightDir);
     context.NoL_01 = context.NoL * 0.5 + 0.5;
     context.NoL_sat = saturate(context.NoL);
     context.NoL_abs = abs(context.NoL);
 
-    context.R = reflect(-inputData.viewDirectionWS, inputData.normalWS);
+    context.R = reflect(-viewDirectionWS, normalWS);
 
-    context.H = SafeNormalize(inputData.viewDirectionWS + lightDir);
-    context.NoH = saturate(dot(inputData.normalWS, context.H));
+    context.H = SafeNormalize(viewDirectionWS + lightDir);
+    context.NoH = saturate(dot(normalWS, context.H));
     context.LoH = saturate(dot(lightDir, context.H));
 
     return context;
+}
+
+BxDFContext GetBxDFContext(CustomInputData inputData, float3 lightDir)
+{
+    return GetBxDFContext(inputData.normalWS, inputData.viewDirectionWS, lightDir);
 }
 
 // 来源: UE 4.25 => EnvBRDFApprox

@@ -28,7 +28,7 @@ inline void InitializeSurfaceData(Varyings input, float4 splatControl, out Custo
 #else
     normalTS.z += 1e-5f;
 #endif
-    normalTS = normalize(normalTS);
+    normalTS = SafeNormalize(normalTS);
     
     surfaceData = (CustomSurfaceData) 0;
     surfaceData.albedo = albedo;
@@ -143,7 +143,7 @@ Varyings ShadowPassVertex(Attributes input)
     normalWS = 2.0 * normalWS - 1.0;
 
 #if _CASTING_PUNCTUAL_LIGHT_SHADOW
-	float3 lightDirectionWS = normalize(_LightPosition - positionWS);
+	float3 lightDirectionWS = SafeNormalize(_LightPosition - positionWS);
 #else
     float3 lightDirectionWS = _LightDirection;
 #endif

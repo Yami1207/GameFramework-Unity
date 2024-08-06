@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Water
+  m_Shader: {fileID: 4800000, guid: 35b7502b097476e4397bfd43712601fb, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _USE_FOAM
+  - _USE_REFLECTION
+  - _USE_REFRACTION
+  - _USE_SPECULAR
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: _WaterOffset _WorkflowMode
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: 208caad423acfcd48a5f5e1eb1d0cc51, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FoamMaskMap:
+        m_Texture: {fileID: 2800000, guid: 42acff2b6f7f771449d882ca1a2e0931, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _IntersectionNoiseMap:
+        m_Texture: {fileID: 2800000, guid: 7fc5be715696992419f9f5d0459b0398, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ReflectionCubemap:
+        m_Texture: {fileID: 8900000, guid: b9e1e733356cbe041b3ff72555e3449a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _DepthDistance: 6.14
+    - _EnableFoam: 1
+    - _EnableIntersection: 0
+    - _EnableReflection: 1
+    - _EnableRefraction: 1
+    - _EnableSpecular: 1
+    - _FoamAmount: 0.367
+    - _FoamDistortion: 0.1
+    - _FoamSpeed: 0.1
+    - _FoamSubSpeed: -0.25
+    - _FoamSubTiling: 0.5
+    - _IntersectionClipping: 0.8
+    - _IntersectionDistance: 0.8
+    - _IntersectionDistortion: 0.05
+    - _IntersectionRippleStrength: 0.15
+    - _IntersectionSpeed: 0.1
+    - _IntersectionThreshold: 0.8
+    - _IntersectionTiling: 0.2
+    - _NormalSpeed: 1
+    - _NormalSubSpeed: -0.8
+    - _NormalSubTiling: 0.5
+    - _ReflectionDistort: 0.11
+    - _ReflectionIntensity: 1
+    - _RefractionFactor: 0.11
+    - _SpecularIntensity: 1.81
+    - _SpecularShinness: 1
+    - _TransparentDistance: 0.45
+    - _WaterSpeed: 1
+    m_Colors:
+    - _FoamColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FoamTiling: {r: 0.1, g: 0.1, b: 0, a: 0}
+    - _IntersectionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _NormalTiling: {r: 0.3, g: 0.3, b: 0, a: 0}
+    - _ReflectionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
+    - _WaterAmplitude: {r: 3.27, g: 0.14, b: 0.39, a: 0}
+    - _WaterDirection: {r: 1, g: 1, b: 0, a: 0}
+    - _WaterFrequency: {r: 0, g: 0.67, b: 0.28, a: 0}
+    - _WaterOffset: {r: 0.04, g: 0.14, b: 0.14, a: 0}
+    - _WaterPhase: {r: 0.28, g: 0.44, b: 0, a: 0}
+  m_BuildTextureStacks: []
+--- !u!114 &4581926080343790585
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7

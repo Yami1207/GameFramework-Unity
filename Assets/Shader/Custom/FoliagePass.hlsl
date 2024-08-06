@@ -150,7 +150,7 @@ Varyings ShadowPassVertex(Attributes input)
 #endif
 
 #if _CASTING_PUNCTUAL_LIGHT_SHADOW
-	float3 lightDirectionWS = normalize(_LightPosition - vertexInput.positionWS);
+	float3 lightDirectionWS = SafeNormalize(_LightPosition - vertexInput.positionWS);
 #else
     float3 lightDirectionWS = _LightDirection;
 #endif
@@ -171,6 +171,34 @@ half4 ShadowPassFragment(Varyings input) : SV_Target
 #if USING_ALPHA_CUTOFF
     half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord.xy);
     clip(albedoAlpha.a - _AlphaCutoff);
+#endif
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//                              DepthOnly                                     /
+///////////////////////////////////////////////////////////////////////////////
+Varyings DepthOnlyVertex(Attributes input)
+{
+    UNITY_SETUP_INSTANCE_ID(input);
+        
+    float3 positionWS = GetVertexPosition(input.positionOS);
+    
+    Varyings output = (Varyings) 0;
+    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+    output.positionCS = TransformWorldToHClip(positionWS);
+#if USING_ALPHA_CUTOFF
+    output.texcoord = input.texcoord;
+#endif
+    return output;
+}
+
+half4 DepthOnlyFragment(Varyings input) : SV_TARGET
+{
+    UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+#if USING_ALPHA_CUTOFF
+    half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord.xy);
+	clip(albedoAlpha.a - _AlphaCutoff);
 #endif
     return 0;
 }

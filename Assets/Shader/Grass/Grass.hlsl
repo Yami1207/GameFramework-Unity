@@ -90,10 +90,10 @@ inline float3 GetGrassPosition(Attributes input, float3 normalWS)
         //pivotPointWS.y = unity_ObjectToWorld._24;
     
         float pushDown = saturate((1 - dist / playerPosWS.w) * lerpY) * _GrassPushStrength;
-        float3 direction = normalize(playerPosWS - pivotPointWS);
+        float3 direction = SafeNormalize(playerPosWS - pivotPointWS);
         float3 newPos = positionWS + (direction * pushDown);
 	    float orgDist = distance(positionWS, pivotPointWS);
-        positionWS = pivotPointWS + (normalize(newPos - pivotPointWS) * orgDist);
+        positionWS = pivotPointWS + (SafeNormalize(newPos - pivotPointWS) * orgDist);
     }
 #endif
     
@@ -183,9 +183,9 @@ FragData frag(Varyings input)
     giColor += _ReflectionIntensity * GetGlossyEnvironmentReflection(bxdfContext.R, perceptualRoughness);
 
     // 主灯颜色(草不要暗部效果)
-    half3 lightColor = surfaceData.albedo * mainLight.color * shadow * bxdfContext.NoL_01;
+    half3 mainLightColor = surfaceData.albedo * mainLight.color * shadow * bxdfContext.NoL_01;
     
-    half3 color = lightColor + giColor;
+    half3 color = mainLightColor + giColor;
 
     // 与雾混合
     color = MixFog(color, inputData, surfaceData);
@@ -217,7 +217,7 @@ Varyings ShadowPassVertex(Attributes input)
 #endif
 
 #if _CASTING_PUNCTUAL_LIGHT_SHADOW
-	float3 lightDirectionWS = normalize(_LightPosition - vertexInput.positionWS);
+	float3 lightDirectionWS = SafeNormalize(_LightPosition - vertexInput.positionWS);
 #else
     float3 lightDirectionWS = _LightDirection;
 #endif

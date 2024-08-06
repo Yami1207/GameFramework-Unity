@@ -32,10 +32,10 @@ inline float4 GetGrassPosition(Attributes input, float3 normalWS)
         float3 pivotPointWS = TransformObjectToWorld(float3(input.texcoord2, input.texcoord3.x));
         //pivotPointWS.y = unity_ObjectToWorld._24;
         float pushDown = saturate((1 - dist / playerPosWS.w) * lerpY) * _GrassPushStrength;
-        float3 direction = normalize(playerPosWS - pivotPointWS);
+        float3 direction = SafeNormalize(playerPosWS - pivotPointWS);
         float3 newPos = positionWS + (direction * pushDown);
 	    float orgDist = distance(positionWS, pivotPointWS);
-        positionWS = pivotPointWS + (normalize(newPos - pivotPointWS) * orgDist);
+        positionWS = pivotPointWS + (SafeNormalize(newPos - pivotPointWS) * orgDist);
     }
 #endif
     
@@ -166,7 +166,7 @@ Varyings ShadowPassVertex(Attributes input)
 #endif
 
 #if _CASTING_PUNCTUAL_LIGHT_SHADOW
-	float3 lightDirectionWS = normalize(_LightPosition - positionWS.xyz);
+	float3 lightDirectionWS = SafeNormalize(_LightPosition - positionWS.xyz);
 #else
     float3 lightDirectionWS = _LightDirection;
 #endif
@@ -197,7 +197,7 @@ half4 ShadowPassFragment(Varyings input) : SV_Target
 Varyings DepthOnlyVertex(Attributes input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    
+        
     float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
     float4 positionWS = GetGrassPosition(input, normalWS);
     
@@ -212,8 +212,8 @@ Varyings DepthOnlyVertex(Attributes input)
 
 half4 DepthOnlyFragment(Varyings input) : SV_TARGET
 {
-#if USING_ALPHA_CUTOFF
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+#if USING_ALPHA_CUTOFF
     half4 albedoAlpha = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.texcoord.xy);
 	clip(albedoAlpha.a - _AlphaCutoff);
 #endif

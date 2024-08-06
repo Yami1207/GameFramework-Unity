@@ -26,7 +26,6 @@
     {
         Tags { "RenderPipeline" = "UniversalPipeline" "RenderType" = "Opaque"  "Queue" = "Geometry" }
         Blend One Zero
-		AlphaToMask On
         Cull[_Cull]
 
         Pass
@@ -80,7 +79,7 @@
 			#pragma target 3.0
 
             #pragma multi_compile_instancing
-            #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
+            #pragma instancing_options assumeuniformscaling nolightprobe nolightmap
             #pragma instancing_options procedural:Setup
 
 			#pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
@@ -106,15 +105,17 @@
 
 			HLSLPROGRAM
 
+			#pragma exclude_renderers gles gles3 glcore
+			#pragma target 4.5
+
 			#pragma vertex DepthOnlyVertex
 			#pragma fragment DepthOnlyFragment
-			#pragma target 3.0
 
 			//--------------------------------------
 			// GPU Instancing
 			#pragma multi_compile_instancing
 			#pragma multi_compile _ DOTS_INSTANCING_ON
-			#pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
+			#pragma instancing_options assumeuniformscaling nolightprobe nolightmap
             #pragma instancing_options procedural:Setup
 
             // -------------------------------------

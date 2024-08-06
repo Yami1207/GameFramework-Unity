@@ -78,7 +78,7 @@
 			#pragma target 3.0
 
             #pragma multi_compile_instancing
-            #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
+            #pragma instancing_options assumeuniformscaling nolightprobe nolightmap
             #pragma instancing_options procedural:Setup
 
 			#pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
@@ -87,6 +87,39 @@
             // 自定义keywords
             #pragma multi_compile __ _USE_WIND_OFF _USE_WIND_ON _USE_WIND_WAVE
             #pragma shader_feature_local _USE_ALPHA_CUTOFF
+
+			#include "FoliagePass.hlsl"
+
+			ENDHLSL
+		}
+
+        Pass
+		{
+			Name "DepthOnly"
+			Tags{"LightMode" = "DepthOnly"}
+
+			ColorMask 0
+
+			HLSLPROGRAM
+
+			#pragma exclude_renderers gles gles3 glcore
+			#pragma target 4.5
+
+			#pragma vertex DepthOnlyVertex
+			#pragma fragment DepthOnlyFragment
+
+			//--------------------------------------
+			// GPU Instancing
+			#pragma multi_compile_instancing
+			#pragma multi_compile _ DOTS_INSTANCING_ON
+			#pragma instancing_options assumeuniformscaling nolightprobe nolightmap
+            #pragma instancing_options procedural:Setup
+
+            // -------------------------------------
+            // 自定义keywords
+            #pragma multi_compile __ _USE_WIND_OFF _USE_WIND_ON _USE_WIND_WAVE
+
+			#pragma shader_feature_local _USE_ALPHA_CUTOFF
 
 			#include "FoliagePass.hlsl"
 

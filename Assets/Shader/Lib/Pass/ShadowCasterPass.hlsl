@@ -47,7 +47,7 @@ Varyings ShadowPassVertex(Attributes input)
     VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS);
 
 #if _CASTING_PUNCTUAL_LIGHT_SHADOW
-	float3 lightDirectionWS = normalize(_LightPosition - vertexInput.positionWS);
+	float3 lightDirectionWS = SafeNormalize(_LightPosition - vertexInput.positionWS);
 #else
     float3 lightDirectionWS = _LightDirection;
 #endif

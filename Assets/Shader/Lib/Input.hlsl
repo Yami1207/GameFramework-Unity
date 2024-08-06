@@ -66,10 +66,6 @@ inline CustomInputData GetDefaultInputData()
     return inputData;
 }
 
-//////////////////////////////////////////////
-// 全局变量
-uniform half3 _G_ShadowColor;
-
 ////////////////////////////////////////////////
 //// 功能结构体与函数
 //struct VertexPositionInputs

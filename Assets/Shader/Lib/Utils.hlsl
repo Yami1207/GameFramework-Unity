@@ -94,4 +94,12 @@ inline float3 RotateAboutAxis(float4 rotationAxisAndAngle, float3 positionOnAxis
     return RotatedPosition - position;
 }
 
+// 获取渐变色(https://sp4ghet.github.io/grad/)
+inline half4 CosineGradient(float x, half4 phase, half4 amp, half4 freq, half4 offset)
+{
+    x *= TWO_PI;
+    phase *= TWO_PI;
+    return half4(offset + 0.5 * amp * cos(x * freq + phase) + 0.5);
+}
+
 #endif

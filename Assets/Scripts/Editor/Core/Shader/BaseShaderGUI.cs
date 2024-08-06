@@ -129,7 +129,7 @@ public class BaseShaderGUI : ShaderGUI
         m_LastFieldWidth = EditorGUIUtility.fieldWidth;
 
         // UI开始
-        m_Editor.SetDefaultGUIWidths();
+        //m_Editor.SetDefaultGUIWidths();
 
         FindProperties(m_Properties);
 

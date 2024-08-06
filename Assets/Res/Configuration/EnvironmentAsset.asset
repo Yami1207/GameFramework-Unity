@@ -22,10 +22,10 @@ MonoBehaviour:
     type: 2
     directionX: 1
     directionZ: 1
-    speed: 0.4
+    speed: 0.7
     intensity: 5
     waveSize: 80
-    waveIntensity: 5
+    waveIntensity: 8
     waveMap: {fileID: 2800000, guid: 569313e8cc7297441ae2f5761cbefc13, type: 3}
   m_EnablePixelDepthOffset: 1
   m_ShadowColor: {x: 0.5448383, y: 0.5448383, z: 0.5448383, w: 0}

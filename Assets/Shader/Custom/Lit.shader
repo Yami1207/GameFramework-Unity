@@ -75,7 +75,7 @@
 			#pragma target 3.0
 
 			#pragma multi_compile_instancing
-            #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
+            #pragma instancing_options assumeuniformscaling nolightprobe nolightmap
             #pragma instancing_options procedural:Setup
 
 			#pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
