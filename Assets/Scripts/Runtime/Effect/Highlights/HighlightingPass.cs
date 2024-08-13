@@ -112,7 +112,7 @@ public class HighlightingPass : ScriptableRendererFeature
 
                 // 渲染外发光物体
                 cmd.Clear();
-                cmd.SetRenderTarget(HIGHLIGHTS_TEX_PROP_ID);
+                CoreUtils.SetRenderTarget(cmd, HIGHLIGHTS_TEX_PROP_ID, depthTarget);
                 cmd.ClearRenderTarget(false, true, Color.black);
                 for (int i = 0; i < renderers.Count; ++i)
                     cmd.DrawRenderer(renderers[i], rendererMaterial);

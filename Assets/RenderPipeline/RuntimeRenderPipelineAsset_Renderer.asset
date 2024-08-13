@@ -27,19 +27,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   m_TexQuality: 0
---- !u!114 &-7206989879901107285
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d75df01f3c63fd8409deaa04111a44b6, type: 3}
-  m_Name: SpecularReflection
-  m_EditorClassIdentifier: 
-  m_Active: 1
 --- !u!114 &-5655963157021180432
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54,6 +41,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   m_Quality: 0
+--- !u!114 &-4820369658984885802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f288e5b05468c34e820994807a29143, type: 3}
+  m_Name: ReflectionRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  m_ReflectionType: 2
+  m_Quality: 2
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 129
+  m_RenderSkybox: 0
+  m_UseDoubleMapping: 0
+  m_FadeOutToEdge: 0.3
+  m_FillHoles: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -72,12 +81,12 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: 6381482789918863231}
   - {fileID: -8499847633944705269}
-  - {fileID: -7206989879901107285}
   - {fileID: 6015525162752545563}
   - {fileID: -5655963157021180432}
   - {fileID: 1484748265903300909}
   - {fileID: -7889520599830213614}
-  m_RendererFeatureMap: 7fef6171c9948f580b07c86d9c790a8aabcba874e3a0fb9b1b134a8f43707b53f03d0eab79fb81b12d210b6aaee29a14124cfe9ed0ca8292
+  - {fileID: -4820369658984885802}
+  m_RendererFeatureMap: 7fef6171c9948f580b07c86d9c790a8a1b134a8f43707b53f03d0eab79fb81b12d210b6aaee29a14124cfe9ed0ca8292d69122a6559b1abd
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -132,8 +141,8 @@ MonoBehaviour:
   m_RenderingEvent: 0
   m_TexQuality: 0
   m_BlurIterations: 9
-  m_BlurPixelOffset: 0.05
-  m_BlurIntensity: 0.9
+  m_BlurPixelOffset: 0.0254
+  m_BlurIntensity: 1.45
   m_HighlightColor: {r: 1, g: 0.3254717, b: 0.3254717, a: 1}
 --- !u!114 &6015525162752545563
 MonoBehaviour:

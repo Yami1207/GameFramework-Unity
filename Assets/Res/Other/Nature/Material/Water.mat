@@ -16,7 +16,8 @@ Material:
   - _USE_REFLECTION
   - _USE_REFRACTION
   - _USE_SPECULAR
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - _REFLECTION_PLANARREFLECTION
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -66,7 +67,7 @@ Material:
     - _NormalSpeed: 1
     - _NormalSubSpeed: -0.8
     - _NormalSubTiling: 0.5
-    - _ReflectionDistort: 0.11
+    - _ReflectionDistort: 0.05
     - _ReflectionIntensity: 1
     - _RefractionFactor: 0.11
     - _SpecularIntensity: 1.81

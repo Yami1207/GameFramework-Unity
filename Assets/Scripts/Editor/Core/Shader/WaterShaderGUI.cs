@@ -148,7 +148,7 @@ public class WaterShaderGUI : BaseShaderGUI
         {
             DoGUI_Title("< 反射 >");
 
-            DrawProperty(m_EnableReflectionProp, "开启反射");
+            DrawProperty(m_EnableReflectionProp, "反射模式");
             if (m_EnableReflectionProp.floatValue > 0.5f)
             {
                 DrawProperty("_ReflectionColor", "颜色", false);

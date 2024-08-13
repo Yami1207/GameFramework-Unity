@@ -133,7 +133,6 @@
 			ColorMask 0
 
 			HLSLPROGRAM
-			#pragma exclude_renderers gles gles3 glcore
 			#pragma target 3.0
 
 			#pragma multi_compile_instancing

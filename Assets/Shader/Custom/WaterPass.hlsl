@@ -156,8 +156,18 @@ half4 frag(Varyings input) : SV_Target0
     half3 reflectedColor = 0;
 #if USING_REFLECTION
     {
-        half3 reflectDir = reflect(-viewDirectionWS, lerp(vertexNormalWS, noiseNormalWS, _ReflectionDistort));
-        reflectedColor = SAMPLE_TEXTURECUBE(_ReflectionCubemap, sampler_ReflectionCubemap, reflectDir).rgb * _ReflectionColor;
+        half3 distortNormalWS = lerp(vertexNormalWS, noiseNormalWS, _ReflectionDistort);
+    
+        // 环境贴图
+        half3 reflectDir = reflect(-viewDirectionWS, distortNormalWS);
+        half3 environmentColor = SAMPLE_TEXTURECUBE(_ReflectionCubemap, sampler_ReflectionCubemap, reflectDir).rgb;
+
+        // 实时反射贴图
+        float2 screenUV = input.positionSS.xy / input.positionSS.w + distortNormalWS.xz;
+        half4 reflectedTex = SAMPLE_TEXTURE2D(_G_ReflectionTex, sampler_G_ReflectionTex, screenUV);
+    
+        reflectedColor = lerp(environmentColor, reflectedTex.rgb, reflectedTex.a) * _ReflectionColor;
+
         half NoV = saturate(dot(vertexNormalWS, viewDirectionWS));
         half fresnel = lerp(DIELECTRIC_SPEC.r, 1, Pow4(1 - NoV));
         finalColor = lerp(finalColor, reflectedColor, fresnel * _ReflectionIntensity);

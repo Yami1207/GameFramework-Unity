@@ -1,0 +1,251 @@
+﻿// 最好是64的整数来提高性能，小于等于256保证移动端的性能支持，因此选择8 * 8
+#define NUM_THREAD_GROUP 8
+
+#define MAX_UINT16 65535
+
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+SamplerState PointClampSampler;
+SamplerState LinearClampSampler;
+
+// 边缘淡出
+uniform float _FadeOutToEdge;
+
+// 纹理大小
+uniform float4 _ColorTextureSize;
+
+// 反射平面（xyz：normal w: -d）
+uniform float4 _ReflectionPlane;
+
+// 裁剪空间变换矩阵
+uniform float4x4 _VPMatrix;
+
+// 当前颜色图
+uniform Texture2D<half4> _CameraColorTexture;
+
+// 当前深度图
+uniform Texture2D<float> _CameraDepthTexture;
+
+uniform Texture2D<float4> _ReflectHashTexture;
+uniform Texture2D<float4> _ReflectMapping0Texture;
+uniform Texture2D<float4> _ReflectMapping1Texture;
+
+uniform RWTexture2D<float4> _RWReflectHashTexture;
+uniform RWTexture2D<float4> _RWReflectMapping0Texture;
+uniform RWTexture2D<float4> _RWReflectMapping1Texture;
+
+// 反射纹理
+uniform Texture2D<half4> _ReflectionTexture;
+uniform RWTexture2D<half4> _RWReflectionTexture;
+
+// uint转float2
+inline float2 PackValue(uint value)
+{
+    uint2 hash = uint2(value >> 8, value % 256);
+    return float2(hash.xy / 255.0);
+}
+
+// float2转uint
+inline uint UnpackValue(float2 value)
+{
+    uint2 result = floor(value * uint2(65280, 255));
+    return result.x + result.y;
+}
+
+inline float PixelDepth(float2 screenUV)
+{
+    float depth = _CameraDepthTexture.SampleLevel(PointClampSampler, screenUV, 0);
+#if !UNITY_REVERSED_Z
+    depth = 2.0 * depth - 1.0;
+#endif
+    return depth;
+}
+
+inline float PixelDepth(uint2 id)
+{
+    return PixelDepth(float2(id.x * _ColorTextureSize.z, id.y * _ColorTextureSize.w));
+}
+
+// 屏幕空间转换成世界空间
+inline float3 PositionSSToPositionWS(uint3 id)
+{
+    // 获取屏幕空间
+    float2 screenUV = float2(id.x * _ColorTextureSize.z, id.y * _ColorTextureSize.w);
+    float depth = PixelDepth(screenUV);
+
+    float4 positionCS = float4(2.0 * screenUV - 1.0, depth, 1.0);
+#if UNITY_UV_STARTS_AT_TOP
+	positionCS.y = -positionCS.y;
+#endif
+
+	// 屏幕空间转换成世界空间
+    float4 positionWS = mul(UNITY_MATRIX_I_VP, positionCS);
+    return positionWS.xyz / positionWS.w;
+}
+
+// 获取反射点
+inline float4 MirrorPositionWS(float3 positionWS)
+{
+    float d = dot(positionWS, _ReflectionPlane.xyz) + _ReflectionPlane.w;
+    return float4(positionWS - 2 * d * _ReflectionPlane.xyz, d);
+}
+
+inline half SDFCube(half2 pos)
+{
+    half2 dist = abs(pos) - half2(1, 1);
+    return length(max(dist, 0.0)) - min(max(dist.x, dist.y), 0.0);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// kernel: RenderReflectHash
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma kernel RenderReflectHash
+
+[numthreads(NUM_THREAD_GROUP, NUM_THREAD_GROUP, 1)]
+void RenderReflectHash(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint) _ColorTextureSize.x || id.y >= (uint) _ColorTextureSize.y)
+        return;
+    
+    _RWReflectHashTexture[id.xy] = float4(1, 1, 1, 1);
+    _RWReflectMapping0Texture[id.xy] = float4(1, 1, 1, 1);
+    _RWReflectMapping1Texture[id.xy] = float4(1, 1, 1, 1);
+
+    float depth = PixelDepth(id.xy);
+#if UNITY_REVERSED_Z
+    if (depth <= 0.0)
+#else
+    if (depth >= 1.0)
+#endif
+        return;
+    
+    float3 positionWS = PositionSSToPositionWS(id);
+    float4 reflectedPositionWS = MirrorPositionWS(positionWS);
+    if (reflectedPositionWS.w <= 0.0)
+        return;
+    
+    float4 reflectedPositionCS = mul(_VPMatrix, float4(reflectedPositionWS.xyz, 1));
+    reflectedPositionCS.xyz /= reflectedPositionCS.w;
+    if (abs(reflectedPositionCS.x) >= 1.0 || abs(reflectedPositionCS.y) >= 1.0)
+        return;
+        
+    float2 positionSS = 0.5 * reflectedPositionCS.xy + 0.5;
+#if UNITY_UV_STARTS_AT_TOP
+    positionSS.y = 1.0 - positionSS.y;
+#endif
+    uint2 reflectedScreenID = floor(positionSS * _ColorTextureSize.xy);
+    _RWReflectHashTexture[id.xy] = float4(PackValue(reflectedScreenID.x), PackValue(reflectedScreenID.y));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// kernel: PreRenderReflectMapping
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma kernel PreRenderReflectMapping
+
+[numthreads(NUM_THREAD_GROUP, NUM_THREAD_GROUP, 1)]
+void PreRenderReflectMapping(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint) _ColorTextureSize.x || id.y >= (uint) _ColorTextureSize.y)
+        return;
+    
+    float4 hash = _ReflectHashTexture[id.xy];
+    uint2 reflectedID = uint2(UnpackValue(hash.xy), UnpackValue(hash.zw));
+    if (reflectedID.x < (uint) _ColorTextureSize.x && reflectedID.y < (uint) _ColorTextureSize.y)
+        _RWReflectMapping0Texture[reflectedID] = float4(PackValue(id.x), PackValue(id.y));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// kernel: RenderReflectMapping
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma kernel RenderReflectMapping
+
+[numthreads(NUM_THREAD_GROUP, NUM_THREAD_GROUP, 1)]
+void RenderReflectMapping(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint) _ColorTextureSize.x || id.y >= (uint) _ColorTextureSize.y)
+        return;
+    
+    float4 hash = _ReflectHashTexture[id.xy];
+    uint x = UnpackValue(hash.xy), y = UnpackValue(hash.zw);
+    if (x >= (uint) _ColorTextureSize.x || y >= (uint) _ColorTextureSize.y)
+        return;
+
+    uint2 targetId = uint2(x, y);
+    float4 cache = _ReflectMapping0Texture[targetId];
+    uint cacheX = UnpackValue(cache.xy), cacheY = UnpackValue(cache.zw);
+    if (id.x == cacheX && id.y == cacheY)
+    {
+        _RWReflectMapping1Texture[targetId] = cache;
+        return;
+    }
+    
+     // 获取两者深度并比较
+    float d = PixelDepth(id.xy), d1 = PixelDepth(uint2(cacheX, cacheY));
+#if UNITY_REVERSED_Z
+    if (d > d1)
+#else
+    if (d < d1)
+#endif
+    {
+        _RWReflectMapping1Texture[targetId] = float4(PackValue(id.x), PackValue(id.y));
+    }
+    else
+    {
+        _RWReflectMapping1Texture[targetId] = cache;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// kernel: RenderReflectionTexture
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma kernel RenderReflectionTexture
+
+[numthreads(NUM_THREAD_GROUP, NUM_THREAD_GROUP, 1)]
+void RenderReflectionTexture(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint) _ColorTextureSize.x || id.y >= (uint) _ColorTextureSize.y)
+        return;
+    
+    float4 hash = _ReflectMapping1Texture[id.xy];
+    uint x = UnpackValue(hash.xy), y = UnpackValue(hash.zw);
+    if (x >= (uint) _ColorTextureSize.x || y >= (uint) _ColorTextureSize.y)
+    {
+        _RWReflectionTexture[id.xy] = float4(0.0, 0.0, 0.0, 0.0);
+    }
+    else
+    {
+        float2 screenUV = float2(x * _ColorTextureSize.z, y * _ColorTextureSize.w);
+        half3 color = _CameraColorTexture.SampleLevel(PointClampSampler, screenUV, 0).rgb;
+        
+        half alpha = SDFCube(2.0 * screenUV - 1.0);
+        alpha = smoothstep(0, _FadeOutToEdge, abs(alpha));
+        _RWReflectionTexture[id.xy] = half4(color, alpha);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// kernel: FillHoles
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma kernel FillHoles
+
+[numthreads(NUM_THREAD_GROUP, NUM_THREAD_GROUP, 1)]
+void FillHoles(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint) _ColorTextureSize.x || id.y >= (uint) _ColorTextureSize.y)
+        return;
+    
+    half4 center = _ReflectionTexture[id.xy];
+    half4 right = _ReflectionTexture[id.xy + uint2(1, 0)];
+    half4 bottom = _ReflectionTexture[id.xy + uint2(0, 1)];
+    half4 bottomRight = _ReflectionTexture[id.xy + uint2(1, 1)];
+	
+    half4 best = center;
+    best = (right.a > best.a + 0.5) ? right : best;
+    best = (bottom.a > best.a + 0.5) ? bottom : best;
+    best = (bottomRight.a > best.a + 0.5) ? bottomRight : best;
+
+    _RWReflectionTexture[id.xy] = (best.a > center.a + 0.5) ? best : center;
+    _RWReflectionTexture[id.xy + uint2(0, 1)] = (best.a > right.a + 0.5) ? best : right;
+    _RWReflectionTexture[id.xy + uint2(1, 0)] = (best.a > bottom.a + 0.5) ? best : bottom;
+    _RWReflectionTexture[id.xy + uint2(1, 1)] = (best.a > bottomRight.a + 0.5) ? best : bottomRight;
+}

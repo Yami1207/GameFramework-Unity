@@ -3,8 +3,8 @@
     SubShader
     {
         Tags { "RenderPipeline" = "UniversalPipeline" }
-        Cull Off 
-		ZWrite On
+        Cull Off
+        ZWrite Off
 		ZTest LEqual
 
         Pass

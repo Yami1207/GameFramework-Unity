@@ -13,7 +13,7 @@
         _WaterFrequency("Frequency", Vector) = (0.00, 0.6, 0.3, 0.0)
         _WaterOffset("Offset", Vector) = (0.0, 0.0, 0.13, 0.0)
 
-        //[Header(Normal)]
+        [Header(Normal)]
         [NoScaleOffset]_BumpMap("法线贴图", 2D) = "bump" {}
         _NormalTiling("法线平铺", Vector) = (0.5, 0.5, 0.0, 0.0)
         _NormalSpeed("法线速度", Float) = 1
