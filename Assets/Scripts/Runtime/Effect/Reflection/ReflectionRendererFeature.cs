@@ -15,6 +15,7 @@ public class ReflectionRendererFeature : ScriptableRendererFeature
     {
         None = 0,
         PlanarReflection,
+        ScreenSpaceReflection,
         ScreenSpacePlanarReflection,
     }
 
@@ -57,6 +58,17 @@ public class ReflectionRendererFeature : ScriptableRendererFeature
         }
     }
 
+    private ScreenSpaceReflectionPass m_ScreenSpaceReflectionPass = null;
+    private ScreenSpaceReflectionPass screenSpaceReflectionPass
+    {
+        get
+        {
+            if (m_ScreenSpaceReflectionPass == null)
+                m_ScreenSpaceReflectionPass = new ScreenSpaceReflectionPass(this);
+            return m_ScreenSpaceReflectionPass;
+        }
+    }
+
     private ScreenSpacePlanarReflectionPass m_ScreenSpacePlanarReflectionPass = null;
     private ScreenSpacePlanarReflectionPass screenSpacePlanarReflectionPass
     {
@@ -74,12 +86,23 @@ public class ReflectionRendererFeature : ScriptableRendererFeature
 
     public override void AddRenderPasses(UnityEngine.Rendering.Universal.ScriptableRenderer renderer, ref UnityEngine.Rendering.Universal.RenderingData renderingData)
     {
-        if (ReflectionManager.instance.planes.Count == 0)
-            return;
-
-        if (m_ReflectionType == ReflectionType.PlanarReflection)
-            renderer.EnqueuePass(planarReflectionPass);
-        else if (m_ReflectionType == ReflectionType.ScreenSpacePlanarReflection && screenSpacePlanarReflectionPass.isVaild)
-            renderer.EnqueuePass(screenSpacePlanarReflectionPass);
+        if (ReflectionManager.instance.planes.Count == 0 || m_ReflectionType == ReflectionType.None)
+        {
+            Shader.SetGlobalTexture(REFLECTION_TEX_PROP_ID, Texture2D.blackTexture);
+        }
+        else
+        {
+            if (m_ReflectionType == ReflectionType.PlanarReflection)
+                renderer.EnqueuePass(planarReflectionPass);
+            else if (m_ReflectionType == ReflectionType.ScreenSpaceReflection)
+                renderer.EnqueuePass(screenSpaceReflectionPass);
+            else if (m_ReflectionType == ReflectionType.ScreenSpacePlanarReflection && screenSpacePlanarReflectionPass.isVaild)
+                renderer.EnqueuePass(screenSpacePlanarReflectionPass);
+        }
     }
+
+    //protected override void Dispose(bool disposing)
+    //{
+    //    base.Dispose(disposing);
+    //}
 }

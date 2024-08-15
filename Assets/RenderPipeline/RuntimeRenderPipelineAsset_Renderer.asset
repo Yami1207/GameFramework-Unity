@@ -60,7 +60,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 129
   m_RenderSkybox: 0
-  m_UseDoubleMapping: 0
+  m_UseDoubleMapping: 1
   m_FadeOutToEdge: 0.3
   m_FillHoles: 1
 --- !u!114 &11400000
@@ -121,7 +121,7 @@ MonoBehaviour:
     zFailOperation: 0
   m_ShadowTransparentReceive: 0
   m_RenderingMode: 0
-  m_DepthPrimingMode: 2
+  m_DepthPrimingMode: 0
   m_CopyDepthMode: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1

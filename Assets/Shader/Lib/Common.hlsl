@@ -1,7 +1,34 @@
-#ifndef __COMMON_HLSL__
+﻿#ifndef __COMMON_HLSL__
 #define __COMMON_HLSL__
 
 #define ANGLE_TO_RADIAN(x) 0.0174532924 * x
+
+TEXTURE2D_X_FLOAT(_CameraDepthTexture);
+SAMPLER(sampler_CameraDepthTexture);
+
+// 返回深度值
+inline float SampleSceneDepth(float2 uv)
+{
+    float depth = SAMPLE_TEXTURE2D_X(_CameraDepthTexture, sampler_CameraDepthTexture, uv).r;
+#if !UNITY_REVERSED_Z
+    depth = lerp(UNITY_NEAR_CLIP_VALUE, 1, depth);
+#endif
+    return depth;
+}
+
+// 返回视角空间下深度值
+inline float GetEye01Depth(float2 uv)
+{
+    float depth = SAMPLE_TEXTURE2D_X(_CameraDepthTexture, sampler_CameraDepthTexture, uv).r;
+    return 1.0 / (_ZBufferParams.x * depth + _ZBufferParams.y);
+}
+
+// 返回视角空间下深度值
+inline float GetEyeDepth(float2 uv)
+{
+    float depth = SAMPLE_TEXTURE2D_X(_CameraDepthTexture, sampler_CameraDepthTexture, uv).r;
+    return 1.0 / (_ZBufferParams.z * depth + _ZBufferParams.w);
+}
 
 inline half Max3(half3 x)
 {

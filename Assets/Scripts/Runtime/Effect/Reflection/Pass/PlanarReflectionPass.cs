@@ -13,8 +13,6 @@ public class PlanarReflectionPass : BaseReflectionPass
 
     private FilteringSettings m_FilteringSettings;
 
-    private Color m_ClearColor = new Color(0.0f, 0.0f, 0.0f, 0.0f);
-
     public PlanarReflectionPass(ReflectionRendererFeature owner) : base(owner)
     {
         m_ShaderTagIdList.Add(new ShaderTagId("UniversalForward"));

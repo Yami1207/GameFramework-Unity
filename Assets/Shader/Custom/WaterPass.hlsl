@@ -11,7 +11,7 @@ inline float2 WaterDirection()
 inline float DepthDistance(float3 positionWS, float4 positionSS, float3 normalWS)
 {
     float2 screenUV = positionSS.xy / positionSS.w;
-    float sceneZ = LinearEyeDepth(SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_CameraDepthTexture, screenUV), _ZBufferParams);
+    float sceneZ = GetEyeDepth(screenUV);
     float deltaDepth = sceneZ - positionSS.w;
     return deltaDepth;
 }

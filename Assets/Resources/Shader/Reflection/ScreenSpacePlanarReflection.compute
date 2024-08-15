@@ -52,18 +52,18 @@ inline uint UnpackValue(float2 value)
     return result.x + result.y;
 }
 
-inline float PixelDepth(float2 screenUV)
+inline float SampleDepth(float2 screenUV)
 {
     float depth = _CameraDepthTexture.SampleLevel(PointClampSampler, screenUV, 0);
 #if !UNITY_REVERSED_Z
-    depth = 2.0 * depth - 1.0;
+    depth = lerp(UNITY_NEAR_CLIP_VALUE, 1, depth);
 #endif
     return depth;
 }
 
-inline float PixelDepth(uint2 id)
+inline float SampleDepth(uint2 id)
 {
-    return PixelDepth(float2(id.x * _ColorTextureSize.z, id.y * _ColorTextureSize.w));
+    return SampleDepth(float2(id.x * _ColorTextureSize.z, id.y * _ColorTextureSize.w));
 }
 
 // 屏幕空间转换成世界空间
@@ -71,8 +71,7 @@ inline float3 PositionSSToPositionWS(uint3 id)
 {
     // 获取屏幕空间
     float2 screenUV = float2(id.x * _ColorTextureSize.z, id.y * _ColorTextureSize.w);
-    float depth = PixelDepth(screenUV);
-
+    float depth = SampleDepth(screenUV);
     float4 positionCS = float4(2.0 * screenUV - 1.0, depth, 1.0);
 #if UNITY_UV_STARTS_AT_TOP
 	positionCS.y = -positionCS.y;
@@ -111,7 +110,7 @@ void RenderReflectHash(uint3 id : SV_DispatchThreadID)
     _RWReflectMapping0Texture[id.xy] = float4(1, 1, 1, 1);
     _RWReflectMapping1Texture[id.xy] = float4(1, 1, 1, 1);
 
-    float depth = PixelDepth(id.xy);
+    float depth = SampleDepth(id.xy);
 #if UNITY_REVERSED_Z
     if (depth <= 0.0)
 #else
@@ -180,7 +179,7 @@ void RenderReflectMapping(uint3 id : SV_DispatchThreadID)
     }
     
      // 获取两者深度并比较
-    float d = PixelDepth(id.xy), d1 = PixelDepth(uint2(cacheX, cacheY));
+    float d = SampleDepth(id.xy), d1 = SampleDepth(uint2(cacheX, cacheY));
 #if UNITY_REVERSED_Z
     if (d > d1)
 #else

@@ -7,6 +7,8 @@ public abstract class BaseReflectionPass : ScriptableRenderPass
 {
     protected readonly ReflectionRendererFeature m_Onwer;
 
+    protected Color m_ClearColor = new Color(0.0f, 0.0f, 0.0f, 0.0f);
+
     public BaseReflectionPass(ReflectionRendererFeature onwer)
     {
         renderPassEvent = RenderPassEvent.BeforeRenderingTransparents;

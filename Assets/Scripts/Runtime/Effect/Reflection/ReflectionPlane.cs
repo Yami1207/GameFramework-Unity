@@ -31,14 +31,18 @@ public class ReflectionPlane : MonoBehaviour
     private LayerMask m_CullingMask = -1;
     public LayerMask cullingMask { get { return m_CullingMask; } }
 
-    private Renderer m_Renderer;
+    /// <summary>
+    /// 渲染器对象
+    /// </summary>
+    private MeshRenderer m_MeshRenderer;
+    public MeshRenderer meshRenderer { get { return m_MeshRenderer; } }
 
     private RenderTexture m_ReflectionTexture;
     public RenderTexture texture { get { return m_ReflectionTexture; } }
 
     private void OnEnable()
     {
-        if (m_Renderer = this.GetComponent<MeshRenderer>())
+        if (m_MeshRenderer = this.GetComponent<MeshRenderer>())
             ReflectionManager.instance.AddPlane(this);
     }
 
@@ -66,9 +70,9 @@ public class ReflectionPlane : MonoBehaviour
 
                 // 纹理设置到材质上
                 var propertyBlock = materialPropertyBlock;
-                m_Renderer.GetPropertyBlock(propertyBlock);
+                m_MeshRenderer.GetPropertyBlock(propertyBlock);
                 propertyBlock.SetTexture(REFLECTION_TEX_PROP_ID, m_ReflectionTexture);
-                m_Renderer.SetPropertyBlock(propertyBlock);
+                m_MeshRenderer.SetPropertyBlock(propertyBlock);
             }
         }
     }

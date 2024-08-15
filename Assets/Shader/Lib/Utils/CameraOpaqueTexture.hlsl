@@ -3,10 +3,16 @@
 
 TEXTURE2D(_G_ScreenOpaqueTexture);
 SAMPLER(sampler_G_ScreenOpaqueTexture);
+float4 _G_ScreenOpaqueTexture_TexelSize;
+
+inline half3 SampleScreen(float2 positionSS)
+{
+    return SAMPLE_TEXTURE2D(_G_ScreenOpaqueTexture, sampler_G_ScreenOpaqueTexture, positionSS.xy).rgb;
+}
 
 inline half3 SampleScreen(float4 positionSS)
 {
-    return SAMPLE_TEXTURE2D(_G_ScreenOpaqueTexture, sampler_G_ScreenOpaqueTexture, positionSS.xy / positionSS.w).rgb;
+    return SampleScreen(positionSS.xy / positionSS.w);
 }
 
 #endif

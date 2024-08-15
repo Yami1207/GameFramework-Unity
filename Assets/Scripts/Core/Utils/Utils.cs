@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Unity.Collections;
 using UnityEngine;
 
 public static class Utils
@@ -117,6 +118,114 @@ public static class Utils
     public static long currentTimeMillis
     {
         get { return (long)(Time.time * 1000); }
+    }
+
+    #endregion
+
+    #region Math
+
+    public static bool TestPlanesAABB(ref Vector4[] planes, Vector3 minBounds, Vector3 maxBounds)
+    {
+        Vector3 min = Vector3.zero, max = Vector3.zero;
+        for (int index = 0; index < 6; ++index)
+        {
+            Vector3 normal = new Vector3(planes[index].x, planes[index].y, planes[index].z);
+            float planeDistance = planes[index].w;
+
+            // X axis
+            if (normal.x < 0)
+            {
+                min.x = minBounds.x;
+                max.x = maxBounds.x;
+            }
+            else
+            {
+                min.x = maxBounds.x;
+                max.x = minBounds.x;
+            }
+
+            // Y axis
+            if (normal.y < 0)
+            {
+                min.y = minBounds.y;
+                max.y = maxBounds.y;
+            }
+            else
+            {
+                min.y = maxBounds.y;
+                max.y = minBounds.y;
+            }
+
+            // Z axis
+            if (normal.z < 0)
+            {
+                min.z = minBounds.z;
+                max.z = maxBounds.z;
+            }
+            else
+            {
+                min.z = maxBounds.z;
+                max.z = minBounds.z;
+            }
+
+            var dot1 = normal.x * min.x + normal.y * min.y + normal.z * min.z;
+            if (dot1 + planeDistance < 0)
+                return false;
+        }
+
+        return true;
+    }
+
+    public static bool TestPlanesAABB(ref NativeArray<Vector4> planes, Vector3 minBounds, Vector3 maxBounds)
+    {
+        Vector3 min = Vector3.zero, max = Vector3.zero;
+        for (int index = 0; index < 6; ++index)
+        {
+            Vector3 normal = new Vector3(planes[index].x, planes[index].y, planes[index].z);
+            float planeDistance = planes[index].w;
+
+            // X axis
+            if (normal.x < 0)
+            {
+                min.x = minBounds.x;
+                max.x = maxBounds.x;
+            }
+            else
+            {
+                min.x = maxBounds.x;
+                max.x = minBounds.x;
+            }
+
+            // Y axis
+            if (normal.y < 0)
+            {
+                min.y = minBounds.y;
+                max.y = maxBounds.y;
+            }
+            else
+            {
+                min.y = maxBounds.y;
+                max.y = minBounds.y;
+            }
+
+            // Z axis
+            if (normal.z < 0)
+            {
+                min.z = minBounds.z;
+                max.z = maxBounds.z;
+            }
+            else
+            {
+                min.z = maxBounds.z;
+                max.z = minBounds.z;
+            }
+
+            var dot1 = normal.x * min.x + normal.y * min.y + normal.z * min.z;
+            if (dot1 + planeDistance < 0)
+                return false;
+        }
+
+        return true;
     }
 
     #endregion

@@ -67,9 +67,6 @@ uniform half _IntersectionRippleStrength;
 
 //--------------------------------------
 // 贴图
-TEXTURE2D_X_FLOAT(_CameraDepthTexture);
-SAMPLER(sampler_CameraDepthTexture);
-
 TEXTURECUBE(_ReflectionCubemap);
 SAMPLER(sampler_ReflectionCubemap);
 
