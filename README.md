@@ -8,6 +8,6 @@
 
 4、物体与地形融合（场景：PDO）
 
-5、PlanarReflection and SSRP（场景：Water）
+5、PlanarReflection、SSR And SSRP（场景：Water）
 
 6、外发光（场景：Highlights）
