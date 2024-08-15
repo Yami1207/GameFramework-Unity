@@ -54,11 +54,11 @@ MonoBehaviour:
   m_Name: ReflectionRendererFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  m_ReflectionType: 2
+  m_ReflectionType: 1
   m_Quality: 2
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 129
+    m_Bits: 193
   m_RenderSkybox: 0
   m_UseDoubleMapping: 1
   m_FadeOutToEdge: 0.3
