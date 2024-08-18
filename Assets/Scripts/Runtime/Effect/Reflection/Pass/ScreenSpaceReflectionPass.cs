@@ -1,9 +1,8 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using static Unity.VisualScripting.Member;
 
 public class ScreenSpaceReflectionPass : BaseReflectionPass
 {
@@ -14,12 +13,16 @@ public class ScreenSpaceReflectionPass : BaseReflectionPass
         public static readonly int SSR_DEPTH_TEXTURE_PROP_ID = Shader.PropertyToID("_SSRDepthTexture");
 
         /// <summary>
-        /// µ±Ç°ÑÕÉ«Í¼
+        /// å½“å‰é¢œè‰²å›¾
         /// </summary>
         public static readonly int CAMERA_COLOR_TEXTURE_PROP_ID = Shader.PropertyToID("_CameraColorTexture");
 
+        public static readonly int THICKNESS_PROP_ID = Shader.PropertyToID("_Thickness");
+
+        public static readonly int STRIDE_PROP_ID = Shader.PropertyToID("_Stride");
+
         /// <summary>
-        /// ²Ã¼ô¿Õ¼ä±ä»»¾ØÕó
+        /// è£å‰ªç©ºé—´å˜æ¢çŸ©é˜µ
         /// </summary>
         public static readonly int VP_MATRIX_PROP_ID = Shader.PropertyToID("_VPMatrix");
     }
@@ -27,17 +30,17 @@ public class ScreenSpaceReflectionPass : BaseReflectionPass
     private static readonly string PROFILE_TAG = "Screen Space Reflection";
 
     /// <summary>
-    /// ¾µÍ·ÊÓ×¶
+    /// é•œå¤´è§†é”¥
     /// </summary>
     private Plane[] m_CameraFrustums = new Plane[6];
 
     /// <summary>
-    /// ¾µÍ·ÊÓ×¶Æ½Ãæ£¨xyz:normal w:distance£©
+    /// é•œå¤´è§†é”¥å¹³é¢ï¼ˆxyz:normal w:distanceï¼‰
     /// </summary>
     private Vector4[] m_CameraFrustumPlanes = new Vector4[6];
 
     /// <summary>
-    /// µ±Ç°ÔÚÊÓ×¶ÄÚµÄ·´ÉäÆ½Ãæ
+    /// å½“å‰åœ¨è§†é”¥å†…çš„åå°„å¹³é¢
     /// </summary>
     private List<MeshRenderer> m_RenderReflectionPlanes = new List<MeshRenderer>(8);
 
@@ -89,6 +92,7 @@ public class ScreenSpaceReflectionPass : BaseReflectionPass
         RenderTargetIdentifier depthTarget = renderer.cameraDepthTarget;
 #endif
 
+        SetupMaterial();
         SetupFrustumPlanes(camera);
         SetupReflectionPlanes();
 
@@ -102,7 +106,7 @@ public class ScreenSpaceReflectionPass : BaseReflectionPass
 
                 cmd.Clear();
 
-                // äÖÈ¾·´ÉäÆ½ÃæĞÅÏ¢
+                // æ¸²æŸ“åå°„å¹³é¢ä¿¡æ¯
                 cmd.Clear();
                 CoreUtils.SetRenderTarget(cmd, ShaderConstants.SSR_MASK_TEXTURE_PROP_ID, ShaderConstants.SSR_DEPTH_TEXTURE_PROP_ID);
                 cmd.ClearRenderTarget(true, true, m_ClearColor);
@@ -113,7 +117,7 @@ public class ScreenSpaceReflectionPass : BaseReflectionPass
                 cmd.Clear();
                 CoreUtils.SetRenderTarget(cmd, ReflectionRendererFeature.REFLECTION_TEX_PROP_ID);
 
-                // ²Ã¼ô¿Õ¼ä±ä»»¾ØÕó
+                // è£å‰ªç©ºé—´å˜æ¢çŸ©é˜µ
                 Matrix4x4 viewProjectionMatrix = GL.GetGPUProjectionMatrix(camera.projectionMatrix, true) * camera.worldToCameraMatrix;
                 cmd.SetGlobalMatrix(ShaderConstants.VP_MATRIX_PROP_ID, viewProjectionMatrix);
 
@@ -137,9 +141,18 @@ public class ScreenSpaceReflectionPass : BaseReflectionPass
         cmd.ReleaseTemporaryRT(ShaderConstants.SSR_DEPTH_TEXTURE_PROP_ID);
     }
 
+    private void SetupMaterial()
+    {
+        var setting = m_Onwer.SSRSetting;
+
+        var m = material;
+        m.SetFloat(ShaderConstants.THICKNESS_PROP_ID, setting.thickness);
+        m.SetFloat(ShaderConstants.STRIDE_PROP_ID, setting.stride);
+    }
+
     private void SetupFrustumPlanes(Camera camera)
     {
-        // »ñÈ¡¾µÍ·ÊÓ×¶Ìå
+        // è·å–é•œå¤´è§†é”¥ä½“
         GeometryUtility.CalculateFrustumPlanes(camera, m_CameraFrustums);
         for (int i = 0; i < 6; ++i)
         {

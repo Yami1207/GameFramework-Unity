@@ -97,7 +97,7 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
         cmd.GetTemporaryRT(ShaderConstants.REFLECT_MAPPING_0_TEXTURE_PROP_ID, desc, FilterMode.Point);
         cmd.GetTemporaryRT(ShaderConstants.REFLECT_MAPPING_1_TEXTURE_PROP_ID, desc, FilterMode.Point);
 
-        if (m_Onwer.fillHoles)
+        if (m_Onwer.SSPRSetting.fillHoles)
             cmd.GetTemporaryRT(ShaderConstants.REFLECT_TEXTURE_PROP_ID, desc, FilterMode.Point);
     }
 
@@ -164,7 +164,7 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
         cmd.ReleaseTemporaryRT(ShaderConstants.REFLECT_MAPPING_1_TEXTURE_PROP_ID);
         cmd.ReleaseTemporaryRT(ReflectionRendererFeature.REFLECTION_TEX_PROP_ID);
 
-        if (m_Onwer.fillHoles)
+        if (m_Onwer.SSPRSetting.fillHoles)
             cmd.ReleaseTemporaryRT(ShaderConstants.REFLECT_TEXTURE_PROP_ID);
     }
 
@@ -180,6 +180,7 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
         RenderTargetIdentifier depthTarget = renderer.cameraDepthTarget;
 #endif
 
+        var setting = m_Onwer.SSPRSetting;
         Camera camera = cameraData.camera;
         Vector2Int size = GetTextureSize(m_Onwer.quality, camera.pixelWidth, camera.pixelHeight);
 
@@ -191,7 +192,7 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
 
         cmd.SetComputeVectorParam(m_ReflectionShader, ShaderConstants.COLOR_TEXTURE_SIZE_PROP_ID, new Vector4(size.x, size.y, 1.0f / size.x, 1.0f / size.y));
         cmd.SetComputeVectorParam(m_ReflectionShader, ShaderConstants.REFLECTION_PLANE_PROP_ID, plane);
-        cmd.SetComputeFloatParam(m_ReflectionShader, ShaderConstants.FADE_OUT_TO_EDGE_PROP_ID, m_Onwer.fadeOutToEdge);
+        cmd.SetComputeFloatParam(m_ReflectionShader, ShaderConstants.FADE_OUT_TO_EDGE_PROP_ID, setting.fadeOutToEdge);
 
         // 裁剪空间变换矩阵
         Matrix4x4 viewProjectionMatrix = GL.GetGPUProjectionMatrix(camera.projectionMatrix, true) * camera.worldToCameraMatrix;
@@ -204,7 +205,7 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
         cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.RW_REFLECT_MAPPING_1_TEXTURE_PROP_ID, m_ReflectMapping1TextureID);
         cmd.DispatchCompute(m_ReflectionShader, kernel, dispatchThreadGroupX, dispatchThreadGroupY, dispatchThreadGroupZ);
 
-        if (m_Onwer.useDoubleMapping)
+        if (setting.useDoubleMapping)
         {
             kernel = m_ReflectionShader.FindKernel("PreRenderReflectMapping");
             cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.REFLECT_HASH_TEXTURE_PROP_ID, m_ReflectHashTextureID);
@@ -226,7 +227,7 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
             cmd.DispatchCompute(m_ReflectionShader, kernel, dispatchThreadGroupX, dispatchThreadGroupY, dispatchThreadGroupZ);
         }
 
-        if (m_Onwer.fillHoles)
+        if (setting.fillHoles)
         {
             kernel = m_ReflectionShader.FindKernel("RenderReflectionTexture");
             cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.CAMERA_COLOR_TEXTURE_PROP_ID, colorTarget);

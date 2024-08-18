@@ -9,24 +9,10 @@ public class ReflectionRendererFeatureEditor : Editor
     private SerializedProperty m_ReflectionTypeProp;
     private SerializedProperty m_QualityProp;
 
-    private SerializedProperty m_CullingMaskProp;
-    private SerializedProperty m_RenderSkyboxProp;
-
-    private SerializedProperty m_UseDoubleMappingProp;
-    private SerializedProperty m_FadeOutToEdgeProp;
-    private SerializedProperty m_FillHolesProp;
-
     public void OnEnable()
     {
         m_ReflectionTypeProp = serializedObject.FindProperty("m_ReflectionType");
         m_QualityProp = serializedObject.FindProperty("m_Quality");
-
-        m_CullingMaskProp = serializedObject.FindProperty("m_CullingMask");
-        m_RenderSkyboxProp = serializedObject.FindProperty("m_RenderSkybox");
-
-        m_UseDoubleMappingProp = serializedObject.FindProperty("m_UseDoubleMapping");
-        m_FadeOutToEdgeProp = serializedObject.FindProperty("m_FadeOutToEdge");
-        m_FillHolesProp = serializedObject.FindProperty("m_FillHoles");
     }
 
     public override void OnInspectorGUI()
@@ -43,20 +29,24 @@ public class ReflectionRendererFeatureEditor : Editor
             {
                 case ReflectionRendererFeature.ReflectionType.PlanarReflection:
                     {
-                        EditorGUILayout.PropertyField(m_CullingMaskProp, EditorDraw.TempContent("Culling Mask"));
-                        EditorGUILayout.PropertyField(m_RenderSkyboxProp, EditorDraw.TempContent("Render Skybox"));
+                        var settingProp = serializedObject.FindProperty("m_PlanarReflectionSetting");
+                        EditorGUILayout.PropertyField(settingProp.FindPropertyRelative("cullingMask"), EditorDraw.TempContent("Culling Mask"));
+                        EditorGUILayout.PropertyField(settingProp.FindPropertyRelative("renderSkybox"), EditorDraw.TempContent("Render Skybox"));
                     }
                     break;
                 case ReflectionRendererFeature.ReflectionType.ScreenSpaceReflection:
                     {
-
+                        var settingProp = serializedObject.FindProperty("m_ScreenSpaceReflectionSetting");
+                        EditorGUILayout.PropertyField(settingProp.FindPropertyRelative("thickness"), EditorDraw.TempContent("Thickness"));
+                        EditorGUILayout.PropertyField(settingProp.FindPropertyRelative("stride"), EditorDraw.TempContent("Stride"));
                     }
                     break;
                 case ReflectionRendererFeature.ReflectionType.ScreenSpacePlanarReflection:
                     {
-                        EditorGUILayout.PropertyField(m_UseDoubleMappingProp, EditorDraw.TempContent("修正渲染顺序"));
-                        EditorGUILayout.PropertyField(m_FadeOutToEdgeProp, EditorDraw.TempContent("边缘淡出"));
-                        EditorGUILayout.PropertyField(m_FillHolesProp, EditorDraw.TempContent("填充空洞"));
+                        var settingProp = serializedObject.FindProperty("m_ScreenSpacePlanarReflectionSetting");
+                        EditorGUILayout.PropertyField(settingProp.FindPropertyRelative("useDoubleMapping"), EditorDraw.TempContent("修正渲染顺序"));
+                        EditorGUILayout.PropertyField(settingProp.FindPropertyRelative("fadeOutToEdge"), EditorDraw.TempContent("边缘淡出"));
+                        EditorGUILayout.PropertyField(settingProp.FindPropertyRelative("fillHoles"), EditorDraw.TempContent("填充空洞"));
                     }
                     break;
             }

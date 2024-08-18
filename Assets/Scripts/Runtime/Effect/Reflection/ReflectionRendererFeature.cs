@@ -1,11 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting.FullSerializer;
-using UnityEditor.Playables;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using static ReflectionPlane;
 
 public class ReflectionRendererFeature : ScriptableRendererFeature
 {
@@ -19,6 +17,33 @@ public class ReflectionRendererFeature : ScriptableRendererFeature
         ScreenSpacePlanarReflection,
     }
 
+    [Serializable]
+    public class PlanarReflectionSetting
+    {
+        public LayerMask cullingMask = -1;
+
+        public bool renderSkybox = false;
+    }
+
+    [Serializable]
+    public class ScreenSpaceReflectionSetting
+    {
+        public float thickness = 2.0f;
+
+        public float stride = 0.3f;
+    }
+
+    [Serializable]
+    public class ScreenSpacePlanarReflectionSetting
+    {
+        public bool useDoubleMapping = true;
+
+        [Range(0.0f, 1.0f)]
+        public float fadeOutToEdge = 0.3f;
+
+        public bool fillHoles = true;
+    }
+
     [SerializeField]
     private ReflectionType m_ReflectionType = ReflectionType.None;
 
@@ -27,25 +52,16 @@ public class ReflectionRendererFeature : ScriptableRendererFeature
     public ReflectionQuality quality { get { return m_Quality; } }
 
     [SerializeField]
-    private LayerMask m_CullingMask = -1;
-    public LayerMask cullingMask { get { return m_CullingMask; } }
+    private PlanarReflectionSetting m_PlanarReflectionSetting = new PlanarReflectionSetting();
+    public PlanarReflectionSetting planarReflectionSetting { get { return m_PlanarReflectionSetting; } }
 
     [SerializeField]
-    private bool m_RenderSkybox = false;
-    public bool renderSkybox { get { return m_RenderSkybox; } }
+    private ScreenSpaceReflectionSetting m_ScreenSpaceReflectionSetting = new ScreenSpaceReflectionSetting();
+    public ScreenSpaceReflectionSetting SSRSetting { get { return m_ScreenSpaceReflectionSetting; } }
 
     [SerializeField]
-    private bool m_UseDoubleMapping = false;
-    public bool useDoubleMapping { get { return m_UseDoubleMapping; } }
-
-    [SerializeField]
-    [Range(0.0f, 1.0f)]
-    private float m_FadeOutToEdge = 0.3f;
-    public float fadeOutToEdge { get { return m_FadeOutToEdge; } }
-
-    [SerializeField]
-    private bool m_FillHoles = true;
-    public bool fillHoles { get { return m_FillHoles; } }
+    private ScreenSpacePlanarReflectionSetting m_ScreenSpacePlanarReflectionSetting = new ScreenSpacePlanarReflectionSetting();
+    public ScreenSpacePlanarReflectionSetting SSPRSetting { get { return m_ScreenSpacePlanarReflectionSetting; } }
 
     private PlanarReflectionPass m_PlanarReflectionPass = null;
     private PlanarReflectionPass planarReflectionPass

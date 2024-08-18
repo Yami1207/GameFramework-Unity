@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -56,6 +55,7 @@ public class PlanarReflectionPass : BaseReflectionPass
             cmd.SetInvertCulling(!invertCulling);
             context.ExecuteCommandBuffer(cmd);
 
+            var setting = m_Onwer.planarReflectionSetting;
             ReflectionPlane sharePlane = null;
             float planeDist = 0.0f;
 
@@ -68,7 +68,7 @@ public class PlanarReflectionPass : BaseReflectionPass
                     // 是否不使用全局的反射纹理
                     Vector3 planeNormal = reflectionPlane.transform.up, planePoint = reflectionPlane.transform.position;
                     Vector4 plane = new Vector4(planeNormal.x, planeNormal.y, planeNormal.z, -Vector2.Dot(planeNormal, planePoint));
-                    RenderReflectionTexture(context, ref renderingData, cmd, plane, reflectionPlane.cullingMask, reflectionPlane.texture);
+                    RenderReflectionTexture(context, ref renderingData, cmd, plane, setting.cullingMask, setting.renderSkybox, reflectionPlane.texture);
                 }
                 else
                 {
@@ -93,7 +93,7 @@ public class PlanarReflectionPass : BaseReflectionPass
             {
                 Vector3 planeNormal = sharePlane.transform.up, planePoint = sharePlane.transform.position;
                 Vector4 plane = new Vector4(planeNormal.x, planeNormal.y, planeNormal.z, -Vector2.Dot(planeNormal, planePoint));
-                RenderReflectionTexture(context, ref renderingData, cmd, plane, m_Onwer.cullingMask, ReflectionRendererFeature.REFLECTION_TEX_PROP_ID);
+                RenderReflectionTexture(context, ref renderingData, cmd, plane, setting.cullingMask, setting.renderSkybox, ReflectionRendererFeature.REFLECTION_TEX_PROP_ID);
             }
 
             // 恢复FrameBuffer
@@ -112,7 +112,8 @@ public class PlanarReflectionPass : BaseReflectionPass
         cmd.ReleaseTemporaryRT(ReflectionRendererFeature.REFLECTION_TEX_PROP_ID);
     }
 
-    private void RenderReflectionTexture(ScriptableRenderContext context, ref RenderingData renderingData, CommandBuffer cmd, Vector4 plane, LayerMask cullingMask, RenderTargetIdentifier texture)
+    private void RenderReflectionTexture(ScriptableRenderContext context, ref RenderingData renderingData, CommandBuffer cmd, Vector4 plane,
+        LayerMask cullingMask, bool renderSkybox, RenderTargetIdentifier texture)
     {
         Camera camera = renderingData.cameraData.camera;
 
@@ -141,11 +142,8 @@ public class PlanarReflectionPass : BaseReflectionPass
         context.DrawRenderers(renderingData.cullResults, ref drawingOpaqueSettings, ref m_FilteringSettings);
 
         // 天空盒
-        if (m_Onwer.renderSkybox)
-        {
-            if (RenderSettings.skybox != null || (camera.TryGetComponent(out Skybox cameraSkybox) && cameraSkybox.material != null))
-                context.DrawSkybox(renderingData.cameraData.camera);
-        }
+        if (renderSkybox && (RenderSettings.skybox != null || (camera.TryGetComponent(out Skybox cameraSkybox) && cameraSkybox.material != null)))
+            context.DrawSkybox(renderingData.cameraData.camera);
 
         // 渲染透明物
         m_FilteringSettings.renderQueueRange = RenderQueueRange.transparent;

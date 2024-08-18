@@ -54,15 +54,20 @@ MonoBehaviour:
   m_Name: ReflectionRendererFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  m_ReflectionType: 1
+  m_ReflectionType: 2
   m_Quality: 2
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 193
-  m_RenderSkybox: 0
-  m_UseDoubleMapping: 1
-  m_FadeOutToEdge: 0.3
-  m_FillHoles: 1
+  m_PlanarReflectionSetting:
+    cullingMask:
+      serializedVersion: 2
+      m_Bits: 193
+    renderSkybox: 0
+  m_ScreenSpaceReflectionSetting:
+    thickness: 4
+    stride: 0.5
+  m_ScreenSpacePlanarReflectionSetting:
+    useDoubleMapping: 1
+    fadeOutToEdge: 0.3
+    fillHoles: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

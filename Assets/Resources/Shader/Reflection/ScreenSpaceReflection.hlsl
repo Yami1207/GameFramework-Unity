@@ -4,6 +4,8 @@
 #include "../../../Shader/Lib/Core.hlsl"
 #include "../../../Shader/Lib/Utils/CameraOpaqueTexture.hlsl"
 
+#define STEP_COUNT 128
+
 //--------------------------------------
 // 顶点结构体
 struct Attributes
@@ -19,6 +21,9 @@ struct Varyings
     float4 positionCS : SV_POSITION;
     half2 texcoord : TEXCOORD0;
 };
+
+uniform float _Stride;
+uniform float _Thickness;
 
 // 裁剪空间变换矩阵
 uniform float4x4 _VPMatrix;
@@ -70,9 +75,9 @@ half4 frag(Varyings input) : SV_Target
 
     half4 reflectColor = 0;
     UNITY_LOOP
-    for (int i = 0; i < 128; ++i)
+    for (int i = 0; i < STEP_COUNT; ++i)
     {
-        float3 reflectPosWS = positionWS.xyz + reflectDirWS * 0.3 * i;
+        float3 reflectPosWS = positionWS.xyz + reflectDirWS * _Stride * i;
         float4 reflectPosCS = mul(_VPMatrix, float4(reflectPosWS, 1.0f));
         float reflectDepth = reflectPosCS.w;
         
@@ -86,7 +91,7 @@ half4 frag(Varyings input) : SV_Target
             break;
         
         float eyeDepth = GetEyeDepth(reflectPosSS);
-        if (reflectDepth > eyeDepth && abs(reflectDepth - eyeDepth) < 4)
+        if (reflectDepth > eyeDepth && abs(reflectDepth - eyeDepth) < _Thickness)
         {
             reflectColor = half4(SampleScreen(reflectPosSS), 1);
             break;
