@@ -16,8 +16,7 @@ Material:
   - _USE_ALPHA_CUTOFF
   - _USE_GRADIENT_COLOR
   - _USE_WIND_WAVE
-  m_InvalidKeywords:
-  - _ENABLE_WIND_ON
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0

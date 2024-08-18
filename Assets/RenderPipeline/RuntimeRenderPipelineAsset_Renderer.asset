@@ -54,7 +54,7 @@ MonoBehaviour:
   m_Name: ReflectionRendererFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  m_ReflectionType: 2
+  m_ReflectionType: 3
   m_Quality: 2
   m_PlanarReflectionSetting:
     cullingMask:
@@ -62,8 +62,8 @@ MonoBehaviour:
       m_Bits: 193
     renderSkybox: 0
   m_ScreenSpaceReflectionSetting:
-    thickness: 4
-    stride: 0.5
+    thickness: 0.001
+    stride: 3
   m_ScreenSpacePlanarReflectionSetting:
     useDoubleMapping: 1
     fadeOutToEdge: 0.3

@@ -25,7 +25,6 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ENABLE_WIND_ON
   - _USE_ALPHA_CUTOFF
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -48,7 +47,6 @@ Material:
     - _ColorMaskHeight: 1
     - _Cull: 0
     - _EnableSubsurfaceScattering: 0
-    - _EnableWind: 1
     - _SubsurfaceColorIntensity: 1
     - _SubsurfaceRadius: 1
     - _UseAlphaCutoff: 1
@@ -56,6 +54,5 @@ Material:
     m_Colors:
     - _BaseBottomColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColor: {r: 0.47353154, g: 0.21952623, b: 0.18447499, a: 1}
-    - _ShadowColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
     - _SubsurfaceColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

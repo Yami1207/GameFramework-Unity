@@ -16,8 +16,7 @@ Material:
   - _USE_REFLECTION
   - _USE_REFRACTION
   - _USE_SPECULAR
-  m_InvalidKeywords:
-  - _REFLECTION_PLANARREFLECTION
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
