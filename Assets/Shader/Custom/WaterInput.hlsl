@@ -100,4 +100,6 @@ struct Varyings
     UNITY_VERTEX_OUTPUT_STEREO
 };
 
+#include "../Lib/Instancing.hlsl"
+
 #endif

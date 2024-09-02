@@ -63,7 +63,7 @@
     SubShader
     {
         Tags { "RenderType" = "Transparent" "Queue" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
-        LOD 100
+        //LOD 100
 		ZWrite Off
 		Blend SrcAlpha OneMinusSrcAlpha
 
@@ -72,9 +72,9 @@
 			Tags { "LightMode" = "UniversalForward" }
 
             HLSLPROGRAM
-			#pragma target 3.0
 			#pragma vertex vert
 			#pragma fragment frag
+            #pragma target 3.0
 			
             // -------------------------------------
 			// Unity defined keywords
@@ -84,6 +84,7 @@
 			// GPU Instancing
 			#pragma multi_compile_instancing
             #pragma instancing_options assumeuniformscaling lodfade nolightprobe nolightmap
+            #pragma instancing_options procedural:Setup
 
             // -------------------------------------
 			// URP keywords

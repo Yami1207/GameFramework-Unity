@@ -59,6 +59,8 @@ inline half SampleIntersection(float2 uv, float deltaDepth, float2 direction, ha
 
 Varyings vert(Attributes input)
 {
+    UNITY_SETUP_INSTANCE_ID(input);
+    
     VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
 
     Varyings output;
