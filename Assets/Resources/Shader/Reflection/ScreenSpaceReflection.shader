@@ -11,8 +11,15 @@
             #pragma vertex vert
             #pragma fragment frag
 
+            //--------------------------------------
+			// GPU Instancing
+			#pragma multi_compile_instancing
+            #pragma instancing_options procedural:Setup
+
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            #include "../../../Shader/Lib/Instancing.hlsl"
 
             //--------------------------------------
             // 顶点结构体
@@ -20,6 +27,7 @@
             {
                 float3 positionOS   : POSITION;
                 float3 normalOS     : NORMAL;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             //--------------------------------------
@@ -28,10 +36,13 @@
             {
                 float4 positionCS   : SV_POSITION;
                 float3 normalWS     : TEXCOORD3;
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
             Varyings vert(Attributes input)
             {
+                UNITY_SETUP_INSTANCE_ID(input);
+
                 VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS);
 
                 Varyings output = (Varyings)0;

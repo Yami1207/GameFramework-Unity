@@ -14,6 +14,9 @@ public class Chunk
     private bool m_ExtendDrawcall = false;
     public bool extendDrawcall { set { m_ExtendDrawcall = value; } get { return m_ExtendDrawcall; } }
 
+    private int m_WaterHeight = int.MaxValue;
+    public int waterHeight { set { m_WaterHeight = value; } get { return m_WaterHeight; } }
+
     /// <summary>
     /// 准备卸载的时间
     /// </summary>

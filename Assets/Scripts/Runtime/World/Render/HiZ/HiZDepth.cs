@@ -47,6 +47,9 @@ public class HiZDepth : ScriptableRendererFeature
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
+        if (!GameSetting.enableInstancing)
+            return;
+
         if (renderingData.cameraData.camera == CameraManager.mainCamera)
             renderer.EnqueuePass(m_ScriptablePass);
     }

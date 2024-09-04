@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class GameSetting
 {
-    private static bool s_EnableInstancing = true;
+    private static bool s_EnableInstancing = false;
     public static bool enableInstancing { set { s_EnableInstancing = value; } get { return s_EnableInstancing; } }
 
     /// <summary>

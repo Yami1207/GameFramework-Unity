@@ -18,9 +18,6 @@ public abstract class BaseReflectionPass : ScriptableRenderPass
 
     public static Vector2Int GetTextureSize(ReflectionQuality quality, int pixelWidth, int pixelHeight)
     {
-        //int bits = (int)quality;
-        //return new Vector2Int(pixelWidth >> bits, pixelHeight >> bits);
-
         int[] sizeArray = { 128, 256, 512 };
         int size = sizeArray[(int)quality];
 
