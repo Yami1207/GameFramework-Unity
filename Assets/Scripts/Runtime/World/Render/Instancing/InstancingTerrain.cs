@@ -73,9 +73,12 @@ public class InstancingTerrain
         m_StandardRenderer.enableFrustumCulling = false;
         m_StandardRenderer.AddDrawcall(m_InstancingCore.CreateInstancingDrawcall(s_TerrainMesh, standard, ShadowCastingMode.Off, true));
 
-        m_StandardAddRenderer = m_InstancingCore.CreateSingleRenderer();
-        m_StandardAddRenderer.enableFrustumCulling = false;
-        m_StandardAddRenderer.AddDrawcall(m_InstancingCore.CreateInstancingDrawcall(s_TerrainMesh, standardAdd, ShadowCastingMode.Off, true));
+        if (standardAdd != null)
+        {
+            m_StandardAddRenderer = m_InstancingCore.CreateSingleRenderer();
+            m_StandardAddRenderer.enableFrustumCulling = false;
+            m_StandardAddRenderer.AddDrawcall(m_InstancingCore.CreateInstancingDrawcall(s_TerrainMesh, standardAdd, ShadowCastingMode.Off, true));
+        }
 
         m_LowRenderer = m_InstancingCore.CreateSingleRenderer();
         m_LowRenderer.enableFrustumCulling = false;

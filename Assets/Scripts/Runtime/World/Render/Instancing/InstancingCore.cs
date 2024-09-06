@@ -208,6 +208,8 @@ public class InstancingCore
 
     #endregion
 
+    private RenderWorld m_RenderWorld = null;
+
     /// <summary>
     /// 渲染帧，防止同一帧渲染两次增加内存
     /// </summary>
@@ -254,8 +256,10 @@ public class InstancingCore
     private ChunkPos m_CameraPosition;
     public ChunkPos cameraPosition { get { return m_CameraPosition; } }
 
-    public InstancingCore()
+    public InstancingCore(RenderWorld renderWorld)
     {
+        m_RenderWorld = renderWorld;
+
         m_InstancingDrwacallShader = AssetManager.instance.LoadAsset<ComputeShader>("Shader/Utils/InstancingDrawcall");
         m_ShaderKernels[0] = m_InstancingDrwacallShader.FindKernel("Main");
         m_ShaderKernels[1] = m_InstancingDrwacallShader.FindKernel("DrawLODInstance");
@@ -315,6 +319,7 @@ public class InstancingCore
         System.Array.Clear(m_CameraFrustumPlanes, 0, m_CameraFrustumPlanes.Length);
 
         m_RenderFrame = 0;
+        m_RenderWorld = null;
     }
 
     public void PerformAll()
@@ -606,6 +611,8 @@ public class InstancingCore
         if (!m_TerrainDict.TryGetValue(pos, out terrain))
         {
             terrain = new InstancingTerrain(this);
+            if (m_RenderWorld.world.GetMapData(pos, out var mapData))
+                terrain.SetMaterials(mapData.terrainStandard, mapData.terrainAddStandard, mapData.terrainLow);
             m_TerrainDict.Add(pos, terrain);
         }
         return terrain;
