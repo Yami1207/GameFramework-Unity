@@ -5,6 +5,7 @@ using System.Resources;
 using System.Xml.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using static InstancingDrawcall;
 
 public class World
 {
@@ -45,6 +46,8 @@ public class World
 
     public void Destroy()
     {
+        m_EnableRenderWorld = false;
+
         if (m_PlayerChunkManager != null)
         {
             m_PlayerChunkManager.Destroy();
@@ -85,17 +88,17 @@ public class World
         m_WorldInfo.Load(path);
 
         // 创建地形
-        if (GameSetting.enableInstancing)
-        {
-            Dictionary<Vector2Int, MapData>.Enumerator iter = m_WorldInfo.mapDataDict.GetEnumerator();
-            while (iter.MoveNext())
-            {
-                MapData data = iter.Current.Value;
-                var instancingTerrain = m_RenderWorld.instancingCore.CreateOrGetInstancingTerrain(iter.Current.Key);
-                instancingTerrain.SetMaterials(data.terrainStandard, data.terrainAddStandard, data.terrainLow);
-            }
-            iter.Dispose();
-        }
+        //if (GameSetting.enableInstancing)
+        //{
+        //    Dictionary<Vector2Int, MapData>.Enumerator iter = m_WorldInfo.mapDataDict.GetEnumerator();
+        //    while (iter.MoveNext())
+        //    {
+        //        MapData data = iter.Current.Value;
+        //        var instancingTerrain = m_RenderWorld.instancingCore.CreateOrGetInstancingTerrain(iter.Current.Key);
+        //        instancingTerrain.SetMaterials(data.terrainStandard, data.terrainAddStandard, data.terrainLow);
+        //    }
+        //    iter.Dispose();
+        //}
 
         PrefabInfo.Load();
     }
@@ -165,12 +168,16 @@ public class World
         m_EnableLoadWorldByPlayer = true;
     }
 
-    public bool GetMapData(ChunkPos pos, out MapData mapData)
+    public bool GetMapData(Vector2Int pos, out MapData mapData)
     {
-        Vector2Int key = Helper.ChunkPosToScenePos(pos);
-        if (!m_WorldInfo.TryGetMapData(key, out mapData))
+        if (!m_WorldInfo.TryGetMapData(pos, out mapData))
             return false;
         return true;
+    }
+
+    public bool GetMapData(ChunkPos pos, out MapData mapData)
+    {
+        return GetMapData(Helper.ChunkPosToScenePos(pos), out mapData);
     }
 
     #region Chunk

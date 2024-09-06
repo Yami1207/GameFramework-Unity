@@ -6,10 +6,11 @@ using UnityEngine;
 public class GameManager : Singleton<GameManager>
 {
     private World m_World;
+    public World world { get { return m_World; } }
 
     private Player m_Player;
 
-    private Vector3 m_PlayerStartPos = new Vector3(130.0f, 0.0f, 485.0f);
+    private Vector3 m_PlayerStartPos = new Vector3(85.0f, 0.0f, 185.0f);
 
     public void Init()
     {
@@ -49,6 +50,8 @@ public class GameManager : Singleton<GameManager>
             m_World.Destroy();
             m_World = null;
         }
+
+        GameSetting.enableInstancing = false;
     }
 
     public void Update()
@@ -69,7 +72,10 @@ public class GameManager : Singleton<GameManager>
 
     private void Setup()
     {
-        GameSetting.enableInstancing = SettingManager.instance.enableInstancing;
+        GameSetting.enableInstancing = SettingManager.instance.enableInstancing && SystemInfo.supportsInstancing;
+
+        if (SettingManager.instance.showFPS)
+            Globals.mainScript.gameObject.AddComponent<ShowFPS>();
     }
 
     private void OnChunkLoaded()
@@ -90,7 +96,7 @@ public class GameManager : Singleton<GameManager>
             pos.y = chunk.bounds.max.y + 50.0f;
 
             RaycastHit hit;
-            if (Physics.Raycast(pos, Vector3.down, out hit, 500.0f, 1 << TagsAndLayers.kLayerTerrain))
+            if (Physics.Raycast(pos, Vector3.down, out hit, 500.0f, 1 << TagsAndLayers.TERRAIN_LAYER))
             {
                 var newPos = hit.point;
                 m_Player.SetPosition(new Vector3(newPos.x, newPos.y + 2.0f, newPos.z));

@@ -40,6 +40,8 @@ public class ObjectNode
             transform = node.transform;
             OnCreate();
         }
+
+        SetLayer(TagsAndLayers.DEFAULT_LAYER);
     }
 
     public void CreateWithStandardPosition(string name, Vector3 pos)

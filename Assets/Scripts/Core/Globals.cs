@@ -5,6 +5,7 @@ using UnityEngine;
 public static class Globals
 {
     private static Main s_MainScript;
+    public static Main mainScript { get { return s_MainScript; } }
 
     public static void SetMainScript(Main main)
     {

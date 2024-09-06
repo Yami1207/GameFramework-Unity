@@ -15,6 +15,10 @@ public struct MapData
     public Material terrainStandard;
     public Material terrainAddStandard;
     public Material terrainLow;
+
+    public int water;
+
+    public float waterHight;
 }
 
 public class WorldInfo
@@ -64,6 +68,7 @@ public class WorldInfo
                 minZ = Mathf.Min(minZ, startChunkZ);
                 maxZ = Mathf.Max(minZ, endChunkZ);
 
+                // 地形材质
                 Material terrainStandard = null, terrainAddStandard = null, terrainLow = null;
                 var terrainToken = iter.Current.SelectToken("terrain");
                 if (terrainToken != null)
@@ -78,13 +83,23 @@ public class WorldInfo
                     terrainLow = AssetManager.instance.LoadAsset<Material>(assetPath);
                 }
 
+                int waterMaterial = 0, waterHeight = 0;
+                var waterToken = iter.Current.SelectToken("water");
+                if (waterToken != null)
+                {
+                    waterMaterial = waterToken.GetValue("material", false, 0);
+                    waterHeight = waterToken.GetValue("height", false, 0);
+                }
+
                 MapData data = new MapData()
                 {
                     id = mapID,
                     pos = new ChunkPos(startChunkX, startChunkZ),
                     terrainStandard = terrainStandard,
                     terrainAddStandard = terrainAddStandard,
-                    terrainLow = terrainLow
+                    terrainLow = terrainLow,
+                    water = waterMaterial,
+                    waterHight = 0.001f * waterHeight
                 };
                 m_MapDataDict.Add(scenePos, data);
             }

@@ -54,7 +54,7 @@ inline void InitializeSurfaceData(Varyings input, inout CustomSurfaceData surfac
     half4 albedoAlpha = (half4) 1;
 #endif
 
-    surfaceData.albedo = albedoAlpha.rgb * lerp(_BaseColor, _GrassTipColor, input.texcoord.y * input.texcoord.y);
+    surfaceData.albedo = albedoAlpha.rgb * lerp(_BaseColor, _GrassTipColor, input.texcoord.y);
     surfaceData.alpha = albedoAlpha.a;
     
     surfaceData.smoothness = 1 - _Roughness;

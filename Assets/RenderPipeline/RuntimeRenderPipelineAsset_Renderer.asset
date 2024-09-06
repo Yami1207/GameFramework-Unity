@@ -54,12 +54,12 @@ MonoBehaviour:
   m_Name: ReflectionRendererFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  m_ReflectionType: 3
+  m_ReflectionType: 1
   m_Quality: 2
   m_PlanarReflectionSetting:
     cullingMask:
       serializedVersion: 2
-      m_Bits: 193
+      m_Bits: 385
     renderSkybox: 0
   m_ScreenSpaceReflectionSetting:
     thickness: 0.001
@@ -161,8 +161,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c01aec6230bce148abe174e4816233c, type: 3}
   m_Name: PixelDepthOffset
   m_EditorClassIdentifier: 
-  m_Active: 1
-  m_TexQuality: 2
+  m_Active: 0
+  m_TexQuality: 1
   m_CullMask:
     serializedVersion: 2
     m_Bits: 64

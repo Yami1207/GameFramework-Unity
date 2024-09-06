@@ -10,6 +10,8 @@ public class RenderChunkNode : ObjectNode
 
     private readonly List<PrefabNode> m_PrefabNodes = new List<PrefabNode>();
 
+    private readonly List<WaterNode> m_WaterNodes = new List<WaterNode>();
+
     #region Collect
 
     public void CollectOrDestroy(ChunkNodePool pool)
@@ -37,12 +39,30 @@ public class RenderChunkNode : ObjectNode
                 m_PrefabNodes.Clear();
             }
 
+            if (m_WaterNodes.Count > 0)
+            {
+                for (int i = 0; i < m_WaterNodes.Count; ++i)
+                    pool.Collect(m_WaterNodes[i]);
+                m_WaterNodes.Clear();
+            }
+
             pool.Collect(this);
         }
         else
         {
             Destroy();
         }
+    }
+
+    #endregion
+
+    #region Collider Node
+
+    public void AddColliderNode(ColliderNode node)
+    {
+        node.ChangeParent(transform);
+        node.PlaceStandardPosition(Vector3.zero, Space.Self);
+        m_ColliderNodes.Add(node);
     }
 
     /// <summary>
@@ -68,6 +88,17 @@ public class RenderChunkNode : ObjectNode
         }
     }
 
+    #endregion
+
+    #region Mesh Node
+
+    public void AddMeshNode(MeshNode node)
+    {
+        node.ChangeParent(transform);
+        node.PlaceStandardPosition(Vector3.zero, Space.Self);
+        m_MeshNodes.Add(node);
+    }
+
     /// <summary>
     /// 删除/回收MeshNode
     /// </summary>
@@ -89,6 +120,17 @@ public class RenderChunkNode : ObjectNode
 
             m_MeshNodes.Clear();
         }
+    }
+
+    #endregion
+
+    #region Prefab Node
+
+    public void AddPrefabNode(PrefabNode node)
+    {
+        node.ChangeParent(transform);
+        node.PlaceStandardPosition(Vector3.zero, Space.Self);
+        m_PrefabNodes.Add(node);
     }
 
     /// <summary>
@@ -116,40 +158,36 @@ public class RenderChunkNode : ObjectNode
 
     #endregion
 
-    #region Collider Node
+    #region Water Node
+
+    public void AddWaterNode(WaterNode node)
+    {
+        node.ChangeParent(transform);
+        node.PlaceStandardPosition(Vector3.zero, Space.Self);
+        m_WaterNodes.Add(node);
+    }
 
     /// <summary>
-    /// 是否有碰撞
+    /// 删除/回收WaterNode
     /// </summary>
-    public bool hasCollider { get { return m_ColliderNodes.Count > 0; } }
-
-    public void AddColliderNode(ColliderNode node)
+    /// <param name="pool"></param>
+    public void CollectOrDestroyWaterNodes(ChunkNodePool pool)
     {
-        node.ChangeParent(transform);
-        node.PlaceStandardPosition(Vector3.zero, Space.Self);
-        m_ColliderNodes.Add(node);
-    }
+        if (m_WaterNodes.Count > 0)
+        {
+            if (pool != null)
+            {
+                for (int i = 0; i < m_WaterNodes.Count; ++i)
+                    pool.Collect(m_WaterNodes[i]);
+            }
+            else
+            {
+                for (int i = 0; i < m_WaterNodes.Count; ++i)
+                    m_WaterNodes[i].Destroy();
+            }
 
-    #endregion
-
-    #region Mesh Node
-
-    public void AddMeshNode(MeshNode node)
-    {
-        node.ChangeParent(transform);
-        node.PlaceStandardPosition(Vector3.zero, Space.Self);
-        m_MeshNodes.Add(node);
-    }
-
-    #endregion
-
-    #region Prefab Node
-
-    public void AddPrefabNode(PrefabNode node)
-    {
-        node.ChangeParent(transform);
-        node.PlaceStandardPosition(Vector3.zero, Space.Self);
-        m_PrefabNodes.Add(node);
+            m_WaterNodes.Clear();
+        }
     }
 
     #endregion

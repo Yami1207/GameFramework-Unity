@@ -89,7 +89,7 @@ public class RenderWorld
         m_RenderChunkNotifyFinishList = new List<RenderChunk>(kChunkContainerCapacity);
 
         if (GameSetting.enableInstancing)
-            m_InstancingCore = new InstancingCore();
+            m_InstancingCore = new InstancingCore(this);
     }
 
     public void Clear()

@@ -39,6 +39,11 @@ public class ChunkNodePool
     /// </summary>
     private readonly CachePool<PrefabNode> m_PrefabNodePool;
 
+    /// <summary>
+    /// WaterNode对象池
+    /// </summary>
+    private readonly CachePool<WaterNode> m_WaterNodePool;
+
     public ChunkNodePool()
     {
         m_PoolRoot = new ObjectNode();
@@ -48,6 +53,7 @@ public class ChunkNodePool
         m_ColliderNodePool = new CachePool<ColliderNode>(s_PoolCapacity);
         m_MeshNodePool = new CachePool<MeshNode>(s_PoolCapacity);
         m_PrefabNodePool = new CachePool<PrefabNode>(s_PoolCapacity);
+        m_WaterNodePool = new CachePool<WaterNode>(s_PoolCapacity);
     }
 
     /// <summary>
@@ -70,6 +76,7 @@ public class ChunkNodePool
         m_ColliderNodePool.Clear();
         m_MeshNodePool.Clear();
         m_PrefabNodePool.Clear();
+        m_WaterNodePool.Clear();
     }
 
     public bool IsRenderChunkRootValid()
@@ -189,6 +196,32 @@ public class ChunkNodePool
         {
             node.Clear();
             m_PrefabNodePool.Release(node);
+        }
+        else
+        {
+            node.Destroy();
+        }
+    }
+
+    #endregion
+
+    #region Water Node
+
+    public WaterNode RequireWaterNode(string name)
+    {
+        if (!IsRenderChunkRootValid())
+            return null;
+
+        var node = m_WaterNodePool.Get();
+        node.Create(name);
+        return node;
+    }
+
+    public void Collect(WaterNode node)
+    {
+        if (!IsPoolValid())
+        {
+            m_WaterNodePool.Release(node);
         }
         else
         {

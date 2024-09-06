@@ -30,6 +30,8 @@ public class HiZCore : Singleton<HiZCore>
         public static readonly int DEPTH_TEXTURE_PARAMS_PROP_ID = Shader.PropertyToID("_HiZDepthTextureParams");
     }
 
+    private int m_RenderFrame = 0;
+
     private ComputeShader m_GenerateMipmapShader;
 
     private int m_GenerateMipmapKernel = -1;
@@ -63,12 +65,18 @@ public class HiZCore : Singleton<HiZCore>
 
     private Vector4 m_DepthTextureParams = Vector4.zero;
 
-    public bool isVaild { get { return m_DepthTexture != null; } }
+    public bool isVaild { get { return m_DepthTexture != null && Time.renderedFrameCount - m_RenderFrame < 3;  } }
 
     public void Destroy()
     {
         m_DepthTextureSize = 0;
         m_DepthTextureMipLevel = 0;
+
+        if (m_DepthTexture != null)
+        {
+            GameObject.Destroy(m_DepthTexture);
+            m_DepthTexture = null;
+        }
     }
 
     public void SetupShaderParams(Camera camera, ComputeShader shader, int[] kernels)
@@ -90,6 +98,13 @@ public class HiZCore : Singleton<HiZCore>
 
     public void ExecuteCopyDepth(ref Camera camera, ref CommandBuffer cmd, DepthQuality quality)
     {
+        if (m_RenderFrame == Time.renderedFrameCount)
+        {
+            Debug.LogError("同一帧不能多次调用，否则影响性能");
+            return;
+        }
+
+        m_RenderFrame = Time.renderedFrameCount;
         m_DepthQuality = quality;
 
         // 检查资源
@@ -151,7 +166,12 @@ public class HiZCore : Singleton<HiZCore>
             // 最小mipmap分辨率为2 * 1
             m_DepthTextureMipLevel = 10 - (int)(m_DepthQuality);
 
-            m_DepthTexture = new RenderTexture(m_DepthTextureSize, m_DepthTextureSize >> 1, 0, RenderTextureFormat.RHalf, m_DepthTextureMipLevel);
+#if UNITY_ANDROID
+            RenderTextureFormat depthTextureFormat = RenderTextureFormat.RFloat;
+#else
+            RenderTextureFormat depthTextureFormat = RenderTextureFormat.RHalf;
+#endif
+            m_DepthTexture = new RenderTexture(m_DepthTextureSize, m_DepthTextureSize >> 1, 0, depthTextureFormat, m_DepthTextureMipLevel);
             m_DepthTexture.name = "HiZDepthRT";
             m_DepthTexture.useMipMap = true;
             m_DepthTexture.autoGenerateMips = false;

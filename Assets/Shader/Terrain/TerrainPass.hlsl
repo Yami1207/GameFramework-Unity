@@ -111,7 +111,7 @@ FragData frag(Varyings input)
     color = MixFog(color, inputData, surfaceData);
 
     FragData output = (FragData) 0;
-#if defined(PIXEL_DEPTH_OFFSET_PASS)
+#if PIXEL_DEPTH_OFFSET_PASS
     float4x4 viewMatrix = GetWorldToViewMatrix();
     float depth = LinearEyeDepth(inputData.positionWS, viewMatrix);
     output.color = half4(surfaceData.albedo * weight, depth);

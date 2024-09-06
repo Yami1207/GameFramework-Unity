@@ -7,8 +7,11 @@
             "z" : 0,
             "terrain": {
                 "base": 5000,
-                "add": 5001,
-                "low": 5002
+                "low": 5001
+            },
+            "water" : {
+                "material": 5100,
+                "height": 9420
             }
         }
     ]

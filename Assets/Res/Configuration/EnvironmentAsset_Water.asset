@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 961d433a87a68ea4f955f38e671a5402, type: 3}
+  m_Name: EnvironmentAsset_Water
+  m_EditorClassIdentifier: 
+  objectTrails:
+    resolution: 512
+    cameraHeight: 10
+    cameraRange: 20
+    cameraNear: 0
+    cameraFar: 50
+  wind:
+    type: 2
+    directionX: 1
+    directionZ: 1
+    speed: 0.7
+    intensity: 1
+    waveSize: 80
+    waveIntensity: 7.81
+    waveMap: {fileID: 2800000, guid: 569313e8cc7297441ae2f5761cbefc13, type: 3}
+  m_EnablePixelDepthOffset: 0
+  m_ShadowColor: {x: 0.5457246, y: 0.5457246, z: 0.5457246, w: 0}

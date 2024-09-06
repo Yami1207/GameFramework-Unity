@@ -33,7 +33,6 @@ public class ColliderNode : ObjectNode
         m_SelfMesh.RecalculateBounds();
         m_SelfMesh.UploadMeshData(false);
 
-        SetLayer(TagsAndLayers.kLayerTerrain);
         SetMeshCollider();
     }
 

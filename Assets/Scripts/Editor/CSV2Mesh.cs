@@ -255,4 +255,39 @@ public class CSV2Mesh
     //    for (int i = 0; i < uvs1.Count; ++i)
     //        Debug.LogError(uvs1[i]);
     //}
+
+    [MenuItem("Assets/Tools/Add Mesh Normal")]
+    private static void AddMeshNormal()
+    {
+        if (UnityEditor.Selection.activeObject == null)
+            return;
+
+        string path = AssetDatabase.GetAssetPath(Selection.activeObject);
+        if (path == null)
+            return;
+
+        Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+        if (mesh == null)
+            return;
+
+        Vector3[] normals = new Vector3[mesh.vertices.Length];
+        for (int i = 0; i < normals.Length; ++i)
+            normals[i] = Vector3.up;
+
+        List<Vector4> uv = new List<Vector4>();
+        mesh.GetUVs(0, uv);
+
+        Mesh newMesh = new Mesh();
+        newMesh.SetVertices(mesh.vertices);
+        newMesh.SetNormals(normals);
+        newMesh.SetUVs(0, uv);
+        newMesh.SetTriangles(mesh.triangles, 0);
+        newMesh.RecalculateBounds();
+
+        int pos = path.LastIndexOf('/');
+        string dir = path.Substring(0, pos);
+        string name = path.Substring(pos + 1);
+        name = name.Substring(0, name.LastIndexOf('.'));
+        AssetDatabase.CreateAsset(newMesh, string.Format("{0}/{1}_1.asset", dir, name));
+    }
 }

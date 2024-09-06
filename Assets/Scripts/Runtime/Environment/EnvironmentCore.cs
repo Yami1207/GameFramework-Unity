@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static EnvironmentSetting;
 
 [ExecuteInEditMode]
 public class EnvironmentCore : SingletonMono<EnvironmentCore>

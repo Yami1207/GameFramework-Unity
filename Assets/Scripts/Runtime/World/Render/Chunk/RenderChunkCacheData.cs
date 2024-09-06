@@ -68,34 +68,35 @@ public class RenderChunkCacheData
                     m_ColliderBuffer.vertices[index + x] = new Vector3(x, binaryReader.ReadSingle(), z);
             }
 
+            // 水面高度
+            chunk.waterHeight = binaryReader.ReadInt32();
+
+            // 场景对象
             m_PrefabBuffer = m_BufferPool.RequirePrefabBuffer();
-            LoadVegetationData(binaryReader);
+            LoadPerfabData(binaryReader);
         }
         fileStream.Close();
     }
 
     /// <summary>
-    /// 加载植被数据
+    /// 加载场景对象数据
     /// </summary>
     /// <param name="reader"></param>
-    private void LoadVegetationData(BinaryReader reader)
+    private void LoadPerfabData(BinaryReader reader)
     {
         int count = reader.ReadInt32();
         for (int i = 0; i < count; ++i)
         {
             int id = reader.ReadInt32();
-            float x = reader.ReadSingle();
-            float y = reader.ReadSingle();
-            float z = reader.ReadSingle();
-            float scaleXZ = reader.ReadSingle();
-            float scaleY = reader.ReadSingle();
-            float rotationY = Mathf.Rad2Deg * reader.ReadSingle();
+            float x = reader.ReadSingle(), y = reader.ReadSingle(), z = reader.ReadSingle();
+            float sx = reader.ReadSingle(), sy = reader.ReadSingle(), sz = reader.ReadSingle();
+            float rx = reader.ReadSingle(), ry = reader.ReadSingle(), rz = reader.ReadSingle();
 
             PrefabDataBufferList list = m_PrefabBuffer.CreateAndGetPrefabDataBufferList(id, m_BufferPool);
             PrefabDataBuffer data = list.CreateNewBuffer(m_BufferPool);
             data.position = new Vector3(x, y, z);
-            data.scale = new Vector3(scaleXZ, scaleY, scaleXZ);
-            data.eulerAngle = new Vector3(0, rotationY, 0);
+            data.eulerAngle = new Vector3(rx, ry, rz);
+            data.scale = new Vector3(sx, sy, sz);
         }
     }
 }

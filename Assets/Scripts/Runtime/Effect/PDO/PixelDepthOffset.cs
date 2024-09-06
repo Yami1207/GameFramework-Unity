@@ -33,7 +33,7 @@ public class PixelDepthOffset : ScriptableRendererFeature
             m_Owner = owner;
             renderPassEvent = RenderPassEvent.BeforeRendering;
 
-            m_ShaderTagIdList.Add(new ShaderTagId("PDO"));
+            m_ShaderTagIdList.Add(new ShaderTagId("UniversalForward"));
 
             m_FilteringSettings = new FilteringSettings();
             m_FilteringSettings.layerMask = -1;
@@ -91,6 +91,9 @@ public class PixelDepthOffset : ScriptableRendererFeature
                 cmd.Clear();
                 Color cearColor = new Color(0.0f, 0.0f, 0.0f, camera.farClipPlane);
                 CoreUtils.SetRenderTarget(cmd, m_MultipleRenderTargets, s_PDOAlbedoTexPropID, ClearFlag.All, cearColor);
+                cmd.EnableShaderKeyword("_RENDER_PIXEL_DEPTH_OFFSET");
+                if (onExecuteRender != null)
+                    onExecuteRender.Invoke(cmd);
                 context.ExecuteCommandBuffer(cmd);
 
                 // 设置渲染Layer
@@ -103,6 +106,7 @@ public class PixelDepthOffset : ScriptableRendererFeature
 
                 // 恢复FrameBuffer
                 cmd.Clear();
+                cmd.DisableShaderKeyword("_RENDER_PIXEL_DEPTH_OFFSET");
                 cmd.SetRenderTarget(colorTarget, depthTarget);
                 cmd.EndSample(s_ProfileTag);
                 context.ExecuteCommandBuffer(cmd);
@@ -124,6 +128,9 @@ public class PixelDepthOffset : ScriptableRendererFeature
     private LayerMask m_CullMask = -1;
 
     private CustomRenderPass m_ScriptablePass;
+
+    public delegate void ExecuteRender(CommandBuffer cmd);
+    public static ExecuteRender onExecuteRender;
 
     public override void Create()
     {

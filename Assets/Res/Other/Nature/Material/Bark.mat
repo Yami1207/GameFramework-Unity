@@ -24,7 +24,8 @@ Material:
   m_Shader: {fileID: 4800000, guid: 4af3871624b42d14ba2f378115a5617f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _ENABLE_MIX_TERRAIN
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
@@ -49,9 +50,9 @@ Material:
     - _BumpScale: 2
     - _Cull: 2
     - _EmissionIntensity: 0
-    - _EnableMixTerrain: 0
+    - _EnableMixTerrain: 1
     - _Metallic: 0
-    - _MixDepthDiffer: 1
+    - _MixDepthDiffer: 0.3
     - _Smoothness: 0.2
     m_Colors:
     - _BaseColor: {r: 0.47353154, g: 0.21952623, b: 0.18447499, a: 1}

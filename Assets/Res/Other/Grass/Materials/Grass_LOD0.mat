@@ -43,7 +43,7 @@ Material:
     - _Roughness: 0.056
     - _UseAlphaCutoff: 0
     m_Colors:
-    - _BaseColor: {r: 0.030452916, g: 0.105611615, b: 0.019721245, a: 1}
+    - _BaseColor: {r: 0.029417241, g: 0.15792648, b: 0.015119349, a: 1}
     - _EmissionColor: {r: 0.72404146, g: 0.77996576, b: 0.24131086, a: 1}
     - _GrassTipColor: {r: 0.04825714, g: 0.2411783, b: 0.025027307, a: 1}
   m_BuildTextureStacks: []

@@ -52,7 +52,7 @@ Material:
     - _EmissionIntensity: 0
     - _EnableMixTerrain: 1
     - _Metallic: 0
-    - _MixDepthDiffer: 1
+    - _MixDepthDiffer: 0.4
     - _Smoothness: 0.3
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}

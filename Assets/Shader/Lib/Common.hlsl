@@ -40,15 +40,15 @@ inline half Min3(half3 x)
     return min(x.x, min(x.y, x.z));
 }
 
-inline half Min3(half x, half y, half z)
-{
-    return min(x, min(y, z));
-}
+//inline half Min3(half x, half y, half z)
+//{
+//    return min(x, min(y, z));
+//}
 
-inline half4 Min3(half4 x, half4 y, half4 z)
-{
-    return min(x, min(y, z));
-}
+//inline half4 Min3(half4 x, half4 y, half4 z)
+//{
+//    return min(x, min(y, z));
+//}
 
 inline float Pow2(float x)
 {

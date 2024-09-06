@@ -35,6 +35,12 @@ public class SettingManager : Singleton<SettingManager>
     private bool m_EnableInstancing = true;
     public bool enableInstancing { get { return m_EnableInstancing; } }
 
+    /// <summary>
+    /// 是否显示FPS
+    /// </summary>
+    private bool m_ShowFPS = true;
+    public bool showFPS { get { return m_ShowFPS; } }
+
     public void Init()
     {
         byte[] setupBytes = GetSetupBytes();
@@ -59,9 +65,11 @@ public class SettingManager : Singleton<SettingManager>
         m_GameVersion = XMLTool.GetIntAttribute(node, "game_version");
         m_ResVersion = XMLTool.GetIntAttribute(node, "res_version");
 
-        // 只有编辑器下可供选择
-#if UNITY_EDITOR
         node = xml.ToXml().SearchForChildByTag("Debug");
+        m_ShowFPS = XMLTool.GetBoolAttribute(node, "fps");
+
+        // ab模式
+#if UNITY_EDITOR
         m_EnableAssetBundle = XMLTool.GetBoolAttribute(node, "use_ab");
 #else
         m_EnableAssetBundle = true;

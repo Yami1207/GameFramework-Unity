@@ -13,8 +13,14 @@ public class PrefabInfo
     private int m_VisibleDistance;
     public int visibleDistance { get { return m_VisibleDistance; } }
 
+    private bool m_FrustumCulling;
+    public bool frustumCulling { get { return m_FrustumCulling; } }
+
     private bool m_OcclusionCulling;
     public bool occlusionCulling { get { return m_OcclusionCulling; } }
+
+    private int m_Layer = 0;
+    public int layer { get { return m_Layer; } }
 
     #region 静态方法
 
@@ -40,7 +46,10 @@ public class PrefabInfo
             info.m_AssetID = node.asset_id;
             info.m_UseInstancing = node.instancing;
             info.m_VisibleDistance = node.visible;
+            info.m_FrustumCulling = node.enable_frustum_culling;
             info.m_OcclusionCulling = node.enable_occlusion_culling;
+            int layer = LayerMask.NameToLayer(node.layer);
+            info.m_Layer = layer == -1 ? 0 : layer;
             s_PrefabInfoDict.Add(node.id, info);
         }
         iter.Dispose();

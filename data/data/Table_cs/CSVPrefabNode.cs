@@ -37,6 +37,16 @@ public class CSVPrefabNode : CSVData
     /// </summary>
     public bool enable_occlusion_culling { private set; get; }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public bool enable_frustum_culling { private set; get; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string layer { private set; get; }
+
     #endregion
 
     #region Override
@@ -98,6 +108,8 @@ public class CSVPrefabNode : CSVData
             csvData.visible = bytesData.ReadToInt32();
             csvData.instancing = bytesData.ReadToBoolean();
             csvData.enable_occlusion_culling = bytesData.ReadToBoolean();
+            csvData.enable_frustum_culling = bytesData.ReadToBoolean();
+            csvData.layer = bytesData.ReadString();
 
         }
         catch (Exception exception)

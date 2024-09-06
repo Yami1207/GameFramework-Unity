@@ -1,6 +1,9 @@
 ﻿#ifndef __TERRAIN_INPUT_HLSL__
 #define __TERRAIN_INPUT_HLSL__
 
+// ========================= 开关定义 =========================
+#define PIXEL_DEPTH_OFFSET_PASS defined(_RENDER_PIXEL_DEPTH_OFFSET)
+
 #include "../Lib/Core.hlsl"
 
 //--------------------------------------
@@ -24,7 +27,6 @@ CBUFFER_START(UnityPerMaterial)
     half _Smoothness2;
     half _Smoothness3;
 CBUFFER_END
-
 
 //--------------------------------------
 // 贴图
@@ -89,7 +91,7 @@ struct Varyings
 // 片元输出结构体
 struct FragData
 {
-#if defined(PIXEL_DEPTH_OFFSET_PASS)
+#if PIXEL_DEPTH_OFFSET_PASS
     float4 color : SV_Target0;
 #else
     half4 color : SV_Target0;

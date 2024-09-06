@@ -5,6 +5,8 @@ using UnityEngine.Rendering.Universal;
 
 public abstract class BaseReflectionPass : ScriptableRenderPass
 {
+    private static readonly int[] s_TextureSizeArray = new int[3] { 128, 256, 512 };
+
     protected readonly ReflectionRendererFeature m_Onwer;
 
     protected Color m_ClearColor = new Color(0.0f, 0.0f, 0.0f, 0.0f);
@@ -18,8 +20,7 @@ public abstract class BaseReflectionPass : ScriptableRenderPass
 
     public static Vector2Int GetTextureSize(ReflectionQuality quality, int pixelWidth, int pixelHeight)
     {
-        int[] sizeArray = { 128, 256, 512 };
-        int size = sizeArray[(int)quality];
+        int size = s_TextureSizeArray[(int)quality];
 
         int width = 0, height = 0;
         if (pixelWidth > pixelHeight)

@@ -138,7 +138,7 @@ public class RenderChunk
         m_RenderChunkNode.CollectOrDestroyColliderNodes(m_ChunkNodePool);
         var colliderNode = CreateColliderNode(m_RenderChunkNode);
         colliderNode.NewMesh(task.GetRenderChunkCacheData().colliderBuffer);
-        m_RenderChunkNode.AddColliderNode(colliderNode);
+        colliderNode.SetLayer(TagsAndLayers.TERRAIN_LAYER);
 
         if (GameSetting.enableInstancing)
         {
@@ -151,14 +151,22 @@ public class RenderChunk
                 m_RenderChunkNode.CollectOrDestroyMeshNodes(m_ChunkNodePool);
                 var meshNode = CreateMeshNode(m_RenderChunkNode, "Terrain Mesh Node");
                 meshNode.Init(colliderNode.mesh, mapData.terrainStandard, UnityEngine.Rendering.ShadowCastingMode.Off, false);
-                m_RenderChunkNode.AddMeshNode(meshNode);
+                meshNode.SetLayer(TagsAndLayers.TERRAIN_LAYER);
 
                 if (chunk.extendDrawcall)
                 {
                     meshNode = CreateMeshNode(m_RenderChunkNode, "Terrain Extend Mesh Node");
                     meshNode.Init(colliderNode.mesh, mapData.terrainAddStandard, UnityEngine.Rendering.ShadowCastingMode.Off, false);
-                    m_RenderChunkNode.AddMeshNode(meshNode);
+                    meshNode.SetLayer(TagsAndLayers.TERRAIN_LAYER);
                 }
+            }
+
+            if (m_Chunk.waterHeight != int.MinValue)
+            {
+                m_RenderChunkNode.CollectOrDestroyWaterNodes(m_ChunkNodePool);
+                var waterNode = CreateWaterNode(m_RenderChunkNode, "Water");
+                waterNode.PlaceStandardPosition(new Vector3(0.0f, 0.001f * m_Chunk.waterHeight, 0.0f), Space.Self);
+                waterNode.SetLayer(TagsAndLayers.WATER_LAYER);
             }
         }
 
@@ -197,8 +205,8 @@ public class RenderChunk
                     {
                         var data = list[i];
                         var prefabNode = CreatePrefabNode(m_RenderChunkNode, name);
+                        prefabNode.SetLayer(info.layer);
                         prefabNode.Load(info);
-                        m_RenderChunkNode.AddPrefabNode(prefabNode);
 
                         // 设置坐标等信息
                         prefabNode.PlaceStandardPosition(data.position, Space.Self);
@@ -216,10 +224,9 @@ public class RenderChunk
     private ColliderNode CreateColliderNode(RenderChunkNode parent)
     {
         ColliderNode node = m_ChunkNodePool.RequireColliderNode("Collider");
-
         if (!node.activeSelf)
             node.activeSelf = true;
-
+        parent.AddColliderNode(node);
         return node;
     }
 
@@ -228,6 +235,7 @@ public class RenderChunk
         MeshNode node = m_ChunkNodePool.RequireMeshNode(name);
         if (!node.activeSelf)
             node.activeSelf = true;
+        parent.AddMeshNode(node);
         return node;
     }
 
@@ -236,6 +244,16 @@ public class RenderChunk
         PrefabNode node = m_ChunkNodePool.RequirePrefabNode(name);
         if (!node.activeSelf)
             node.activeSelf = true;
+        parent.AddPrefabNode(node);
+        return node;
+    }
+
+    private WaterNode CreateWaterNode(RenderChunkNode parent, string name)
+    {
+        WaterNode node = m_ChunkNodePool.RequireWaterNode(name);
+        if (!node.activeSelf)
+            node.activeSelf = true;
+        parent.AddWaterNode(node);
         return node;
     }
 

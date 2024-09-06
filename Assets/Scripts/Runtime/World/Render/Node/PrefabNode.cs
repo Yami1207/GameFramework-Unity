@@ -26,6 +26,10 @@ public class PrefabNode : ObjectNode
         {
             m_Instance = AssetManager.instance.Instantiate(obj as GameObject);
             m_Instance.transform.SetParent(node.transform, false);
+
+            var transforms = m_Instance.GetComponentsInChildren<Transform>();
+            for (int i = 0; i < transforms.Length; ++i)
+                transforms[i].gameObject.layer = node.layer;
         }
     }
 

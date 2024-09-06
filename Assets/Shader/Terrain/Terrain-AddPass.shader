@@ -1,4 +1,4 @@
-Shader "Rendering/Terrian/Standard (Add)"
+ÔªøShader "Rendering/Terrian/Standard (Add)"
 {
     Properties
     {
@@ -66,43 +66,17 @@ Shader "Rendering/Terrian/Standard (Add)"
 			// URP keywords
 			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
 
+			// -------------------------------------
+            // Ëá™ÂÆö‰πâkeywords
+			#pragma multi_compile _RENDER_PIXEL_DEPTH_OFFSET
+
+			// -------------------------------------
+            // Ëá™ÂÆö‰πâÂÆè
 			#define TERRAIN_ADD_PASS
 
 			#include "TerrainPass.hlsl"
 
 			ENDHLSL
         }
-
-		Pass
-		{
-			Tags { "LightMode" = "PDO" }
-
-			HLSLPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
-			#pragma target 3.0
-
-			// -------------------------------------
-			// Unity defined keywords
-			#pragma multi_compile_fog
-
-			//--------------------------------------
-			// GPU Instancing
-			#pragma multi_compile_instancing
-			#pragma instancing_options procedural:Setup
-
-			// -------------------------------------
-			// URP keywords
-			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
-
-			//--------------------------------------
-            // ◊‘∂®“Â∫Í
-            #define PIXEL_DEPTH_OFFSET_PASS    1
-			#define TERRAIN_ADD_PASS
-
-			#include "TerrainPass.hlsl"
-
-			ENDHLSL
-		}
     }
 }

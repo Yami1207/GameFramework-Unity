@@ -99,7 +99,7 @@ Shader "Rendering/Terrian/Low"
 
             FragData frag(Varyings input)
             {
-                half3 color = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.texcoord.xy).rgb;
+                half3 color = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.texcoord.xy).rgb * input.lightingFog.rgb;
                 color = MixFog(color, input.lightingFog.w);
 
                 FragData output = (FragData) 0;

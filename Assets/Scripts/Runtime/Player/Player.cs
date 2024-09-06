@@ -60,7 +60,7 @@ public class Player
         m_CameraFollow = new CameraFollow();
         m_CameraFollow.camera = CameraManager.mainCamera;
         m_CameraFollow.target = m_Actor.transform;
-        m_CameraFollow.layerMask = 1 << TagsAndLayers.kLayerTerrain;
+        m_CameraFollow.layerMask = 1 << TagsAndLayers.TERRAIN_LAYER;
         InputManager.instance.onDragTouchPad += m_CameraFollow.MoveCamera;
     }
 
