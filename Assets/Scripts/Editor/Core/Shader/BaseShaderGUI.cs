@@ -105,6 +105,21 @@ public class BaseShaderGUI : ShaderGUI
     private MaterialProperty m_ZWriteProp;
 
     /// <summary>
+    /// 是否检查过没使用的keywords
+    /// </summary>
+    private bool m_CheckUnusedKeywords = false;
+
+    /// <summary>
+    /// 未使用的keywords
+    /// </summary>
+    private string[] m_UnusedKeywords = null;
+
+    /// <summary>
+    /// 滚动条位置
+    /// </summary>
+    private Vector2 m_UnusedKeywordsPos;
+
+    /// <summary>
     /// 是否检查过没使用的属性
     /// </summary>
     private bool m_CheckUnusedProperity = false;
@@ -136,7 +151,11 @@ public class BaseShaderGUI : ShaderGUI
         // 子类
         DoGUI_Before();
 
-        // 检查冗余
+        // 检查冗余keywords
+        CheckUnusedKeywords();
+        DoGUI_UnusedKeywords();
+
+        // 检查冗余资源属性
         CheckUnusedProperity();
         DoGUI_UnusedProperties();
 
@@ -376,6 +395,51 @@ public class BaseShaderGUI : ShaderGUI
     #endregion
 
     #region 检查
+
+    private void CheckUnusedKeywords()
+    {
+        if (m_UnusedKeywords == null || m_UnusedKeywords.Length <= 0)
+            return;
+
+        EditorGUILayout.BeginVertical(Styles.frameBgStyle);
+        {
+            DoGUI_Title("< 冗余Keywords >");
+            EditorGUILayout.HelpBox("有冗余的Keywords可以清除", MessageType.Warning);
+
+            EditorGUILayout.LabelField(string.Format("一共冗余Keywords{0}个！冗余Keywords列表：", m_UnusedKeywords.Length));
+
+            EditorGUILayout.BeginHorizontal();
+            {
+                var lineCount = Mathf.Min(5, m_UnusedKeywords.Length);
+                m_UnusedKeywordsPos = EditorGUILayout.BeginScrollView(m_UnusedKeywordsPos, false, false, GUILayout.MinHeight(lineCount * EditorGUIUtility.singleLineHeight));
+                {
+                    for (int i = 0; i < m_UnusedKeywords.Length; ++i)
+                        EditorGUILayout.LabelField(m_UnusedKeywords[i]);
+                }
+                EditorGUILayout.EndScrollView();
+
+                if (GUILayout.Button("清除", GUILayout.ExpandHeight(true)))
+                {
+                    OptimalPerformance.CheckMaterial.RemoveUnusedKeywords(m_TargetMaterial);
+                    m_CheckUnusedKeywords = false;
+                    EditorGUIUtility.ExitGUI();
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+        EditorGUILayout.EndVertical();
+    }
+
+    private void DoGUI_UnusedKeywords()
+    {
+        if (!m_CheckUnusedKeywords)
+        {
+            m_UnusedKeywords = OptimalPerformance.CheckMaterial.GetUnusedKeywords(m_TargetMaterial);
+            m_UnusedKeywordsPos = Vector2.zero;
+
+            m_CheckUnusedKeywords = true;
+        }
+    }
 
     /// <summary>
     /// 检查没用的属性

@@ -14,10 +14,7 @@ Material:
   m_ValidKeywords:
   - _ENABLE_INTERACTIVE_ON
   - _USE_WIND_WAVE
-  m_InvalidKeywords:
-  - _ENABLE_RIPPLING_WHEAT_ON
-  - _USE_INTERACTIVE
-  - _USE_SWING
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0

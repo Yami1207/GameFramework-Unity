@@ -8,9 +8,58 @@ namespace OptimalPerformance
 {
     public static class CheckMaterial
     {
+        #region Unused Keyword
+
+        /// <summary>
+        /// 获得所有未使用的Keywords
+        /// </summary>
+        /// <param name="material"></param>
+        /// <returns></returns>
+        public static string[] GetUnusedKeywords(Material material)
+        {
+            Debug.Assert(material != null);
+            System.Collections.Generic.List<string> list = new System.Collections.Generic.List<string>();
+
+            var serializedObject = new SerializedObject(material);
+            serializedObject.Update();
+
+            var invalidKeywordsProp = serializedObject.FindProperty("m_InvalidKeywords");
+            if (invalidKeywordsProp != null && invalidKeywordsProp.arraySize > 0)
+            {
+                for (int i = 0; i < invalidKeywordsProp.arraySize; ++i)
+                    list.Add(invalidKeywordsProp.GetArrayElementAtIndex(i).stringValue);
+            }
+
+            return list.ToArray();
+        }
+
+        /// <summary>
+        /// 删除所有未使用的Keywords
+        /// </summary>
+        /// <param name="material"></param>
+        /// <returns></returns>
+        public static bool RemoveUnusedKeywords(Material material)
+        {
+            Debug.Assert(material != null);
+            bool hasModifiedProperties = false;
+
+            var serializedObject = new SerializedObject(material);
+            serializedObject.Update();
+            var invalidKeywordsProp = serializedObject.FindProperty("m_InvalidKeywords");
+            if (invalidKeywordsProp != null && invalidKeywordsProp.arraySize > 0)
+            {
+                invalidKeywordsProp.arraySize = 0;
+                hasModifiedProperties = serializedObject.ApplyModifiedProperties();
+            }
+
+            return hasModifiedProperties;
+        }
+
+        #endregion
+
         #region Unused Property
 
-        private delegate void EachUnusedPropertiesFunc(SerializedProperty parent, int _index, SerializedProperty target);
+        private delegate void EachUnusedPropertiesFunc(SerializedProperty parent, int index, SerializedProperty target);
         private delegate void EachUnusedPropertiesFinishFunc(SerializedObject so);
 
         /// <summary>

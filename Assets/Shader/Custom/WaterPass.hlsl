@@ -145,10 +145,9 @@ half4 frag(Varyings input) : SV_Target0
     
         CustomBRDFData brdfData = GetBRDFData(albedo, 0, _SpecularShinness);
         half specular = DirectBRDFSpecular(brdfData, bxdfContext);
+        //half specular = pow(max(0.001, bxdfContext.NoH), _SpecularShinness * 256);
+    
         specularColor *= specular;
-        //float3 H = SafeNormalize(viewDirectionWS + mainLight.direction);
-        //half specular = pow(max(0.001, dot(normalWS, H)), _SpecularShinness * 128);
-        //specularColor = specular * _SpecularIntensity * _SpecularColor;
     }
 #endif
     
