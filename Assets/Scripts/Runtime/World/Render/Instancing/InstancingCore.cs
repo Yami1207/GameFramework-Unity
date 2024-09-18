@@ -260,7 +260,7 @@ public class InstancingCore
     {
         m_RenderWorld = renderWorld;
 
-        m_InstancingDrwacallShader = AssetManager.instance.LoadAsset<ComputeShader>("Shader/Utils/InstancingDrawcall");
+        m_InstancingDrwacallShader = AssetManager.instance.LoadAsset<ComputeShader>("Shader/Instancing/InstancingDrawcall");
         m_ShaderKernels[0] = m_InstancingDrwacallShader.FindKernel("Main");
         m_ShaderKernels[1] = m_InstancingDrwacallShader.FindKernel("DrawLODInstance");
     }
@@ -322,7 +322,7 @@ public class InstancingCore
         m_RenderWorld = null;
     }
 
-    public void PerformAll()
+    public void Perform()
     {
         if (m_RenderFrame == Time.renderedFrameCount)
         {
@@ -356,6 +356,10 @@ public class InstancingCore
         UnityEngine.Profiling.Profiler.BeginSample("PerformDrawcall");
         PerformDrawcall();
         UnityEngine.Profiling.Profiler.EndSample();
+    }
+
+    public void Render()
+    {
     }
 
     private void SetupShaderParams(Camera camera)

@@ -30,7 +30,7 @@ public class InstancingPrefab
         m_InstancingCore = null;
     }
 
-    public void Load(PrefabInfo info)
+    public void Load(int id, PrefabInfo info)
     {
         Debug.Assert(m_InstancingCore != null);
         Debug.Assert(m_Renderer == null);

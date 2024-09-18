@@ -260,9 +260,10 @@ AppendStructuredBuffer<InstanceParam> _VisibleBuffer_LOD2;
 
 inline float DistanceToRelativeHeight(float dist, float size)
 {
-    if (_CameraParam.x > 0.5)
-        return 0.5 * size / _CameraParam.y;
-    return 0.5 * size / (dist * _CameraParam.w);
+    //if (_CameraParam.x > 0.5)
+    //    return 0.5 * size / _CameraParam.y;
+    //return 0.5 * size / (dist * _CameraParam.w);
+    return lerp(0.5 * size / (dist * _CameraParam.w), 0.5 * size / _CameraParam.y, floor(_CameraParam.x + 0.5));
 }
 
 [numthreads(NUM_THREAD_X_GROUP, 1, 1)]
