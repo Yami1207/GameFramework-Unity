@@ -27,5 +27,5 @@ MonoBehaviour:
     waveSize: 80
     waveIntensity: 7.81
     waveMap: {fileID: 2800000, guid: 569313e8cc7297441ae2f5761cbefc13, type: 3}
-  m_EnablePixelDepthOffset: 0
+  m_EnablePixelDepthOffset: 1
   m_ShadowColor: {x: 0.5448383, y: 0.5448383, z: 0.5448383, w: 0}

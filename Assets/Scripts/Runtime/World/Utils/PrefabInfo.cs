@@ -22,6 +22,9 @@ public class PrefabInfo
     private int m_Layer = 0;
     public int layer { get { return m_Layer; } }
 
+    private int m_Capacity = 8;
+    public int capacity { get { return m_Capacity; } }
+
     #region 静态方法
 
     private static Dictionary<int, PrefabInfo> s_PrefabInfoDict = new Dictionary<int, PrefabInfo>();
@@ -50,6 +53,7 @@ public class PrefabInfo
             info.m_OcclusionCulling = node.enable_occlusion_culling;
             int layer = LayerMask.NameToLayer(node.layer);
             info.m_Layer = layer == -1 ? 0 : layer;
+            info.m_Capacity = node.capacity;
             s_PrefabInfoDict.Add(node.id, info);
         }
         iter.Dispose();

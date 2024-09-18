@@ -237,17 +237,15 @@ public class AssetManager : Singleton<AssetManager>, IAssetLoader
             return null;
         }
 
-        T asset = null;
-
         //从缓存获取
-        asset = GetAssetFromCache(assetId) as T;
+        T asset = GetAssetFromCache(assetId) as T;
+        if (asset != null)
+            return asset;
 
 #if USING_ASSET_BUNDLE
         // 从Assetbundle获取
         if (enableAssetBundle)
-        {
             asset = m_AssetBundleManager.LoadAsset<T>(assetId);
-        }
 #endif
 
         // 从Resource获取

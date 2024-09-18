@@ -23,6 +23,8 @@ public class HiZCore : Singleton<HiZCore>
 
         public static readonly int DEPTH_TEXTURE_SIZE_PROP_ID = Shader.PropertyToID("_TextureSize");
 
+        public static readonly int HIZ_VAILD_PROP_ID = Shader.PropertyToID("_HiZVaild");
+
         public static readonly int DEPTH_VIEW_PROJECTION_PROP_ID = Shader.PropertyToID("_HiZViewProjection");
 
         public static readonly int DEPTH_TEXTURE_PROP_ID = Shader.PropertyToID("_HiZDepthTexture");
@@ -81,6 +83,7 @@ public class HiZCore : Singleton<HiZCore>
 
     public void SetupShaderParams(Camera camera, ComputeShader shader, int[] kernels)
     {
+        shader.SetInt(ShaderConstants.HIZ_VAILD_PROP_ID, isVaild ? 1 : 0);
         shader.SetMatrix(ShaderConstants.DEPTH_VIEW_PROJECTION_PROP_ID, m_ViewProjectionMatrix);
         shader.SetVector(ShaderConstants.DEPTH_TEXTURE_PARAMS_PROP_ID, m_DepthTextureParams);
 

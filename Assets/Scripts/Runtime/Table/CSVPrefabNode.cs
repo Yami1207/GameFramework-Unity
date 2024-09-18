@@ -47,6 +47,11 @@ public class CSVPrefabNode : CSVData
     /// </summary>
     public string layer { private set; get; }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public int capacity { private set; get; }
+
     #endregion
 
     #region Override
@@ -110,6 +115,7 @@ public class CSVPrefabNode : CSVData
             csvData.enable_occlusion_culling = bytesData.ReadToBoolean();
             csvData.enable_frustum_culling = bytesData.ReadToBoolean();
             csvData.layer = bytesData.ReadString();
+            csvData.capacity = bytesData.ReadToInt32();
 
         }
         catch (Exception exception)

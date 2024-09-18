@@ -5,7 +5,7 @@ using UnityEngine.Rendering.Universal;
 
 public abstract class BaseReflectionPass : ScriptableRenderPass
 {
-    private static readonly int[] s_TextureSizeArray = new int[3] { 128, 256, 512 };
+    protected static readonly int[] s_TextureSizeArray = new int[3] { 128, 256, 512 };
 
     protected readonly ReflectionRendererFeature m_Onwer;
 

@@ -36,8 +36,6 @@ public class ReflectionRendererFeature : ScriptableRendererFeature
     [Serializable]
     public class ScreenSpacePlanarReflectionSetting
     {
-        public bool useDoubleMapping = true;
-
         [Range(0.0f, 1.0f)]
         public float fadeOutToEdge = 0.3f;
 

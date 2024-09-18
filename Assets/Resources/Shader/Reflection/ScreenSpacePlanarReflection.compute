@@ -4,7 +4,7 @@
 #define MAX_UINT16 65535
 
 // 平面厚度
-#define THICKNESS_PLANE 0.1
+#define THICKNESS_PLANE 0.2
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
@@ -30,22 +30,22 @@ uniform Texture2D<half4> _CameraColorTexture;
 uniform Texture2D<float> _CameraDepthTexture;
 
 uniform Texture2D<float4> _ReflectHashTexture;
-uniform Texture2D<float4> _ReflectMapping0Texture;
-uniform Texture2D<float4> _ReflectMapping1Texture;
+uniform Texture2D<float4> _ReflectMappingTexture;
 
 uniform RWTexture2D<float4> _RWReflectHashTexture;
-uniform RWTexture2D<float4> _RWReflectMapping0Texture;
-uniform RWTexture2D<float4> _RWReflectMapping1Texture;
+uniform RWTexture2D<float4> _RWReflectMappingTexture;
 
 // 反射纹理
 uniform Texture2D<half4> _ReflectionTexture;
 uniform RWTexture2D<half4> _RWReflectionTexture;
 
+uniform RWStructuredBuffer<uint> _RWReflectDistanceBuffer;
+
 // uint转float2
 inline float2 PackValue(uint value)
 {
     uint2 hash = uint2(value >> 8, value % 256);
-    return float2(hash.xy / 255.0);
+    return float2(0.0039215686 * hash.xy);
 }
 
 // float2转uint
@@ -110,9 +110,9 @@ void RenderReflectHash(uint3 id : SV_DispatchThreadID)
         return;
     
     _RWReflectHashTexture[id.xy] = float4(1, 1, 1, 1);
-    _RWReflectMapping0Texture[id.xy] = float4(1, 1, 1, 1);
-    _RWReflectMapping1Texture[id.xy] = float4(1, 1, 1, 1);
-
+    _RWReflectMappingTexture[id.xy] = float4(1, 1, 1, 1);
+    _RWReflectDistanceBuffer[id.x + id.y * _ColorTextureSize.x] = 1048576;  // 1024 * 1024
+    
     float depth = SampleDepth(id.xy);
 #if UNITY_REVERSED_Z
     if (depth <= 0.0)
@@ -140,23 +140,6 @@ void RenderReflectHash(uint3 id : SV_DispatchThreadID)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// kernel: PreRenderReflectMapping
-////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma kernel PreRenderReflectMapping
-
-[numthreads(NUM_THREAD_GROUP, NUM_THREAD_GROUP, 1)]
-void PreRenderReflectMapping(uint3 id : SV_DispatchThreadID)
-{
-    if (id.x >= (uint) _ColorTextureSize.x || id.y >= (uint) _ColorTextureSize.y)
-        return;
-    
-    float4 hash = _ReflectHashTexture[id.xy];
-    uint2 reflectedID = uint2(UnpackValue(hash.xy), UnpackValue(hash.zw));
-    if (reflectedID.x < (uint) _ColorTextureSize.x && reflectedID.y < (uint) _ColorTextureSize.y)
-        _RWReflectMapping0Texture[reflectedID] = float4(PackValue(id.x), PackValue(id.y));
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 // kernel: RenderReflectMapping
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma kernel RenderReflectMapping
@@ -168,33 +151,16 @@ void RenderReflectMapping(uint3 id : SV_DispatchThreadID)
         return;
     
     float4 hash = _ReflectHashTexture[id.xy];
-    uint x = UnpackValue(hash.xy), y = UnpackValue(hash.zw);
-    if (x >= (uint) _ColorTextureSize.x || y >= (uint) _ColorTextureSize.y)
+    uint2 reflectedID = uint2(UnpackValue(hash.xy), UnpackValue(hash.zw));
+    if (reflectedID.x >= (uint) _ColorTextureSize.x || reflectedID.y >= (uint) _ColorTextureSize.y)
         return;
-
-    uint2 targetId = uint2(x, y);
-    float4 cache = _ReflectMapping0Texture[targetId];
-    uint cacheX = UnpackValue(cache.xy), cacheY = UnpackValue(cache.zw);
-    if (id.x == cacheX && id.y == cacheY)
-    {
-        _RWReflectMapping1Texture[targetId] = cache;
-        return;
-    }
     
-     // 获取两者深度并比较
-    float d = SampleDepth(id.xy), d1 = SampleDepth(uint2(cacheX, cacheY));
-#if UNITY_REVERSED_Z
-    if (d > d1)
-#else
-    if (d < d1)
-#endif
-    {
-        _RWReflectMapping1Texture[targetId] = float4(PackValue(id.x), PackValue(id.y));
-    }
-    else
-    {
-        _RWReflectMapping1Texture[targetId] = cache;
-    }
+    int index = reflectedID.x + reflectedID.y * _ColorTextureSize.x;
+    int dx = id.x - reflectedID.x, dy = id.y - reflectedID.y;
+    uint dist = dx * dx + dy * dy;
+    InterlockedMin(_RWReflectDistanceBuffer[index], dist);
+    if (_RWReflectDistanceBuffer[index] == dist)
+        _RWReflectMappingTexture[reflectedID] = float4(PackValue(id.x), PackValue(id.y));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -208,7 +174,7 @@ void RenderReflectionTexture(uint3 id : SV_DispatchThreadID)
     if (id.x >= (uint) _ColorTextureSize.x || id.y >= (uint) _ColorTextureSize.y)
         return;
     
-    float4 hash = _ReflectMapping1Texture[id.xy];
+    float4 hash = _ReflectMappingTexture[id.xy];
     uint x = UnpackValue(hash.xy), y = UnpackValue(hash.zw);
     if (x >= (uint) _ColorTextureSize.x || y >= (uint) _ColorTextureSize.y)
     {

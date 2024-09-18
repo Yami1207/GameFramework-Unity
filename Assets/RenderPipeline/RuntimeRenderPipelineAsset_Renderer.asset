@@ -39,7 +39,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ac1f79fd1bbafb4bb59e7527bc13fa0, type: 3}
   m_Name: HiZDepth
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   m_Quality: 0
 --- !u!114 &-4820369658984885802
 MonoBehaviour:
@@ -54,7 +54,7 @@ MonoBehaviour:
   m_Name: ReflectionRendererFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  m_ReflectionType: 1
+  m_ReflectionType: 3
   m_Quality: 2
   m_PlanarReflectionSetting:
     cullingMask:
@@ -65,8 +65,7 @@ MonoBehaviour:
     thickness: 0.001
     stride: 3
   m_ScreenSpacePlanarReflectionSetting:
-    useDoubleMapping: 1
-    fadeOutToEdge: 0.3
+    fadeOutToEdge: 0.1
     fillHoles: 1
 --- !u!114 &11400000
 MonoBehaviour:
@@ -161,7 +160,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c01aec6230bce148abe174e4816233c, type: 3}
   m_Name: PixelDepthOffset
   m_EditorClassIdentifier: 
-  m_Active: 0
+  m_Active: 1
   m_TexQuality: 1
   m_CullMask:
     serializedVersion: 2

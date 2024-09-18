@@ -44,7 +44,6 @@ public class ReflectionRendererFeatureEditor : Editor
                 case ReflectionRendererFeature.ReflectionType.ScreenSpacePlanarReflection:
                     {
                         var settingProp = serializedObject.FindProperty("m_ScreenSpacePlanarReflectionSetting");
-                        EditorGUILayout.PropertyField(settingProp.FindPropertyRelative("useDoubleMapping"), EditorDraw.TempContent("修正渲染顺序"));
                         EditorGUILayout.PropertyField(settingProp.FindPropertyRelative("fadeOutToEdge"), EditorDraw.TempContent("边缘淡出"));
                         EditorGUILayout.PropertyField(settingProp.FindPropertyRelative("fillHoles"), EditorDraw.TempContent("填充空洞"));
                     }

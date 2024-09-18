@@ -12,10 +12,6 @@ public class PlanarReflectionPass : BaseReflectionPass
 
     private FilteringSettings m_FilteringSettings;
 
-
-    public delegate void DrawInstancingObjects(CommandBuffer cmd, int cullingMask);
-    public static DrawInstancingObjects drawInstancingObjects;
-
     public PlanarReflectionPass(ReflectionRendererFeature owner) : base(owner)
     {
         m_ShaderTagIdList.Add(new ShaderTagId("UniversalForward"));
@@ -138,33 +134,24 @@ public class PlanarReflectionPass : BaseReflectionPass
 
         // 设置视角与投影矩阵
         cmd.SetViewProjectionMatrices(worldToCameraMatrix, projectionMatrix);
+        context.ExecuteCommandBuffer(cmd);
 
-        if (drawInstancingObjects != null)
-        {
-            drawInstancingObjects.Invoke(cmd, cullingMask);
-            context.ExecuteCommandBuffer(cmd);
-        }
-        else
-        {
-            context.ExecuteCommandBuffer(cmd);
+        // 过滤反射层
+        m_FilteringSettings.layerMask = cullingMask;
 
-            // 过滤反射层
-            m_FilteringSettings.layerMask = cullingMask;
+        // 渲染不透明物
+        m_FilteringSettings.renderQueueRange = RenderQueueRange.opaque;
+        DrawingSettings drawingOpaqueSettings = this.CreateDrawingSettings(m_ShaderTagIdList, ref renderingData, SortingCriteria.CommonOpaque);
+        context.DrawRenderers(renderingData.cullResults, ref drawingOpaqueSettings, ref m_FilteringSettings);
 
-            // 渲染不透明物
-            m_FilteringSettings.renderQueueRange = RenderQueueRange.opaque;
-            DrawingSettings drawingOpaqueSettings = this.CreateDrawingSettings(m_ShaderTagIdList, ref renderingData, SortingCriteria.CommonOpaque);
-            context.DrawRenderers(renderingData.cullResults, ref drawingOpaqueSettings, ref m_FilteringSettings);
+        // 天空盒
+        if (renderSkybox && (RenderSettings.skybox != null || (camera.TryGetComponent(out Skybox cameraSkybox) && cameraSkybox.material != null)))
+            context.DrawSkybox(renderingData.cameraData.camera);
 
-            // 天空盒
-            if (renderSkybox && (RenderSettings.skybox != null || (camera.TryGetComponent(out Skybox cameraSkybox) && cameraSkybox.material != null)))
-                context.DrawSkybox(renderingData.cameraData.camera);
-
-            // 渲染透明物
-            m_FilteringSettings.renderQueueRange = RenderQueueRange.transparent;
-            DrawingSettings drawingTransparentSettings = this.CreateDrawingSettings(m_ShaderTagIdList, ref renderingData, SortingCriteria.CommonTransparent);
-            context.DrawRenderers(renderingData.cullResults, ref drawingTransparentSettings, ref m_FilteringSettings);
-        }
+        // 渲染透明物
+        m_FilteringSettings.renderQueueRange = RenderQueueRange.transparent;
+        DrawingSettings drawingTransparentSettings = this.CreateDrawingSettings(m_ShaderTagIdList, ref renderingData, SortingCriteria.CommonTransparent);
+        context.DrawRenderers(renderingData.cullResults, ref drawingTransparentSettings, ref m_FilteringSettings);
     }
 
     /// <summary>

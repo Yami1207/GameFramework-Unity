@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class RenderChunk
 {
@@ -190,7 +189,7 @@ public class RenderChunk
                 if (GameSetting.enableInstancing && info.useInstancing)
                 {
                     var instancingPrefab = m_RenderWorld.instancingCore.GetInstancingPrefab();
-                    instancingPrefab.Load(info);
+                    instancingPrefab.Load(id, info);
                     for (int i = 0; i < list.Count; ++i)
                     {
                         var data = list[i];

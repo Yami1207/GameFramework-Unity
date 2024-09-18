@@ -129,12 +129,15 @@ public class RenderWorld
         long finishTime = RenderUtil.CreateMSFromRealTime(kDefaultRenderTimePreFrame);
 
         UpdateAllRenderChunk(startTime, finishTime);
+
+        if (m_InstancingCore != null)
+            m_InstancingCore.Perform();
     }
 
     public void LateUpdate()
     {
         if (m_InstancingCore != null)
-            m_InstancingCore.PerformAll();
+            m_InstancingCore.Render();
     }
 
     private void UpdateAllRenderChunk(long startTime, long finishTime)

@@ -44,14 +44,13 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
         public static readonly int REFLECT_HASH_TEXTURE_PROP_ID = Shader.PropertyToID("_ReflectHashTexture");
         public static readonly int RW_REFLECT_HASH_TEXTURE_PROP_ID = Shader.PropertyToID("_RWReflectHashTexture");
 
-        public static readonly int REFLECT_MAPPING_0_TEXTURE_PROP_ID = Shader.PropertyToID("_ReflectMapping0Texture");
-        public static readonly int RW_REFLECT_MAPPING_0_TEXTURE_PROP_ID = Shader.PropertyToID("_RWReflectMapping0Texture");
-
-        public static readonly int REFLECT_MAPPING_1_TEXTURE_PROP_ID = Shader.PropertyToID("_ReflectMapping1Texture");
-        public static readonly int RW_REFLECT_MAPPING_1_TEXTURE_PROP_ID = Shader.PropertyToID("_RWReflectMapping1Texture");
+        public static readonly int REFLECT_MAPPING_TEXTURE_PROP_ID = Shader.PropertyToID("_ReflectMappingTexture");
+        public static readonly int RW_REFLECT_MAPPING_TEXTURE_PROP_ID = Shader.PropertyToID("_RWReflectMappingTexture");
 
         public static readonly int REFLECT_TEXTURE_PROP_ID = Shader.PropertyToID("_ReflectionTexture");
         public static readonly int RW_REFLECT_TEXTURE_PROP_ID = Shader.PropertyToID("_RWReflectionTexture");
+
+        public static readonly int REFLECT_DISTANCE_BUFFER_PROP_ID = Shader.PropertyToID("_RWReflectDistanceBuffer");
     }
 
     private static readonly string PROFILE_TAG = "Screen Space Planar Reflection";
@@ -66,10 +65,11 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
     public bool isVaild { get { return m_ReflectionShader != null; } }
 
     private RenderTargetIdentifier m_ReflectHashTextureID = new RenderTargetIdentifier(ShaderConstants.REFLECT_HASH_TEXTURE_PROP_ID);
-    private RenderTargetIdentifier m_ReflectMapping0TextureID = new RenderTargetIdentifier(ShaderConstants.REFLECT_MAPPING_0_TEXTURE_PROP_ID);
-    private RenderTargetIdentifier m_ReflectMapping1TextureID = new RenderTargetIdentifier(ShaderConstants.REFLECT_MAPPING_1_TEXTURE_PROP_ID);
+    private RenderTargetIdentifier m_ReflectMappingTextureID = new RenderTargetIdentifier(ShaderConstants.REFLECT_MAPPING_TEXTURE_PROP_ID);
     private RenderTargetIdentifier m_TempReflectionTextureID = new RenderTargetIdentifier(ShaderConstants.REFLECT_TEXTURE_PROP_ID);
     private RenderTargetIdentifier m_ReflectionTextureID = new RenderTargetIdentifier(ReflectionRendererFeature.REFLECTION_TEX_PROP_ID);
+
+    private readonly ComputeBuffer m_ReflectDistanceBuffer;
 
     public ScreenSpacePlanarReflectionPass(ReflectionRendererFeature owner) : base(owner)
     {
@@ -78,6 +78,9 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
 #else
         m_ReflectionShader = AssetManager.instance.LoadAsset<ComputeShader>("Shader/Reflection/ScreenSpacePlanarReflection");
 #endif
+
+        int size = s_TextureSizeArray[2] * s_TextureSizeArray[2];
+        m_ReflectDistanceBuffer = new ComputeBuffer(size, sizeof(uint), ComputeBufferType.Default);
     }
 
     public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
@@ -94,8 +97,7 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
 
         cmd.GetTemporaryRT(ReflectionRendererFeature.REFLECTION_TEX_PROP_ID, desc, FilterMode.Bilinear);
         cmd.GetTemporaryRT(ShaderConstants.REFLECT_HASH_TEXTURE_PROP_ID, desc, FilterMode.Point);
-        cmd.GetTemporaryRT(ShaderConstants.REFLECT_MAPPING_0_TEXTURE_PROP_ID, desc, FilterMode.Point);
-        cmd.GetTemporaryRT(ShaderConstants.REFLECT_MAPPING_1_TEXTURE_PROP_ID, desc, FilterMode.Point);
+        cmd.GetTemporaryRT(ShaderConstants.REFLECT_MAPPING_TEXTURE_PROP_ID, desc, FilterMode.Point);
 
         if (m_Onwer.SSPRSetting.fillHoles)
             cmd.GetTemporaryRT(ShaderConstants.REFLECT_TEXTURE_PROP_ID, desc, FilterMode.Point);
@@ -150,6 +152,10 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
                 RenderReflectionTexture(context, ref renderingData, cmd, plane, ReflectionRendererFeature.REFLECTION_TEX_PROP_ID);
             }
 
+            Vector4 instancingPlane = Vector4.zero;
+            if (ReflectionRendererFeature.instancingReflectionPlane != null && ReflectionRendererFeature.instancingReflectionPlane.Invoke(out instancingPlane))
+                RenderReflectionTexture(context, ref renderingData, cmd, instancingPlane, ReflectionRendererFeature.REFLECTION_TEX_PROP_ID);
+
             cmd.Clear();
             cmd.EndSample(PROFILE_TAG);
             context.ExecuteCommandBuffer(cmd);
@@ -160,8 +166,7 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
     public override void FrameCleanup(CommandBuffer cmd)
     {
         cmd.ReleaseTemporaryRT(ShaderConstants.REFLECT_HASH_TEXTURE_PROP_ID);
-        cmd.ReleaseTemporaryRT(ShaderConstants.REFLECT_MAPPING_0_TEXTURE_PROP_ID);
-        cmd.ReleaseTemporaryRT(ShaderConstants.REFLECT_MAPPING_1_TEXTURE_PROP_ID);
+        cmd.ReleaseTemporaryRT(ShaderConstants.REFLECT_MAPPING_TEXTURE_PROP_ID);
         cmd.ReleaseTemporaryRT(ReflectionRendererFeature.REFLECTION_TEX_PROP_ID);
 
         if (m_Onwer.SSPRSetting.fillHoles)
@@ -200,38 +205,22 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
 
         // 保存每个像素的反射点
         int kernel = m_ReflectionShader.FindKernel("RenderReflectHash");
+        cmd.SetComputeBufferParam(m_ReflectionShader, kernel, ShaderConstants.REFLECT_DISTANCE_BUFFER_PROP_ID, m_ReflectDistanceBuffer);
         cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.RW_REFLECT_HASH_TEXTURE_PROP_ID, m_ReflectHashTextureID);
-        cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.RW_REFLECT_MAPPING_0_TEXTURE_PROP_ID, m_ReflectMapping0TextureID);
-        cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.RW_REFLECT_MAPPING_1_TEXTURE_PROP_ID, m_ReflectMapping1TextureID);
+        cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.RW_REFLECT_MAPPING_TEXTURE_PROP_ID, m_ReflectMappingTextureID);
         cmd.DispatchCompute(m_ReflectionShader, kernel, dispatchThreadGroupX, dispatchThreadGroupY, dispatchThreadGroupZ);
 
-        if (setting.useDoubleMapping)
-        {
-            kernel = m_ReflectionShader.FindKernel("PreRenderReflectMapping");
-            cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.REFLECT_HASH_TEXTURE_PROP_ID, m_ReflectHashTextureID);
-            cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.RW_REFLECT_MAPPING_0_TEXTURE_PROP_ID, m_ReflectMapping0TextureID);
-            cmd.DispatchCompute(m_ReflectionShader, kernel, dispatchThreadGroupX, dispatchThreadGroupY, dispatchThreadGroupZ);
-
-            kernel = m_ReflectionShader.FindKernel("RenderReflectMapping");
-            cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.CAMERA_DEPTH_TEXTURE_PROP_ID, depthTarget);
-            cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.REFLECT_HASH_TEXTURE_PROP_ID, m_ReflectHashTextureID);
-            cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.REFLECT_MAPPING_0_TEXTURE_PROP_ID, m_ReflectMapping0TextureID);
-            cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.RW_REFLECT_MAPPING_1_TEXTURE_PROP_ID, m_ReflectMapping1TextureID);
-            cmd.DispatchCompute(m_ReflectionShader, kernel, dispatchThreadGroupX, dispatchThreadGroupY, dispatchThreadGroupZ);
-        }
-        else
-        {
-            kernel = m_ReflectionShader.FindKernel("PreRenderReflectMapping");
-            cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.REFLECT_HASH_TEXTURE_PROP_ID, m_ReflectHashTextureID);
-            cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.RW_REFLECT_MAPPING_0_TEXTURE_PROP_ID, m_ReflectMapping1TextureID);
-            cmd.DispatchCompute(m_ReflectionShader, kernel, dispatchThreadGroupX, dispatchThreadGroupY, dispatchThreadGroupZ);
-        }
+        kernel = m_ReflectionShader.FindKernel("RenderReflectMapping");
+        cmd.SetComputeBufferParam(m_ReflectionShader, kernel, ShaderConstants.REFLECT_DISTANCE_BUFFER_PROP_ID, m_ReflectDistanceBuffer);
+        cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.REFLECT_HASH_TEXTURE_PROP_ID, m_ReflectHashTextureID);
+        cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.RW_REFLECT_MAPPING_TEXTURE_PROP_ID, m_ReflectMappingTextureID);
+        cmd.DispatchCompute(m_ReflectionShader, kernel, dispatchThreadGroupX, dispatchThreadGroupY, dispatchThreadGroupZ);
 
         if (setting.fillHoles)
         {
             kernel = m_ReflectionShader.FindKernel("RenderReflectionTexture");
             cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.CAMERA_COLOR_TEXTURE_PROP_ID, colorTarget);
-            cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.REFLECT_MAPPING_1_TEXTURE_PROP_ID, m_ReflectMapping1TextureID);
+            cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.REFLECT_MAPPING_TEXTURE_PROP_ID, m_ReflectMappingTextureID);
             cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.RW_REFLECT_TEXTURE_PROP_ID, m_TempReflectionTextureID);
             cmd.DispatchCompute(m_ReflectionShader, kernel, dispatchThreadGroupX, dispatchThreadGroupY, dispatchThreadGroupZ);
 
@@ -244,7 +233,7 @@ public class ScreenSpacePlanarReflectionPass : BaseReflectionPass
         {
             kernel = m_ReflectionShader.FindKernel("RenderReflectionTexture");
             cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.CAMERA_COLOR_TEXTURE_PROP_ID, colorTarget);
-            cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.REFLECT_MAPPING_1_TEXTURE_PROP_ID, m_ReflectMapping1TextureID);
+            cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.REFLECT_MAPPING_TEXTURE_PROP_ID, m_ReflectMappingTextureID);
             cmd.SetComputeTextureParam(m_ReflectionShader, kernel, ShaderConstants.RW_REFLECT_TEXTURE_PROP_ID, m_ReflectionTextureID);
             cmd.DispatchCompute(m_ReflectionShader, kernel, dispatchThreadGroupX, dispatchThreadGroupY, dispatchThreadGroupZ);
         }
