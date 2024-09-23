@@ -45,8 +45,8 @@ uniform half _ReflectionIntensity;
 uniform half _RefractionFactor;
 
 uniform half3 _SpecularColor;
-uniform half _SpecularShinness;
 uniform half _SpecularIntensity;
+uniform half _SpecularShinness;
 
 uniform half3 _FoamColor;
 uniform half _FoamAmount;

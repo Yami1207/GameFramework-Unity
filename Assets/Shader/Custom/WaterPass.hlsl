@@ -141,13 +141,13 @@ half4 frag(Varyings input) : SV_Target0
     half3 specularColor = 0;
 #if USING_SPECULAR
     {
-        specularColor = mainLightColor * _SpecularIntensity * _SpecularColor * (1 - 2 * foam) * (1 - intersection);
+        specularColor = mainLightColor * _SpecularColor * (1 - 2 * foam) * (1 - intersection);
     
         CustomBRDFData brdfData = GetBRDFData(albedo, 0, _SpecularShinness);
         half specular = DirectBRDFSpecular(brdfData, bxdfContext);
         //half specular = pow(max(0.001, bxdfContext.NoH), _SpecularShinness * 256);
     
-        specularColor *= specular;
+        specularColor *= specular * _SpecularIntensity;
     }
 #endif
     

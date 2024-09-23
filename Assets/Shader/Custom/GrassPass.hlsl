@@ -26,13 +26,13 @@ inline float4 GetGrassPosition(Attributes input, float3 normalWS)
     float4 playerPosWS = GetTrailObject(positionWS);
     if (playerPosWS.w > 0)
     {
-        float dist = distance(positionWS, playerPosWS);
+        float dist = distance(positionWS, playerPosWS.xyz);
     
         // 草的描点
         float3 pivotPointWS = TransformObjectToWorld(float3(input.texcoord2, input.texcoord3.x));
         //pivotPointWS.y = unity_ObjectToWorld._24;
         float pushDown = saturate((1 - dist / playerPosWS.w) * lerpY) * _GrassPushStrength;
-        float3 direction = SafeNormalize(playerPosWS - pivotPointWS);
+        float3 direction = SafeNormalize(playerPosWS.xyz - pivotPointWS);
         float3 newPos = positionWS + (direction * pushDown);
 	    float orgDist = distance(positionWS, pivotPointWS);
         positionWS = pivotPointWS + (SafeNormalize(newPos - pivotPointWS) * orgDist);
@@ -91,7 +91,7 @@ Varyings vert(Attributes input)
 
     Varyings output;
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
-    output.positionCS = TransformWorldToHClip(positionWS);
+    output.positionCS = TransformWorldToHClip(positionWS.xyz);
     output.texcoord = half3(input.texcoord, positionWS.w);
     output.normalWS = normalWS;
     output.positionWSAndFog = float4(positionWS.xyz, ComputeFogFactor(output.positionCS.z));

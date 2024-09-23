@@ -8,7 +8,7 @@ public static class AssetManagerSetup
     {
         SettingManager.instance.Init();
 
-        //安装表格数据读取方法
+        // 安装表格数据读取方法
         CSVHelper.loadBytes = (path) =>
         {
             return AssetManager.instance.LoadFileData(path);

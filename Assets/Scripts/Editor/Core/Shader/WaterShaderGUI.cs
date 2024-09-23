@@ -242,8 +242,8 @@ public class WaterShaderGUI : BaseShaderGUI
             if (m_EnableSpecularProp.floatValue > 0.5f)
             {
                 DrawProperty("_SpecularColor", "颜色", false);
-                DrawProperty("_SpecularShinness", "光泽度", false);
                 DrawProperty("_SpecularIntensity", "强度", false);
+                DrawProperty("_SpecularShinness", "光泽度", false);
             }
         }
         EditorGUILayout.EndVertical();

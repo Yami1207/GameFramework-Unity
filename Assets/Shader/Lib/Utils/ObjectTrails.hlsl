@@ -16,7 +16,7 @@ inline float4 GetTrailObject(float3 positionWS)
 #endif
     
     half4 info = SAMPLE_TEXTURE2D_LOD(_G_ObjectTrailsTex, sampler_G_ObjectTrailsTex, uv, 0.0);
-    half theta = ((2.0 * info) - 1.0) * PI;
+    half theta = ((2.0 * info.x) - 1.0) * PI;
     float x = info.y * cos(theta);
     float z = info.y * sin(theta);
     float planeHeight = lerp(_G_ObjectTrailsTexHeight.x, _G_ObjectTrailsTexHeight.y, info.z);

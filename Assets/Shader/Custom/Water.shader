@@ -34,8 +34,8 @@
         [Header(Specular)]
         [Toggle(_USE_SPECULAR)]_EnableSpecular("开启高光", Float) = 1
 		[Linear]_SpecularColor("Color", Vector) = (1.0, 1.0, 1.0, 1.0)
-		_SpecularShinness("Shinness", Range(0, 1)) = 1
-		_SpecularIntensity("Intensity", Range(0, 5)) = 1
+        _SpecularIntensity("Intensity", Range(0, 5)) = 1.0
+		_SpecularShinness("Shinness", Range(0.0, 1.0)) = 1.0
 
         [Header(Surface Foam)]
         [Toggle(_USE_FOAM)]_EnableFoam("开启泡沫", Float) = 1

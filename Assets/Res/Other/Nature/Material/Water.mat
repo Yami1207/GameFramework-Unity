@@ -68,8 +68,8 @@ Material:
     - _NormalSubTiling: 0.5
     - _ReflectionDistort: 0.05
     - _ReflectionIntensity: 1
-    - _RefractionFactor: 0.11
-    - _SpecularIntensity: 1.81
+    - _RefractionFactor: 0.2
+    - _SpecularIntensity: 0.4
     - _SpecularShinness: 1
     - _TransparentDistance: 0.45
     - _WaterSpeed: 1
@@ -79,7 +79,7 @@ Material:
     - _IntersectionColor: {r: 1, g: 1, b: 1, a: 1}
     - _NormalTiling: {r: 0.3, g: 0.3, b: 0, a: 0}
     - _ReflectionColor: {r: 1, g: 1, b: 1, a: 1}
-    - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SpecularColor: {r: 0.13023897, g: 0.13023897, b: 0.13023897, a: 1}
     - _WaterAmplitude: {r: 3.27, g: 0.14, b: 0.39, a: 0}
     - _WaterDirection: {r: 1, g: 1, b: 0, a: 0}
     - _WaterFrequency: {r: 0, g: 0.67, b: 0.28, a: 0}

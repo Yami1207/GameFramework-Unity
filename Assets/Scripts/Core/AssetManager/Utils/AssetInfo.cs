@@ -91,6 +91,8 @@ public class AssetInfo
 
     private static Dictionary<int, AssetInfo> s_AssetInfoDict = new Dictionary<int, AssetInfo>();
 
+    public static int count { get { return s_AssetInfoDict.Count; } }
+
     /// <summary>
     /// 获取枚举器
     /// </summary>

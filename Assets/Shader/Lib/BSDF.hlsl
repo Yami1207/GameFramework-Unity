@@ -49,8 +49,8 @@ CustomBRDFData GetBRDFData(half3 albedo, half metallic, half smoothness)
 
 	// 粗糙度
     data.perceptualRoughness = roughness;
-    data.roughness = max(data.perceptualRoughness * data.perceptualRoughness, 0.002);
-    data.roughness2 = data.roughness * data.roughness;
+    data.roughness = max(data.perceptualRoughness * data.perceptualRoughness, HALF_MIN_SQRT);
+    data.roughness2 = max(data.roughness * data.roughness, HALF_MIN);
     data.roughness2MinusOne = data.roughness2 - 1;
     data.normalizationTerm = data.roughness * 4 + 2;
 
