@@ -83,14 +83,14 @@ MonoBehaviour:
     debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7, type: 3}
     hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
   m_RendererFeatures:
-  - {fileID: 6381482789918863231}
   - {fileID: -8499847633944705269}
   - {fileID: 6015525162752545563}
   - {fileID: -5655963157021180432}
   - {fileID: 1484748265903300909}
   - {fileID: -7889520599830213614}
   - {fileID: -4820369658984885802}
-  m_RendererFeatureMap: 7fef6171c9948f580b07c86d9c790a8a1b134a8f43707b53f03d0eab79fb81b12d210b6aaee29a14124cfe9ed0ca8292d69122a6559b1abd
+  - {fileID: 831211022826968315}
+  m_RendererFeatureMap: 0b07c86d9c790a8a1b134a8f43707b53f03d0eab79fb81b12d210b6aaee29a14124cfe9ed0ca8292d69122a6559b1abdfb94fd74050e890b
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -129,6 +129,48 @@ MonoBehaviour:
   m_CopyDepthMode: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
+--- !u!114 &831211022826968315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d457bb816936254bac278e391c11651, type: 3}
+  m_Name: VolumetricClouds
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  m_CloudColor: {r: 1, g: 1, b: 1, a: 1}
+  m_CloudMaskTexture: {fileID: 2800000, guid: f6007e89c1c6a084b869165175bfe318, type: 3}
+  m_CloudMaskUVScale: 0.000006
+  m_CloudLutTexture: {fileID: 2800000, guid: 2889ea1b10f34c647a22984cfff7cddb, type: 3}
+  m_CloudLayerAltitude: 1200
+  m_CloudLayerThickness: 800
+  m_EarthRadiusKm: 6360
+  m_EarthCurvature: 0
+  m_ShapeFactor: 0.8
+  m_DensityNoiseTexture: {fileID: 11700000, guid: 87aca26f262221c47b0d3a2d84d08823, type: 3}
+  m_DensityNoiseScale: 8
+  m_DensityMultiplier: 0.4
+  m_ErosionFactor: 0.8
+  m_ErosionNoiseTexture: {fileID: 11700000, guid: d1aae012f8a4f23478471851f17ff915, type: 3}
+  m_ErosionNoiseScale: 107
+  m_LightIntensity: 6
+  m_MultiScattering: 0.5
+  m_PowderEffectIntensity: 0.7
+  m_Extinction: {r: 0.48627454, g: 0.7725491, b: 0.92549026, a: 1}
+  m_ExtinctionScale: 0.75
+  m_ErosionOcclusion: 0.1
+  m_PhaseG: 0.5
+  m_PhaseG2: -0.5
+  m_PhaseBlend: 0.2
+  m_NumPrimarySteps: 32
+  m_FadeInStart: 10000
+  m_FadeInDistance: 200
+  m_EnbaleDownsampleResolution: 1
+  m_WindDirection: {x: 10, y: 10}
 --- !u!114 &1484748265903300909
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,17 +207,3 @@ MonoBehaviour:
   m_CullMask:
     serializedVersion: 2
     m_Bits: 64
---- !u!114 &6381482789918863231
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d457bb816936254bac278e391c11651, type: 3}
-  m_Name: VolumetricCloud
-  m_EditorClassIdentifier: 
-  m_Active: 0
-  m_Material: {fileID: 2100000, guid: ff5fbf824445d8b43858dc6b222851f0, type: 2}

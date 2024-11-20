@@ -1,6 +1,9 @@
 ﻿#ifndef __COMMON_HLSL__
 #define __COMMON_HLSL__
 
+#define KILOMETER_TO_METER  	1000.0
+#define METER_TO_KILOMETER  	0.0001
+
 #define ANGLE_TO_RADIAN(x) 0.0174532924 * x
 
 TEXTURE2D_X_FLOAT(_CameraDepthTexture);
@@ -115,6 +118,37 @@ inline half3 L2G(half3 color)
 #else
     return color;
 #endif
+}
+
+inline float Remap(float value, float originMin, float originMax, float newMin, float newMax)
+{
+    return newMin + (newMax - newMin) * saturate(((value - originMin) / (originMax - originMin)));
+}
+
+//---------------------------------------------
+// Phase functions
+//---------------------------------------------
+
+// 各向同性相函数
+inline float IsotropicPhase()
+{
+    return 0.25 * INV_PI; //1.0 / (4.0 * PI);
+}
+
+// HG相函数
+// https://www.pbr-book.org/3ed-2018/Volume_Scattering/Phase_Functions
+inline float HenyeyGreensteinPhase(float cosTheta, float g)
+{
+    float numer = 1.0 - g * g;
+    float denom = 1.0 + g * g + 2.0 * g * cosTheta;
+    return numer / (4.0 * PI * denom * sqrt(denom));
+}
+
+// 瑞利相函数
+inline float RayleighPhase(float cosTheta)
+{
+    float factor = 3.0 / (16.0 * PI);
+    return factor * (1.0 + cosTheta * cosTheta);
 }
 
 #endif

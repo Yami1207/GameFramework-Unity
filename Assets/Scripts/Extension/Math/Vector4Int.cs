@@ -19,4 +19,12 @@ public struct Vector4Int
         z = _z;
         w = _w;
     }
+
+    public void Set(int _x, int _y = 0, int _z = 0, int _w = 0)
+    {
+        x = _x;
+        y = _y;
+        z = _z;
+        w = _w;
+    }
 }

@@ -1,0 +1,148 @@
+﻿#pragma multi_compile _ USE_DOWNSAMPLE_RESOLUTION
+
+//#include "VolumetricCloudsTypes.hlsl"
+#include "VolumetricCloudsUtility.hlsl"
+#include "../Utilities/Transforms.hlsl"
+
+// 深度图
+Texture2D<float> _CameraDepthTexture;
+
+// 降采样深度图
+Texture2D<float> _HalfDepthTexture;
+
+Texture2D<float4> _CloudsTexture;
+SamplerState sampler_CloudsTexture;
+
+inline float SampleDepth(uint2 id)
+{
+#ifdef USE_DOWNSAMPLE_RESOLUTION
+    return _HalfDepthTexture[id];
+#else
+    return _CameraDepthTexture[id];
+#endif
+}
+
+inline CloudRay GetCloudRay(uint2 id, float depth, in CloudLayerParams cloudLayerParams)
+{
+    CloudRay ray;
+    
+    // 射线起点
+    ray.origin = float3(0, 0, 0); //_WorldSpaceCameraPos.xyz;
+    
+    // 射线方向
+#ifdef USE_DOWNSAMPLE_RESOLUTION
+    float2 positionSS = (0.5 + id.xy) * _CloudsTextureSize.zw;
+#else
+    float2 positionSS = (0.5 + id.xy) / _CameraColorTextureSize;
+#endif
+    float3 positionWS = PositionSSToPositionWS(positionSS, depth);
+    ray.direction = normalize(positionWS);
+    
+    // 射线最大长度
+    ray.maxRayLength = MAX_SKYBOX_VOLUMETRIC_CLOUDS_DISTANCE;
+    
+    float toEarthCenter = length(ray.origin - cloudLayerParams.center);
+    if (toEarthCenter >= cloudLayerParams.bottomRadius && toEarthCenter <= cloudLayerParams.topRadius)
+        ray.insideClouds = true;
+    else
+        ray.insideClouds = false;
+    
+    return ray;
+}
+
+inline CloudLayerParams GetCloudLayerParams()
+{
+    CloudLayerParams params;
+    params.center = float3(0.0, -_PanetRadius, 0.0);
+    params.planetRadius = _PanetRadius;
+    params.bottomRadius = params.planetRadius + _CloudLayerAltitude;
+    params.topRadius = params.bottomRadius + _CloudLayerThickness;
+    params.toNormAltitude = 1.0 / _CloudLayerThickness;
+    return params;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// kernel: DownsampleDepth
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma kernel DownsampleDepth
+
+uniform RWTexture2D<float> _RWHalfDepthTexture;
+
+[numthreads(8, 8, 1)]
+void DownsampleDepth(uint2 id : SV_DispatchThreadID)
+{
+    if (any(id > _HalfDepthTextureSize))
+        return;
+    
+    uint2 uv = id.xy * 2;
+    uint x = min(uv.x + 1, _CameraColorTextureSize.x - 1);
+    uint y = min(uv.y + 1, _CameraColorTextureSize.y - 1);
+    float4 depth = float4(_CameraDepthTexture[uv], _CameraDepthTexture[uint2(uv.x, y)], _CameraDepthTexture[uint2(x, uv.y)], _CameraDepthTexture[uint2(x, y)]);
+    
+    // 离镜头最远的深度
+#ifdef UNITY_REVERSED_Z
+    depth.xy = min(depth.xy, depth.zw);
+    _RWHalfDepthTexture[id] = min(depth.x, depth.y);
+#else
+    depth.xy = max(depth.xy, depth.zw);
+    _RWHalfDepthTexture[id] = max(depth.x, depth.y);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// kernel: RenderClouds
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma kernel RenderClouds
+
+uniform RWTexture2D<float4> _RWCloudsTexture;
+
+[numthreads(8, 8, 1)]
+void RenderClouds(uint2 id : SV_DispatchThreadID)
+{
+    if (any(id > (uint2)_CloudsTextureSize.xy))
+        return;
+
+    float depth = SampleDepth(id);
+    // 像素是否被物体遮挡
+#ifdef UNITY_REVERSED_Z
+    if (depth <= UNITY_RAW_FAR_CLIP_VALUE)
+#else
+    if (depth >= UNITY_RAW_FAR_CLIP_VALUE)
+#endif
+    {
+        CloudLayerParams cloudLayerParams = GetCloudLayerParams();
+        CloudRay ray = GetCloudRay(id, depth, cloudLayerParams);
+
+        VolumetricRayResult result = TraceVolumetricRay(ray, cloudLayerParams);
+        _RWCloudsTexture[id] = float4(result.scattering * _CloudColor.rgb, result.transmittance);
+    }
+    else
+    {
+        _RWCloudsTexture[id] = float4(0, 0, 0, 1);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// kernel: CombineColorFrame
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma kernel CombineColorFrame
+
+uniform Texture2D<float4> _CameraColorTexture;
+
+uniform RWTexture2D<float4> _RWCombineColorTexture;
+
+SamplerState PointClampSampler;
+
+[numthreads(8, 8, 1)]
+void CombineColorFrame(uint2 id : SV_DispatchThreadID)
+{
+    if (any(id > (uint2) _CameraColorTextureSize))
+        return;
+    
+    float4 color = _CameraColorTexture[id];
+    float4 cloud = _CloudsTexture.SampleLevel(PointClampSampler, 1.0 * id / _CameraColorTextureSize, 0);
+    //_RWCombineColorTexture[id] = float4(lerp(cloud.rgb, color.rgb, cloud.a), color.a);
+    _RWCombineColorTexture[id] = float4(color.rgb * cloud.a + cloud.rgb, color.a);
+    //* cloud.a + , color.a);
+}
+
