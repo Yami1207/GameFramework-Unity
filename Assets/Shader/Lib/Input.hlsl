@@ -8,7 +8,12 @@ struct CustomSurfaceData
     half3 albedo;
     
     // 高光
-    half3 specular;
+    half specular;
+    half3 specularColor;
+    half specularThreshold;
+    
+    // 光泽度
+    half shininess;
     
     // 金属度
     half metallic;
@@ -20,13 +25,17 @@ struct CustomSurfaceData
     half3 normalTS;
     
     // 自发光
-    half3 emission;
+    half emission;
+    half3 emissionColor;
     
     // 遮蔽强度
     half occlusion;
     
     // 透明度
     half alpha;
+    
+    // 顶点颜色
+    half4 vertexColor;
 };
 
 inline CustomSurfaceData GetDefaultSurfaceData()
@@ -39,8 +48,11 @@ inline CustomSurfaceData GetDefaultSurfaceData()
 // 片元顶点参数
 struct CustomInputData
 {
-    float3 positionWS;
+    float2 uv;
     
+    float3 positionWS;
+    float4 positionCS;
+
     float3 normalWS;
     
     half3 viewDirectionWS;

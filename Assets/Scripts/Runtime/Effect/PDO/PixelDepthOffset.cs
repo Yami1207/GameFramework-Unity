@@ -50,6 +50,7 @@ public class PixelDepthOffset : ScriptableRendererFeature
             desc.colorFormat = RenderTextureFormat.ARGBHalf;
             desc.width = width;
             desc.height = height;
+            desc.msaaSamples = 1;
             cmd.GetTemporaryRT(s_PDOAlbedoTexPropID, desc, FilterMode.Bilinear);
 
             RenderTextureDescriptor normalDesc = cameraTextureDescriptor;

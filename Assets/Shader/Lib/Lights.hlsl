@@ -14,7 +14,7 @@ inline Light GetMainLight(CustomInputData inputData, half4 shadowMask, AmbientOc
     return light;
 }
 
-half4 CalculateShadowMask(CustomInputData inputData)
+inline half4 CalculateShadowMask(CustomInputData inputData)
 {
     // To ensure backward compatibility we have to avoid using shadowMask input, as it is not present in older shaders
 #if defined(SHADOWS_SHADOWMASK) && defined(LIGHTMAP_ON)

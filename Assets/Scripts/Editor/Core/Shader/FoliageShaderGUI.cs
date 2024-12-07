@@ -20,7 +20,7 @@ public class FoliageShaderGUI : BaseShaderGUI
     protected override void FindProperties(MaterialProperty[] properties)
     {
         base.FindProperties(properties);
-
+        
         m_BaseMapProp = FindProperty("_BaseMap", false);
         m_BaseColorProp = FindProperty("_BaseColor", false);
 

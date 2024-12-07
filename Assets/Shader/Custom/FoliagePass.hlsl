@@ -44,6 +44,7 @@ inline void InitializeSurfaceData(Varyings input, inout CustomSurfaceData surfac
     surfaceData.smoothness = 0;
     
     surfaceData.emission = 0;
+    surfaceData.emissionColor = half3(0, 0, 0);
     surfaceData.occlusion = input.color.r;
 }
 

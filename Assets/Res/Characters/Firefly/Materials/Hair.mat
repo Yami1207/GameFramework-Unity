@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Hair
+  m_Shader: {fileID: 4800000, guid: 4ccd67098e29c53499f3da020e0946f8, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _USE_RIM_LIGHT
+  - _USE_RIM_SHADOW
+  - _USE_SPECULAR
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _AlbedoTex:
+        m_Texture: {fileID: 2800000, guid: 8fb1b102200a1fa4a8ebe36f40f8de60, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CoolRampTex:
+        m_Texture: {fileID: 2800000, guid: 3237249b15939af43b3b2cde7f502d71, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LightMap:
+        m_Texture: {fileID: 2800000, guid: ef7a05a1079370b45aac1a50cb1b6c27, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WarmRampTex:
+        m_Texture: {fileID: 2800000, guid: 62bdcd9781cb2e545999af62185bf725, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _CullMode: 2
+    - _DstBlend: 0
+    - _EmissionIntensity: 0
+    - _EmissionThreshold: 0.173
+    - _OutlineWidth: 1
+    - _OutlineZOffset: 0.001
+    - _RimLightEdgeSoftness: 0.05
+    - _RimLightHeader: 0
+    - _RimLightThreshold: 0.5
+    - _RimShadowFeather: 0.5
+    - _RimShadowHeader: 0
+    - _RimShadowIntensity: 1
+    - _RimShadowWidth: 1
+    - _RimWidth: 1
+    - _SpecularHeader: 0
+    - _SpecularIntensity: 0.4
+    - _SpecularRoughness: 0.225
+    - _SpecularShininess: 4
+    - _SrcBlend: 1
+    - _UseEmission: 0
+    - _UseRimLight: 1
+    - _UseRimShadow: 1
+    - _UseSpecular: 1
+    - _ZWrite: 1
+    m_Colors:
+    - _BackColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor: {r: 0.21404114, g: 0.21404114, b: 0.21404114, a: 1}
+    - _RimColor: {r: 0.35727677, g: 0.35727677, b: 0.35727677, a: 1}
+    - _RimShadowColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []
+--- !u!114 &7883544562218544271
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7

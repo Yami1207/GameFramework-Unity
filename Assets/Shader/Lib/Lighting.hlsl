@@ -18,7 +18,7 @@ inline half3 LightingSpecular(half3 lightColor, CustomSurfaceData surfaceData, B
 {
     half smoothness = exp2(10 * surfaceData.smoothness + 1);
     half spec = pow(max(bxdfContext.NoH, 0.00009), smoothness);
-    return lightColor * spec * surfaceData.specular;
+    return lightColor * spec * surfaceData.specular * surfaceData.specularColor;
 }
 
 //--------------------------------------
@@ -131,7 +131,7 @@ inline half3 LightingPhysicallyBased(CustomInputData inputData, CustomSurfaceDat
 // 自发光
 inline half3 MixEmission(half3 fragColor, CustomSurfaceData surfaceData)
 {
-    return fragColor + surfaceData.emission;
+    return fragColor + surfaceData.albedo * surfaceData.emission;
 }
 
 #endif

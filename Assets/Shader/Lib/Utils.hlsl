@@ -102,4 +102,29 @@ inline half4 CosineGradient(float x, half4 phase, half4 amp, half4 freq, half4 o
     return half4(offset + 0.5 * amp * cos(x * freq + phase) + 0.5);
 }
 
+//---------------------------------------------
+// Vertex Utils
+//---------------------------------------------
+// 计算扩展宽度
+inline float CalculateExtendWidthWS(float3 positionWS, float3 extendVectorWS, float extendWidth, float minExtendWidth, float maxExtendWidth)
+{
+    float4 positionCS = TransformWorldToHClip(positionWS);
+    float4 extendPositionCS = TransformWorldToHClip(positionWS + extendVectorWS * extendWidth);
+
+    float2 screenParam = GetScaledScreenParams().xy;
+    float2 delta = extendPositionCS.xy / extendPositionCS.w - positionCS.xy / positionCS.w;
+    delta *= screenParam / screenParam.y * 1080.0f;
+
+    const float extendLen = length(delta);
+    float width = extendWidth * min(1.0, minExtendWidth / extendLen) * max(1.0, maxExtendWidth / extendLen);
+    return width;
+}
+
+float3 ExtendRim(float3 positionWS, float3 normalWS, float width, float minWidth, float maxWidth)
+{
+    float3 extendWS = normalize(float3(normalWS.x, 0.0, normalWS.z));
+    float offsetLen = CalculateExtendWidthWS(positionWS, extendWS, width, minWidth, maxWidth);
+    return positionWS + extendWS * offsetLen;
+}
+
 #endif

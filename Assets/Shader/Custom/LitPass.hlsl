@@ -18,7 +18,8 @@ inline void InitializeSurfaceData(Varyings input, out CustomSurfaceData surfaceD
     surfaceData.metallic = _Metallic;
     surfaceData.smoothness = _Smoothness;
     
-    surfaceData.emission = surfaceData.albedo * _EmissionIntensity * _EmissionColor.rgb;
+    surfaceData.emission = _EmissionIntensity;
+    surfaceData.emissionColor = _EmissionColor.rgb;
     surfaceData.occlusion = 1;
 }
 

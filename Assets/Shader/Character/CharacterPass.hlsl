@@ -12,9 +12,11 @@ inline void InitializeSurfaceData(Varyings input, out CustomSurfaceData surfaceD
     surfaceData.albedo = albedoAlpha.rgb;
     surfaceData.alpha = albedoAlpha.a;
     
-    surfaceData.specular = _SpecularColor;
+    surfaceData.specular = 1.0;
+    surfaceData.specularColor = _SpecularColor;
     
-    surfaceData.emission = _EmissionColor;
+    surfaceData.emission = albedoAlpha.a;
+    surfaceData.emissionColor = _EmissionColor;
 }
 
 inline half3 FragmentShading(Varyings input, CustomSurfaceData surfaceData)

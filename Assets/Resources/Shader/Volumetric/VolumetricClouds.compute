@@ -142,7 +142,6 @@ void CombineColorFrame(uint2 id : SV_DispatchThreadID)
     float4 color = _CameraColorTexture[id];
     float4 cloud = _CloudsTexture.SampleLevel(PointClampSampler, 1.0 * id / _CameraColorTextureSize, 0);
     //_RWCombineColorTexture[id] = float4(lerp(cloud.rgb, color.rgb, cloud.a), color.a);
-    _RWCombineColorTexture[id] = float4(color.rgb * cloud.a + cloud.rgb, color.a);
-    //* cloud.a + , color.a);
+    _RWCombineColorTexture[id] = float4(cloud.a * color.rgb + cloud.rgb, color.a);
 }
 

@@ -25,6 +25,7 @@ inline void MixPixelDepthOffset(float3 positionWS, half differ, inout CustomSurf
     surfaceData.metallic = lerp(0, surfaceData.metallic, t);
     surfaceData.smoothness = lerp(0, surfaceData.smoothness, t);
     surfaceData.emission = lerp(0, surfaceData.emission, t);
+    surfaceData.emissionColor = lerp(0, surfaceData.emissionColor, t);
 
     // nromal
     float3 normalWS = SAMPLE_TEXTURE2D(_G_PDO_NormalTex, sampler_G_PDO_NormalTex, uv).rgb;

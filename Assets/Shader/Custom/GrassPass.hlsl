@@ -60,7 +60,8 @@ inline void InitializeSurfaceData(Varyings input, inout CustomSurfaceData surfac
     surfaceData.smoothness = 1 - _Roughness;
     
     // 自发光
-    surfaceData.emission = _EmissionIntensity * _EmissionColor * input.texcoord.z;
+    surfaceData.emission = _EmissionIntensity * input.texcoord.z;
+    surfaceData.emissionColor = _EmissionColor;
 }
 
 inline void InitializeInputData(Varyings input, CustomSurfaceData surfaceData, inout CustomInputData inputData)
@@ -134,7 +135,7 @@ FragData frag(Varyings input)
     half3 color = mainLightColor + giColor;
     
     // 自发光
-    color += surfaceData.emission * shadow;
+    color += surfaceData.emission * surfaceData.emissionColor * shadow;
 
     // 与雾混合
     color = MixFog(color, inputData, surfaceData);

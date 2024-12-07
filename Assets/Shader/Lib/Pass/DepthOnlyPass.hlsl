@@ -10,8 +10,8 @@
 // 材质属性
 CBUFFER_START(UnityPerMaterial)
 #if USING_ALPHA_CUTOFF
-float4 _BaseMap_ST;
-half _Cutoff;
+    float4 _BaseMap_ST;
+    half _Cutoff;
 #endif
 CBUFFER_END
 

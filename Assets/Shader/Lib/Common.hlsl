@@ -19,18 +19,46 @@ inline float SampleSceneDepth(float2 uv)
     return depth;
 }
 
-// 返回视角空间下深度值
-inline float GetEye01Depth(float2 uv)
+// 返回深度值
+inline float SampleSceneDepth(uint2 uv)
 {
-    float depth = SAMPLE_TEXTURE2D_X(_CameraDepthTexture, sampler_CameraDepthTexture, uv).r;
+    float depth = LOAD_TEXTURE2D_X(_CameraDepthTexture, uv).r;
+#if !UNITY_REVERSED_Z
+    depth = lerp(UNITY_NEAR_CLIP_VALUE, 1, depth);
+#endif
+    return depth;
+}
+
+// 返回视角空间下深度值(0..1)
+inline float GetLinear01Depth(float depth)
+{
     return 1.0 / (_ZBufferParams.x * depth + _ZBufferParams.y);
 }
 
-// 返回视角空间下深度值
-inline float GetEyeDepth(float2 uv)
+// 返回视角空间下深度值(0..1)
+inline float GetLinear01Depth(float2 uv)
 {
     float depth = SAMPLE_TEXTURE2D_X(_CameraDepthTexture, sampler_CameraDepthTexture, uv).r;
+    return GetLinear01Depth(depth);
+}
+
+// 返回视角空间下深度值
+inline float GetLinearEyeDepth(float depth)
+{
     return 1.0 / (_ZBufferParams.z * depth + _ZBufferParams.w);
+}
+
+// 返回视角空间下深度值
+inline float GetLinearEyeDepth(float2 uv)
+{
+    float depth = SAMPLE_TEXTURE2D_X(_CameraDepthTexture, sampler_CameraDepthTexture, uv).r;
+    return GetLinearEyeDepth(depth);
+}
+
+// 返回视角空间下深度值
+inline float GetLinearEyeDepth(float4 positionCS)
+{
+    return GetLinearEyeDepth(positionCS.z);
 }
 
 inline half Max3(half3 x)
